@@ -1,4 +1,33 @@
 <resources>
     <string name="app_name">To Let</string>
     <string name="title_activity_maps">Map</string>
+    <string name="title_activity_main">MainActivity</string>
+    <string name="title_bank">Bank</string>
+    <string name="title_bazaar">Bazaar</string>
+    <string name="title_map">Map</string>
+    <string name="title_bus_stand">Bus stand</string>
+    <string name="title_school">School</string>
+    <string name="title_activity_navigation">NavigationActivity</string>
+
+    <string name="navigation_drawer_open">Open navigation drawer</string>
+    <string name="navigation_drawer_close">Close navigation drawer</string>
+
+    <string name="action_settings">Settings</string>
+    <string name="user_profile">User Profile</string>
+    <string name="my_ads">My Ads</string>
+    <string name="favorites">Favorites</string>
+    <string name="ads">Ads</string>
+    <string name="all_ads">All Ads</string>
+    <string name="nearest_ads">Nearest Ads</string>
+    <string name="logout">Logout</string>
+    <string name="smart_ads">Smart Ads</string>
+    <string name="default_user_name">Makinul Hasan</string>
+    <string name="default_user_email">md.makinul.nasim@gmail.com</string>
+    <string name="default_contact_info">md.makinul.nasim@gmail.com</string>
+    <string name="post_your_add">Post Your Add</string>
+
+    <string name="title_activity_splash">SplashActivity</string>
+    <string name="dummy_button">Dummy Button</string>
+    <string name="dummy_content">DUMMY\nCONTENT</string>
+    <string name="loading">loading…</string>
 </resources>
