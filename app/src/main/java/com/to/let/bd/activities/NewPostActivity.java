@@ -16,10 +16,13 @@ import android.support.v7.widget.Toolbar;
 import android.text.SpannableString;
 import android.text.style.ForegroundColorSpan;
 import android.view.View;
+import android.widget.AdapterView;
+import android.widget.ArrayAdapter;
 import android.widget.EditText;
 import android.widget.FrameLayout;
 import android.widget.ImageView;
 import android.widget.ScrollView;
+import android.widget.Spinner;
 import android.widget.TextView;
 
 import com.google.android.gms.common.ConnectionResult;
@@ -49,12 +52,14 @@ public class NewPostActivity extends BaseActivity
         GoogleApiClient.OnConnectionFailedListener,
         GoogleMap.OnMapLongClickListener,
         GoogleMap.InfoWindowAdapter,
-        GoogleMap.OnMapClickListener {
+        GoogleMap.OnMapClickListener,AdapterView.OnItemSelectedListener {
 
     private static final String TAG = NewPostActivity.class.getSimpleName();
     private GoogleMap googleMap;
     private CameraPosition mCameraPosition;
     private EditText totalSpace;
+    private Spinner bedRoom, balcony, bathRoom, whichFloor, whichFacing;
+    ArrayAdapter<String> bedRoomAdapter, balconyAdapter, bathRoomAdapter, floreAdapter, facingAdapter;
 
     // The entry point to Google Play services, used by the Places API and Fused Location Provider.
     private GoogleApiClient mGoogleApiClient;
@@ -90,8 +95,9 @@ public class NewPostActivity extends BaseActivity
         retrieveSavedInstanceState(savedInstanceState);
 
         setContentView(R.layout.activity_new_post);
-        totalSpace = (EditText)findViewById(R.id.total_space);
-        totalSpace.setText("1000");
+        initialize();
+        addItemsOnSpinner();
+
 
         Toolbar toolbar = (Toolbar) findViewById(R.id.toolbar);
         setSupportActionBar(toolbar);
@@ -117,6 +123,22 @@ public class NewPostActivity extends BaseActivity
                 .addApi(LocationServices.API)
                 .build();
         mGoogleApiClient.connect();
+    }
+
+    public void initialize(){
+        totalSpace = (EditText)findViewById(R.id.total_space);
+        totalSpace.setText("1000");
+        bedRoom = (Spinner)findViewById(R.id.bedRoom);
+        balcony = (Spinner)findViewById(R.id.balcony);
+        bathRoom = (Spinner)findViewById(R.id.bathRoom);
+        whichFacing = (Spinner)findViewById(R.id.whichFacing);
+        whichFloor = (Spinner)findViewById(R.id.whichFloor);
+
+        bedRoom.setOnItemSelectedListener(this);
+        balcony.setOnItemSelectedListener(this);
+        bathRoom.setOnItemSelectedListener(this);
+        whichFloor.setOnItemSelectedListener(this);
+        whichFacing.setOnItemSelectedListener(this);
     }
 
     private TextView addressDetails;
@@ -393,6 +415,39 @@ public class NewPostActivity extends BaseActivity
         }
 
         return result;
+    }
+
+    public void addItemsOnSpinner() {
+        String[] totalBedRoom = {"1","2","3","4","5","6","7"};
+        String[] flore = {"0","1st", "2nd", "3rd", "4th","5th", "6th", "7th", "8th","9th","10th" };
+        //String[] totalBalcony = {"1","2","3","4","5","6","7"};
+
+        // Creating adapter for spinner
+        bedRoomAdapter = new ArrayAdapter<String>(this, android.R.layout.simple_spinner_item, totalBedRoom);
+        floreAdapter = new ArrayAdapter<String>(this, android.R.layout.simple_spinner_item, totalBedRoom);
+
+
+
+        // Drop down layout style - list view with radio button
+        bedRoomAdapter.setDropDownViewResource(android.R.layout.select_dialog_singlechoice);
+        floreAdapter.setDropDownViewResource(android.R.layout.select_dialog_singlechoice);
+
+        // attaching data adapter to spinner
+        bedRoom.setAdapter(bedRoomAdapter);
+        balcony.setAdapter(bedRoomAdapter);
+        bathRoom.setAdapter(bedRoomAdapter);
+        whichFloor.setAdapter(facingAdapter);
+        //bedRoom.setAdapter(bedRoomAdapter);
+    }
+
+    @Override
+    public void onItemSelected(AdapterView<?> adapterView, View view, int i, long l) {
+
+    }
+
+    @Override
+    public void onNothingSelected(AdapterView<?> adapterView) {
+
     }
 
     /**

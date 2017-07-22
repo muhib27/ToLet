@@ -94,11 +94,11 @@
 
                 <Spinner
                     android:id="@+id/whichFloor"
-                    android:layout_width="0dp"
+                    android:layout_width="@dimen/margin_0dp"
                     android:layout_height="wrap_content"
-                    android:layout_weight="1"
                     android:minWidth="@dimen/size_50dp"
                     android:spinnerMode="dropdown"
+                    android:layout_weight="1"
                     tools:listitem="@layout/common_spinner_sub_item" />
 
                 <Spinner
@@ -339,9 +339,12 @@
                 android:orientation="horizontal"
                 android:padding="@dimen/margin_8dp">
 
+
+
                 <LinearLayout
                     android:layout_width="@dimen/margin_0dp"
                     android:layout_height="wrap_content"
+                    android:layout_gravity="center"
                     android:layout_weight="1"
                     android:orientation="horizontal">
 
@@ -350,90 +353,83 @@
                         android:layout_height="wrap_content"
                         android:orientation="horizontal">
 
-                        <android.support.design.widget.TextInputLayout
-                            android:layout_width="@dimen/margin_0dp"
-                            android:layout_height="wrap_content"
-                            android:layout_weight="2">
-
-                            <EditText
-                                android:id="@+id/total_space"
-                                android:layout_width="match_parent"
-                                android:layout_height="wrap_content"
-                                android:hint="@string/total_space"
-                                android:imeActionId="@+id/email"
-                                android:imeOptions="actionUnspecified"
-                                android:inputType="number"
-                                android:maxLines="1"
-                                android:singleLine="true" />
-
-                        </android.support.design.widget.TextInputLayout>
-
                         <TextView
-                            android:layout_width="0dp"
+                            android:layout_width="@dimen/margin_0dp"
                             android:layout_height="wrap_content"
                             android:layout_gravity="center"
                             android:layout_weight="1"
-                            android:text="sqft" />
-                    </LinearLayout>
-                </LinearLayout>
+                            android:text="@string/bed_room"
+                            android:textSize="@dimen/text_size_16sp" />
 
+                        <Spinner
+                            android:id="@+id/bedRoom"
+                            android:layout_width="@dimen/margin_0dp"
+                            android:layout_height="40dp"
+                            android:layout_gravity="center"
+                            android:layout_weight="1">
+
+                        </Spinner>
+                    </LinearLayout>
+
+                    <!--<LinearLayout-->
+                    <!--android:layout_width="match_parent"-->
+                    <!--android:layout_height="wrap_content"-->
+                    <!--android:orientation="horizontal">-->
+
+                    <!--<android.support.design.widget.TextInputLayout-->
+                    <!--android:layout_width="@dimen/margin_0dp"-->
+                    <!--android:layout_weight="2"-->
+                    <!--android:layout_height="wrap_content">-->
+
+                    <!--<EditText-->
+                    <!--android:id="@+id/total_rent"-->
+                    <!--android:layout_width="match_parent"-->
+                    <!--android:layout_height="wrap_content"-->
+                    <!--android:hint="@string/rent"-->
+                    <!--android:imeActionId="@+id/email"-->
+                    <!--android:imeOptions="actionUnspecified"-->
+                    <!--android:maxLines="1"-->
+                    <!--android:singleLine="true" />-->
+
+                    <!--</android.support.design.widget.TextInputLayout>-->
+
+                    <!--<TextView-->
+                    <!--android:layout_gravity="center"-->
+                    <!--android:layout_width="@dimen/margin_0dp"-->
+                    <!--android:layout_height="wrap_content"-->
+                    <!--android:layout_weight="1"-->
+                    <!--android:text="BDT" />-->
+                    <!--</LinearLayout>-->
+                </LinearLayout>
                 <LinearLayout
-                    android:layout_gravity="center"
                     android:layout_width="@dimen/margin_0dp"
                     android:layout_height="wrap_content"
+                    android:layout_gravity="center"
                     android:layout_weight="1"
                     android:orientation="horizontal">
+
                     <LinearLayout
                         android:layout_width="match_parent"
                         android:layout_height="wrap_content"
                         android:orientation="horizontal">
-                    <TextView
-                        android:layout_width="@dimen/margin_0dp"
-                        android:layout_height="wrap_content"
-                        android:layout_gravity="center"
-                        android:layout_weight="1"
-                        android:text="@string/bed_room"
-                        android:textSize="@dimen/text_size_16sp" />
+
+                        <TextView
+                            android:layout_width="@dimen/margin_0dp"
+                            android:layout_height="wrap_content"
+                            android:layout_gravity="center"
+                            android:layout_weight="1"
+                            android:text="@string/balcony"
+                            android:textSize="@dimen/text_size_16sp" />
 
                         <Spinner
-                            android:layout_weight="1"
-                            android:id="@+id/bedRoom"
+                            android:id="@+id/balcony"
                             android:layout_width="@dimen/margin_0dp"
                             android:layout_height="40dp"
-                            android:layout_gravity="center">
+                            android:layout_gravity="center"
+                            android:layout_weight="1">
 
                         </Spinner>
-                        </LinearLayout>
-
-                    <!--<LinearLayout-->
-                        <!--android:layout_width="match_parent"-->
-                        <!--android:layout_height="wrap_content"-->
-                        <!--android:orientation="horizontal">-->
-
-                        <!--<android.support.design.widget.TextInputLayout-->
-                            <!--android:layout_width="@dimen/margin_0dp"-->
-                            <!--android:layout_weight="2"-->
-                            <!--android:layout_height="wrap_content">-->
-
-                            <!--<EditText-->
-                                <!--android:id="@+id/total_rent"-->
-                                <!--android:layout_width="match_parent"-->
-                                <!--android:layout_height="wrap_content"-->
-                                <!--android:hint="@string/rent"-->
-                                <!--android:imeActionId="@+id/email"-->
-                                <!--android:imeOptions="actionUnspecified"-->
-                                <!--android:maxLines="1"-->
-                                <!--android:singleLine="true" />-->
-
-                        <!--</android.support.design.widget.TextInputLayout>-->
-
-                        <!--<TextView-->
-                            <!--android:layout_gravity="center"-->
-                            <!--android:layout_width="@dimen/margin_0dp"-->
-                            <!--android:layout_height="wrap_content"-->
-                            <!--android:layout_weight="1"-->
-                            <!--android:text="BDT" />-->
-                    <!--</LinearLayout>-->
+                    </LinearLayout>
                 </LinearLayout>
 
                 <!--<LinearLayout-->
@@ -508,65 +504,64 @@
             <!--</LinearLayout>-->
             <!--</LinearLayout>-->
 
+            <!--<LinearLayout-->
+            <!--android:layout_width="match_parent"-->
+            <!--android:layout_height="wrap_content"-->
+            <!--android:layout_marginTop="@dimen/margin_16dp"-->
+            <!--android:orientation="vertical"-->
+            <!--android:padding="@dimen/margin_8dp">-->
+
+            <!--<TextView-->
+            <!--android:layout_width="wrap_content"-->
+            <!--android:layout_height="wrap_content"-->
+            <!--android:gravity="start"-->
+            <!--android:text="@string/bed_room"-->
+            <!--android:textColor="@color/black"-->
+            <!--android:textSize="@dimen/margin_20sp"-->
+            <!--android:textStyle="bold" />-->
+
+            <!--<LinearLayout-->
+            <!--android:layout_width="match_parent"-->
+            <!--android:layout_height="wrap_content"-->
+            <!--android:layout_marginTop="@dimen/margin_8dp"-->
+            <!--android:background="@drawable/rounded_button_background_white">-->
+
+            <!--<Spinner-->
+            <!--android:id="@+id/bed_room_spinner"-->
+            <!--android:layout_width="match_parent"-->
+            <!--android:layout_height="40dp"-->
+            <!--android:layout_gravity="center">-->
+
+            <!--</Spinner>-->
+            <!--</LinearLayout>-->
+
+            <!--</LinearLayout>-->
+
             <LinearLayout
                 android:layout_width="match_parent"
                 android:layout_height="wrap_content"
-                android:layout_marginTop="@dimen/margin_16dp"
-                android:orientation="vertical"
-                android:padding="@dimen/margin_8dp">
-
-                <TextView
-                    android:layout_width="wrap_content"
-                    android:layout_height="wrap_content"
-                    android:gravity="start"
-                    android:text="@string/bed_room"
-                    android:textColor="@color/black"
-                    android:textSize="@dimen/margin_20sp"
-                    android:textStyle="bold" />
-
-                <LinearLayout
-                    android:layout_width="match_parent"
-                    android:layout_height="wrap_content"
-                    android:layout_marginTop="@dimen/margin_8dp"
-                    android:background="@drawable/rounded_button_background_white">
-
-                    <Spinner
-                        android:id="@+id/bed_room_spinner"
-                        android:layout_width="match_parent"
-                        android:layout_height="40dp"
-                        android:layout_gravity="center">
-
-                    </Spinner>
-                </LinearLayout>
-
-            </LinearLayout>
-
-            <LinearLayout
-                android:layout_width="match_parent"
-                android:layout_height="wrap_content"
+                android:layout_marginTop="@dimen/margin_8dp"
+                android:background="@drawable/rounded_button_background_white"
                 android:orientation="horizontal">
 
                 <LinearLayout
-                    android:layout_width="match_parent"
+                    android:layout_width="@dimen/margin_0dp"
                     android:layout_height="wrap_content"
                     android:layout_gravity="center"
-                    android:orientation="horizontal"
+                    android:layout_weight="1"
+                    android:orientation="vertical"
                     android:padding="@dimen/margin_8dp">
 
                     <TextView
                         android:layout_width="wrap_content"
                         android:layout_height="wrap_content"
                         android:text="@string/drawing_dining"
-                        android:textColor="@color/black"
-                        android:textSize="@dimen/margin_20sp"
-                        android:textStyle="bold" />
+                        android:textSize="@dimen/text_size_16sp" />
 
                     <RadioGroup
                         android:id="@+id/drawing_dining"
                         android:layout_width="match_parent"
                         android:layout_height="wrap_content"
-                        android:layout_marginLeft="@dimen/margin_8dp"
-                        android:background="@drawable/rounded_button_background_white"
                         android:orientation="horizontal">
 
                         <RadioButton
@@ -587,79 +582,200 @@
                     </RadioGroup>
                 </LinearLayout>
 
+                <LinearLayout
+                    android:layout_width="@dimen/margin_0dp"
+                    android:layout_height="match_parent"
+                    android:layout_gravity="bottom"
+                    android:layout_weight="1"
+                    android:orientation="horizontal">
+
+                    <LinearLayout
+                        android:layout_width="match_parent"
+                        android:layout_height="wrap_content"
+                        android:layout_gravity="center"
+                        android:orientation="horizontal">
+
+                        <TextView
+                            android:layout_width="@dimen/margin_0dp"
+                            android:layout_height="wrap_content"
+                            android:layout_gravity="center"
+                            android:layout_weight="1"
+                            android:text="@string/bathroom"
+                            android:textSize="@dimen/text_size_16sp" />
+
+                        <Spinner
+                            android:id="@+id/bathRoom"
+                            android:layout_width="@dimen/margin_0dp"
+                            android:layout_height="40dp"
+                            android:layout_gravity="center"
+                            android:layout_weight="1">
+
+                        </Spinner>
+                    </LinearLayout>
+                </LinearLayout>
+
             </LinearLayout>
 
             <LinearLayout
                 android:layout_width="match_parent"
                 android:layout_height="wrap_content"
-                android:layout_marginTop="@dimen/margin_16dp"
-                android:orientation="vertical"
-                android:padding="@dimen/margin_8dp">
+                android:layout_marginTop="@dimen/margin_8dp"
+                android:padding="@dimen/margin_8dp"
+                android:background="@drawable/rounded_button_background_white"
+                android:orientation="horizontal">
 
-                <TextView
-                    android:layout_width="wrap_content"
-                    android:layout_height="wrap_content"
-                    android:gravity="start"
-                    android:text="@string/bathroom"
-                    android:textColor="@color/black"
-                    android:textSize="@dimen/margin_20sp"
-                    android:textStyle="bold" />
 
                 <LinearLayout
-                    android:layout_width="match_parent"
+                    android:layout_width="@dimen/margin_0dp"
                     android:layout_height="wrap_content"
-                    android:layout_marginTop="@dimen/margin_8dp"
-                    android:background="@drawable/rounded_button_background_white">
+                    android:layout_weight="1"
+                    android:orientation="horizontal">
 
-                    <Spinner
-                        android:id="@+id/bathroom_spinner"
+                    <LinearLayout
                         android:layout_width="match_parent"
-                        android:layout_height="40dp"
-                        android:layout_gravity="center">
+                        android:layout_height="wrap_content"
+                        android:orientation="horizontal">
 
-                    </Spinner>
+                        <android.support.design.widget.TextInputLayout
+                            android:layout_width="@dimen/margin_0dp"
+                            android:layout_height="wrap_content"
+                            android:layout_weight="2">
+
+                            <EditText
+                                android:id="@+id/total_space"
+                                android:layout_width="match_parent"
+                                android:layout_height="wrap_content"
+                                android:hint="@string/total_space"
+                                android:imeActionId="@+id/email"
+                                android:imeOptions="actionUnspecified"
+                                android:inputType="number"
+                                android:maxLines="1"
+                                android:singleLine="true" />
+
+                        </android.support.design.widget.TextInputLayout>
+
+                        <TextView
+                            android:layout_width="0dp"
+                            android:layout_height="wrap_content"
+                            android:layout_gravity="center"
+                            android:layout_weight="1"
+                            android:text="sqft" />
+                    </LinearLayout>
                 </LinearLayout>
 
+                    <LinearLayout
+                        android:layout_width="@dimen/margin_0dp"
+                        android:layout_height="wrap_content"
+                        android:layout_gravity="center"
+                        android:layout_weight="1"
+                        android:orientation="horizontal">
 
-                <!--<LinearLayout-->
-                <!--android:layout_width="@dimen/margin_0dp"-->
-                <!--android:layout_height="wrap_content"-->
-                <!--android:layout_marginTop="@dimen/margin_8dp"-->
-                <!--android:layout_weight="1"-->
-                <!--android:background="@drawable/rounded_button_background_white"-->
-                <!--android:orientation="vertical">-->
-                <!---->
-                <!--<Spinner-->
-                <!--android:id="@+id/bathroom_spinner"-->
-                <!--android:layout_width="match_parent"-->
-                <!--android:layout_height="40dp"-->
-                <!--android:layout_gravity="center"/>-->
-                <!--</LinearLayout>-->
+                        <LinearLayout
+                            android:layout_width="match_parent"
+                            android:layout_height="wrap_content"
+                            android:orientation="horizontal">
 
-                <!--<LinearLayout-->
-                <!--android:layout_width="@dimen/margin_0dp"-->
-                <!--android:layout_height="wrap_content"-->
-                <!--android:layout_marginTop="@dimen/margin_8dp"-->
-                <!--android:layout_weight="1"-->
-                <!--android:background="@drawable/rounded_button_background_white"-->
-                <!--android:orientation="vertical">-->
+                            <android.support.design.widget.TextInputLayout
+                                android:layout_width="@dimen/margin_0dp"
+                                android:layout_height="wrap_content"
+                                android:layout_weight="2">
 
-                <!--<TextView-->
-                <!--android:layout_width="wrap_content"-->
-                <!--android:layout_height="wrap_content"-->
-                <!--android:gravity="start"-->
-                <!--android:text="@string/bathroom"-->
-                <!--android:textColor="@color/black"-->
-                <!--android:textSize="@dimen/margin_20sp"-->
-                <!--android:textStyle="bold" />-->
+                                <EditText
+                                    android:id="@+id/total_rent"
+                                    android:layout_width="match_parent"
+                                    android:layout_height="wrap_content"
+                                    android:hint="@string/rent"
+                                    android:imeActionId="@+id/email"
+                                    android:imeOptions="actionUnspecified"
+                                    android:maxLines="1"
+                                    android:inputType="number"
+                                    android:singleLine="true" />
 
-                <!--<Spinner-->
-                <!--android:id="@+id/bathroom_"-->
-                <!--android:layout_width="match_parent"-->
-                <!--android:layout_height="40dp"-->
-                <!--android:layout_gravity="center"/>-->
-                <!--</LinearLayout>-->
+                            </android.support.design.widget.TextInputLayout>
+
+                            <TextView
+                                android:layout_width="@dimen/margin_0dp"
+                                android:layout_height="wrap_content"
+                                android:layout_gravity="center"
+                                android:layout_weight="1"
+                                android:text="BDT" />
+                        </LinearLayout>
+                    </LinearLayout>
+                </LinearLayout>
+
             </LinearLayout>
+
+            <!--<LinearLayout-->
+            <!--android:layout_width="match_parent"-->
+            <!--android:layout_height="wrap_content"-->
+            <!--android:layout_marginTop="@dimen/margin_16dp"-->
+            <!--android:orientation="vertical"-->
+            <!--android:padding="@dimen/margin_8dp">-->
+
+            <!--<TextView-->
+            <!--android:layout_width="wrap_content"-->
+            <!--android:layout_height="wrap_content"-->
+            <!--android:gravity="start"-->
+            <!--android:text="@string/bathroom"-->
+            <!--android:textColor="@color/black"-->
+            <!--android:textSize="@dimen/margin_20sp"-->
+            <!--android:textStyle="bold" />-->
+
+            <!--<LinearLayout-->
+            <!--android:layout_width="match_parent"-->
+            <!--android:layout_height="wrap_content"-->
+            <!--android:layout_marginTop="@dimen/margin_8dp"-->
+            <!--android:background="@drawable/rounded_button_background_white">-->
+
+            <!--<Spinner-->
+            <!--android:id="@+id/bathroom_spinner"-->
+            <!--android:layout_width="match_parent"-->
+            <!--android:layout_height="40dp"-->
+            <!--android:layout_gravity="center">-->
+
+            <!--</Spinner>-->
+            <!--</LinearLayout>-->
+
+
+            <!--<LinearLayout-->
+            <!--android:layout_width="@dimen/margin_0dp"-->
+            <!--android:layout_height="wrap_content"-->
+            <!--android:layout_marginTop="@dimen/margin_8dp"-->
+            <!--android:layout_weight="1"-->
+            <!--android:background="@drawable/rounded_button_background_white"-->
+            <!--android:orientation="vertical">-->
+            <!---->
+            <!--<Spinner-->
+            <!--android:id="@+id/bathroom_spinner"-->
+            <!--android:layout_width="match_parent"-->
+            <!--android:layout_height="40dp"-->
+            <!--android:layout_gravity="center"/>-->
+            <!--</LinearLayout>-->
+
+            <!--<LinearLayout-->
+            <!--android:layout_width="@dimen/margin_0dp"-->
+            <!--android:layout_height="wrap_content"-->
+            <!--android:layout_marginTop="@dimen/margin_8dp"-->
+            <!--android:layout_weight="1"-->
+            <!--android:background="@drawable/rounded_button_background_white"-->
+            <!--android:orientation="vertical">-->
+
+            <!--<TextView-->
+            <!--android:layout_width="wrap_content"-->
+            <!--android:layout_height="wrap_content"-->
+            <!--android:gravity="start"-->
+            <!--android:text="@string/bathroom"-->
+            <!--android:textColor="@color/black"-->
+            <!--android:textSize="@dimen/margin_20sp"-->
+            <!--android:textStyle="bold" />-->
+
+            <!--<Spinner-->
+            <!--android:id="@+id/bathroom_"-->
+            <!--android:layout_width="match_parent"-->
+            <!--android:layout_height="40dp"-->
+            <!--android:layout_gravity="center"/>-->
+            <!--</LinearLayout>-->
+            <!--</LinearLayout>-->
 
             <LinearLayout
                 android:layout_width="match_parent"
@@ -672,9 +788,7 @@
                     android:layout_width="match_parent"
                     android:layout_height="wrap_content"
                     android:text="@string/others_facility"
-                    android:textColor="@color/black"
-                    android:textSize="@dimen/margin_20sp"
-                    android:textStyle="bold" />
+                    android:textSize="@dimen/text_size_16sp" />
 
                 <LinearLayout
                     android:layout_width="match_parent"
@@ -733,7 +847,6 @@
                             android:layout_height="wrap_content"
                             android:layout_weight="1" />
                     </LinearLayout>
-                </LinearLayout>
             </LinearLayout>
 
             <LinearLayout
@@ -803,5 +916,6 @@
                 android:textAllCaps="false"
                 android:textStyle="bold" />
         </LinearLayout>
+
     </LinearLayout>
 </ScrollView>
