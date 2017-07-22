@@ -32,4 +32,11 @@
     <dimen name="text_size_12sp">12sp</dimen>
     <dimen name="text_size_10sp">10sp</dimen>
     <dimen name="new_post_common_padding">5dp</dimen>
+
+
+    <dimen name="margin_0dp">0dp</dimen>
+    <dimen name="margin_8dp">8dp</dimen>
+    <dimen name="margin_16dp">16dp</dimen>
+    <dimen name="margin_20sp">20sp</dimen>
+    <dimen name="margin_40dp">40dp</dimen>
 </resources>

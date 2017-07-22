@@ -16,6 +16,7 @@ import android.support.v7.widget.Toolbar;
 import android.text.SpannableString;
 import android.text.style.ForegroundColorSpan;
 import android.view.View;
+import android.widget.EditText;
 import android.widget.FrameLayout;
 import android.widget.ImageView;
 import android.widget.ScrollView;
@@ -53,6 +54,7 @@ public class NewPostActivity extends BaseActivity
     private static final String TAG = NewPostActivity.class.getSimpleName();
     private GoogleMap googleMap;
     private CameraPosition mCameraPosition;
+    private EditText totalSpace;
 
     // The entry point to Google Play services, used by the Places API and Fused Location Provider.
     private GoogleApiClient mGoogleApiClient;
@@ -88,6 +90,8 @@ public class NewPostActivity extends BaseActivity
         retrieveSavedInstanceState(savedInstanceState);
 
         setContentView(R.layout.activity_new_post);
+        totalSpace = (EditText)findViewById(R.id.total_space);
+        totalSpace.setText("1000");
 
         Toolbar toolbar = (Toolbar) findViewById(R.id.toolbar);
         setSupportActionBar(toolbar);

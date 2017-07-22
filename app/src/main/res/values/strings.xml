@@ -55,4 +55,8 @@
     <string name="houseInfo">House number/name:</string>
     <string name="title">Title</string>
     <string name="sub_title">Sub Title</string>
+
+    <string name="submit">Submit</string>
+    <string name="contact">Contact</string>
+    <string name="belcony">Belcony</string>
 </resources>
