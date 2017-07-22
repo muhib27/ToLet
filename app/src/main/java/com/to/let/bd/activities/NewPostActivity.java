@@ -1,21 +1,24 @@
-package com.to.let.bd;
+package com.to.let.bd.activities;
 
 import android.content.pm.PackageManager;
+import android.graphics.Bitmap;
 import android.graphics.Color;
 import android.location.Address;
 import android.location.Geocoder;
 import android.location.Location;
 import android.os.Bundle;
 import android.support.annotation.NonNull;
-import android.support.design.widget.BottomNavigationView;
+import android.support.design.widget.FloatingActionButton;
+import android.support.design.widget.Snackbar;
 import android.support.v4.app.ActivityCompat;
 import android.support.v4.content.ContextCompat;
+import android.support.v7.widget.Toolbar;
 import android.text.SpannableString;
 import android.text.style.ForegroundColorSpan;
-import android.view.MenuItem;
 import android.view.View;
 import android.widget.FrameLayout;
 import android.widget.ImageView;
+import android.widget.ScrollView;
 import android.widget.TextView;
 
 import com.google.android.gms.common.ConnectionResult;
@@ -30,14 +33,16 @@ import com.google.android.gms.maps.model.CameraPosition;
 import com.google.android.gms.maps.model.LatLng;
 import com.google.android.gms.maps.model.Marker;
 import com.google.android.gms.maps.model.MarkerOptions;
+import com.to.let.bd.R;
 import com.to.let.bd.common.BaseActivity;
+import com.to.let.bd.common.WorkaroundMapFragment;
 
 import java.io.IOException;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Locale;
 
-public class MapsActivity extends BaseActivity
+public class NewPostActivity extends BaseActivity
         implements OnMapReadyCallback,
         GoogleApiClient.ConnectionCallbacks,
         GoogleApiClient.OnConnectionFailedListener,
@@ -45,37 +50,17 @@ public class MapsActivity extends BaseActivity
         GoogleMap.InfoWindowAdapter,
         GoogleMap.OnMapClickListener {
 
-    private BottomNavigationView.OnNavigationItemSelectedListener mOnNavigationItemSelectedListener
-            = new BottomNavigationView.OnNavigationItemSelectedListener() {
-
-        @Override
-        public boolean onNavigationItemSelected(@NonNull MenuItem item) {
-            switch (item.getItemId()) {
-                case R.id.navigation_bank:
-                    return true;
-                case R.id.navigation_bazaar:
-                    return true;
-                case R.id.navigation_map:
-                    return true;
-                case R.id.navigation_bus_stand:
-                    return true;
-                case R.id.navigation_school:
-                    return true;
-            }
-            return false;
-        }
-    };
-
-    private static final String TAG = MapsActivity.class.getSimpleName();
+    private static final String TAG = NewPostActivity.class.getSimpleName();
     private GoogleMap googleMap;
     private CameraPosition mCameraPosition;
 
     // The entry point to Google Play services, used by the Places API and Fused Location Provider.
     private GoogleApiClient mGoogleApiClient;
 
+
     // A default location (Sydney, Australia) and default zoom to use when location permission is
     // not granted.
-    private final LatLng mDefaultLatLng = new LatLng(-33.8523341, 151.2106085);
+    private LatLng mDefaultLatLng = new LatLng(-33.8523341, 151.2106085);
     private static final int DEFAULT_ZOOM = 15;
     private static final int PERMISSIONS_REQUEST_CODE = 1;
 //    private boolean mLocationPermissionGranted;
@@ -102,8 +87,22 @@ public class MapsActivity extends BaseActivity
 
         retrieveSavedInstanceState(savedInstanceState);
 
-        // Retrieve the content view that renders the map.
-        setContentView(R.layout.activity_maps);
+        setContentView(R.layout.activity_new_post);
+
+        Toolbar toolbar = (Toolbar) findViewById(R.id.toolbar);
+        setSupportActionBar(toolbar);
+
+        FloatingActionButton fab = (FloatingActionButton) findViewById(R.id.fab);
+        fab.setOnClickListener(new View.OnClickListener() {
+            @Override
+            public void onClick(View view) {
+                Snackbar.make(view, "Replace with your own action", Snackbar.LENGTH_LONG)
+                        .setAction("Action", null).show();
+            }
+        });
+
+        mapScrollView = (ScrollView) findViewById(R.id.mapScrollView);
+        addressDetails = (TextView) findViewById(R.id.addressDetails);
 
         // Build the Play services client for use by the Fused Location Provider and the Places API.
         // Use the addApi() method to request the Google Places API and the Fused Location Provider.
@@ -114,8 +113,10 @@ public class MapsActivity extends BaseActivity
                 .addApi(LocationServices.API)
                 .build();
         mGoogleApiClient.connect();
-        initBottomNavigation();
     }
+
+    private TextView addressDetails;
+    private ScrollView mapScrollView;
 
     /**
      * Saves the state of the map when the activity is paused.
@@ -158,19 +159,6 @@ public class MapsActivity extends BaseActivity
         showLog("Play services connection suspended");
     }
 
-    private BottomNavigationView bottomNavigationView;
-
-    private void initBottomNavigation() {
-        bottomNavigationView = (BottomNavigationView) findViewById(R.id.navigation);
-        bottomNavigationView.setOnNavigationItemSelectedListener(mOnNavigationItemSelectedListener);
-        bottomNavigationView.post(new Runnable() {
-            @Override
-            public void run() {
-                bottomNavigationView.setSelectedItemId(R.id.navigation_map);
-            }
-        });
-    }
-
     /**
      * Manipulates the map once available.
      * This callback is triggered when the map is ready to be used.
@@ -182,8 +170,24 @@ public class MapsActivity extends BaseActivity
      */
     @Override
     public void onMapReady(GoogleMap googleMap) {
+//        if (this.googleMap == null) {
+//            this.googleMap = ((WorkaroundMapFragment) getSupportFragmentManager().findFragmentById(R.id.map)).getMap();
+//
+//
+//        }
+
         this.googleMap = googleMap;
+        this.googleMap.setMapType(GoogleMap.MAP_TYPE_NORMAL);
         this.googleMap.getUiSettings().setZoomControlsEnabled(true);
+        mapScrollView = (ScrollView) findViewById(R.id.mapScrollView); //parent scrollview in xml, give your scrollview id value
+
+        ((WorkaroundMapFragment) getSupportFragmentManager().findFragmentById(R.id.map))
+                .setListener(new WorkaroundMapFragment.OnTouchListener() {
+                    @Override
+                    public void onTouch() {
+                        mapScrollView.requestDisallowInterceptTouchEvent(true);
+                    }
+                });
 
         requestLocationPermission();
 
@@ -205,22 +209,6 @@ public class MapsActivity extends BaseActivity
 
         this.googleMap.setOnMapLongClickListener(this);
         this.googleMap.setOnMapClickListener(this);
-    }
-
-    @Override
-    public void onStart() {
-        super.onStart();
-        if (mGoogleApiClient != null) {
-            mGoogleApiClient.connect();
-        }
-    }
-
-    @Override
-    public void onStop() {
-        super.onStop();
-        if (mGoogleApiClient != null) {
-            mGoogleApiClient.disconnect();
-        }
     }
 
     private void requestLocationPermission() {
@@ -271,13 +259,18 @@ public class MapsActivity extends BaseActivity
         // Set the map's camera position to the current location of the device.
         if (mCameraPosition != null) {
             googleMap.moveCamera(CameraUpdateFactory.newCameraPosition(mCameraPosition));
+            mDefaultLatLng = new LatLng(mCameraPosition.target.latitude, mCameraPosition.target.longitude);
         } else if (mLastKnownLocation != null) {
             googleMap.moveCamera(CameraUpdateFactory.newLatLngZoom(getLatLng(mLastKnownLocation), DEFAULT_ZOOM));
+            mDefaultLatLng = getLatLng(mLastKnownLocation);
         } else {
             showLog("Current location is null. Using defaults.");
             googleMap.moveCamera(CameraUpdateFactory.newLatLngZoom(mDefaultLatLng, DEFAULT_ZOOM));
             googleMap.getUiSettings().setMyLocationButtonEnabled(false);
         }
+
+        String fullAddress = getLocationBestApproximateResult(findCurrentLocationDetails(mDefaultLatLng.latitude, mDefaultLatLng.longitude), mDefaultLatLng);
+        addressDetails.setText(fullAddress);
     }
 
     private LatLng getLatLng(Location location) {
@@ -322,7 +315,7 @@ public class MapsActivity extends BaseActivity
         gotoDeviceLocation();
     }
 
-    private final int maxAddressResult = 3;
+    private final int maxAddressResult = 5;
 
     private List<Address> findCurrentLocationDetails(double latitude, double longitude) {
         Geocoder geocoder;
@@ -347,58 +340,55 @@ public class MapsActivity extends BaseActivity
     @Override
     public void onMapLongClick(LatLng latLng) {
         googleMap.clear();
-        getLocationBestApproximateResult(findCurrentLocationDetails(latLng.latitude, latLng.longitude));
+        String fullAddress = getLocationBestApproximateResult(findCurrentLocationDetails(latLng.latitude, latLng.longitude), latLng);
+        addressDetails.setText(fullAddress);
         googleMap.addMarker(new MarkerOptions()
                 .position(latLng)
-                .snippet("your full address")
-                .title("You are here")
+                .snippet(fullAddress)
+                .title("You tap here")
                 .icon(BitmapDescriptorFactory.defaultMarker(BitmapDescriptorFactory.HUE_RED)));
 
-        googleMap.setInfoWindowAdapter(new CustomInfoWindowAdapter());
+//        googleMap.setInfoWindowAdapter(new CustomInfoWindowAdapter());
     }
 
     @Override
     public void onMapClick(LatLng latLng) {
-        googleMap.clear();
+        this.googleMap.snapshot(new GoogleMap.SnapshotReadyCallback() {
+            @Override
+            public void onSnapshotReady(Bitmap bitmap) {
+                googleMap.clear();
+            }
+        });
     }
 
-    private String getLocationBestApproximateResult(List<Address> addressList) {
+    private String getLocationBestApproximateResult(List<Address> addressList, LatLng latLng) {
         if (addressList == null || addressList.isEmpty()) {
             return null;
         }
 
-        ArrayList<TestClass> testList = new ArrayList<>();
-        testList.clear();
-
         String result = "";
-        String country = "";
         for (Address address : addressList) {
-
-            int maxAddressLine = address.getMaxAddressLineIndex();
-            String fullAddressLine = "";
-            for (int i = 0; i < maxAddressLine; i++) {
-                if (i == 0) {
-                    fullAddressLine = address.getAddressLine(i);
-                } else {
-                    fullAddressLine = fullAddressLine + ", " + address.getAddressLine(i);
-                }
-            }
             // If any additional address line present than only, check with max available address lines by getMaxAddressLineIndex()
-            String addressLine = address.getAddressLine(0);
-            String city = address.getLocality();
-            String state = address.getAdminArea();
-//            String country = address.getCountryName();
-            String postalCode = address.getPostalCode();
-            // Only if available else return NULL
-            String knownName = address.getFeatureName();
+            if (address.getAddressLine(0) != null) {
+                result = address.getAddressLine(0);
+            }
+            if (address.getLocality() != null && !result.contains(address.getLocality())) {
+                result = result + "," + address.getLocality();
+            }
+
+            if (address.getCountryName() != null && !result.contains(address.getCountryName())) {
+                result = result + "," + address.getCountryName();
+            }
+
+            if (address.getAdminArea() != null && !result.contains(address.getAdminArea())) {
+                result = result + "," + address.getAdminArea();
+            }
+//            String postalCode = address.getPostalCode();
+//            // Only if available else return NULL
+//            String knownName = address.getFeatureName();
         }
 
         return result;
-    }
-
-    private class TestClass {
-        private String name = "";
-        private int count = 0;
     }
 
     /**
@@ -479,4 +469,5 @@ public class MapsActivity extends BaseActivity
             }
         }
     }
+
 }

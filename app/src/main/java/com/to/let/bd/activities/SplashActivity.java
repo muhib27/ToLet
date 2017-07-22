@@ -12,6 +12,7 @@ import com.google.firebase.auth.AuthResult;
 import com.google.firebase.auth.FirebaseAuth;
 import com.google.firebase.auth.FirebaseUser;
 import com.to.let.bd.MainActivity;
+import com.to.let.bd.MapsActivity;
 import com.to.let.bd.R;
 import com.to.let.bd.common.BaseActivity;
 
@@ -30,7 +31,6 @@ public class SplashActivity extends BaseActivity {
     @Override
     protected void onPostCreate(Bundle savedInstanceState) {
         super.onPostCreate(savedInstanceState);
-
         handler.postDelayed(delayStartActivity, 1000);
     }
 
@@ -44,7 +44,6 @@ public class SplashActivity extends BaseActivity {
     @Override
     protected void onPause() {
         super.onPause();
-
         handler.removeCallbacks(delayStartActivity);
     }
 
@@ -132,7 +131,7 @@ public class SplashActivity extends BaseActivity {
 
     private void startHomeActivity() {
         finish();
-        Intent intent = new Intent(this, MainActivity.class);
+        Intent intent = new Intent(this, NewPostActivity.class);
         startActivity(intent);
     }
 }

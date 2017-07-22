@@ -4,5 +4,16 @@
     <color name="colorPrimaryDark">#303F9F</color>
     <color name="colorAccent">#FF4081</color>
 
+    <color name="colorPrimaryNew">#00a1c7</color>
+    <color name="colorPrimaryDarkNew">#005669</color>
+
     <color name="black_overlay">#66000000</color>
+    <color name="black">#000000</color>
+    <color name="black_light">#66000000</color>
+    <color name="white">#ffffff</color>
+    <color name="link">#166099</color>
+    <color name="link_pressed">#3d9ce5</color>
+    <color name="white_light">#66ffffff</color>
+
+    <color name="progress_gray">#FFD8D8D8</color>
 </resources>

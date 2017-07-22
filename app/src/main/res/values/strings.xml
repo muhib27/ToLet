@@ -1,5 +1,5 @@
 <resources>
-    <string name="app_name">To Let</string>
+    <string name="app_name">Smart To-Let</string>
     <string name="title_activity_maps">Map</string>
     <string name="title_activity_main">MainActivity</string>
     <string name="title_bank">Bank</string>
@@ -26,8 +26,33 @@
     <string name="default_contact_info">md.makinul.nasim@gmail.com</string>
     <string name="post_your_add">Post Your Add</string>
 
-    <string name="title_activity_splash">SplashActivity</string>
     <string name="dummy_button">Dummy Button</string>
     <string name="dummy_content">DUMMY\nCONTENT</string>
     <string name="loading">loading…</string>
+
+    <!--new post resources-->
+    <string name="rent_type">Rent type:</string>
+    <string name="family">Family</string>
+    <string name="sublet">Sublet</string>
+    <string name="bachelor">Bachelor</string>
+    <string name="others">Others</string>
+    <string name="total_space">Total Space: </string>
+    <string name="rent">Rent: </string>
+    <string name="bed_room">Bed Room: </string>
+    <string name="drawing_dining">Drawing Dining</string>
+    <string name="yes">Yes</string>
+    <string name="no">No</string>
+    <string name="bathroom">Bathroom</string>
+    <string name="balcony">Balcony</string>
+    <string name="others_facility">Others Facility: </string>
+    <string name="water">Water</string>
+    <string name="gaz">Gaz</string>
+    <string name="electricity">Electricity</string>
+    <string name="lift">Lift</string>
+    <string name="generator">Generator</string>
+    <string name="email">Your Email</string>
+    <string name="phone_no">Phone no</string>
+    <string name="houseInfo">House number/name:</string>
+    <string name="title">Title</string>
+    <string name="sub_title">Sub Title</string>
 </resources>
