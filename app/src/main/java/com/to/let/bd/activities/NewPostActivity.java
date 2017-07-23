@@ -1,5 +1,6 @@
 package com.to.let.bd.activities;
 
+import android.app.DatePickerDialog;
 import android.content.pm.PackageManager;
 import android.graphics.Bitmap;
 import android.graphics.Color;
@@ -18,12 +19,16 @@ import android.text.style.ForegroundColorSpan;
 import android.view.View;
 import android.widget.AdapterView;
 import android.widget.ArrayAdapter;
+import android.widget.DatePicker;
 import android.widget.EditText;
 import android.widget.FrameLayout;
 import android.widget.ImageView;
+import android.widget.RadioButton;
+import android.widget.RadioGroup;
 import android.widget.ScrollView;
 import android.widget.Spinner;
 import android.widget.TextView;
+import android.widget.Toast;
 
 import com.google.android.gms.common.ConnectionResult;
 import com.google.android.gms.common.api.GoogleApiClient;
@@ -42,7 +47,9 @@ import com.to.let.bd.common.BaseActivity;
 import com.to.let.bd.common.WorkaroundMapFragment;
 
 import java.io.IOException;
+import java.text.SimpleDateFormat;
 import java.util.ArrayList;
+import java.util.Calendar;
 import java.util.List;
 import java.util.Locale;
 
@@ -52,14 +59,22 @@ public class NewPostActivity extends BaseActivity
         GoogleApiClient.OnConnectionFailedListener,
         GoogleMap.OnMapLongClickListener,
         GoogleMap.InfoWindowAdapter,
-        GoogleMap.OnMapClickListener,AdapterView.OnItemSelectedListener {
+        GoogleMap.OnMapClickListener,
+        AdapterView.OnItemSelectedListener,View.OnClickListener {
 
     private static final String TAG = NewPostActivity.class.getSimpleName();
     private GoogleMap googleMap;
     private CameraPosition mCameraPosition;
     private EditText totalSpace;
     private Spinner bedRoom, balcony, bathRoom, whichFloor, whichFacing;
-    ArrayAdapter<String> bedRoomAdapter, balconyAdapter, bathRoomAdapter, floreAdapter, facingAdapter;
+    ArrayAdapter<String> bedRoomAdapter, balconyAdapter, bathRoomAdapter, floorAdapter, facingAdapter;
+
+    private DatePickerDialog rentFromDialog;
+    private SimpleDateFormat dateFormatter;
+    Calendar newCalendar = Calendar.getInstance();
+    private TextView setDate;
+    private RadioGroup drawingDining;
+    private RadioButton drawingDiningYes, drawingDiningNo, checkedRadioButton;
 
     // The entry point to Google Play services, used by the Places API and Fused Location Provider.
     private GoogleApiClient mGoogleApiClient;
@@ -97,6 +112,7 @@ public class NewPostActivity extends BaseActivity
         setContentView(R.layout.activity_new_post);
         initialize();
         addItemsOnSpinner();
+        setDateTimeField();
 
 
         Toolbar toolbar = (Toolbar) findViewById(R.id.toolbar);
@@ -126,6 +142,10 @@ public class NewPostActivity extends BaseActivity
     }
 
     public void initialize(){
+
+        drawingDining = (RadioGroup)findViewById(R.id.drawingDining);
+        drawingDiningYes = (RadioButton)findViewById(R.id.drawingDiningYes);
+        drawingDiningNo = (RadioButton)findViewById(R.id.drawingDiningNo);
         totalSpace = (EditText)findViewById(R.id.total_space);
         totalSpace.setText("1000");
         bedRoom = (Spinner)findViewById(R.id.bedRoom);
@@ -134,11 +154,30 @@ public class NewPostActivity extends BaseActivity
         whichFacing = (Spinner)findViewById(R.id.whichFacing);
         whichFloor = (Spinner)findViewById(R.id.whichFloor);
 
+        setDate = (TextView)findViewById(R.id.setDate);
+
         bedRoom.setOnItemSelectedListener(this);
         balcony.setOnItemSelectedListener(this);
         bathRoom.setOnItemSelectedListener(this);
         whichFloor.setOnItemSelectedListener(this);
         whichFacing.setOnItemSelectedListener(this);
+
+        checkedRadioButton = (RadioButton)drawingDining.findViewById(drawingDining.getCheckedRadioButtonId());
+        drawingDining.setOnCheckedChangeListener(new RadioGroup.OnCheckedChangeListener()
+        {
+            public void onCheckedChanged(RadioGroup group, int checkedId)
+            {
+                // This will get the radiobutton that has changed in its check state
+                RadioButton checkedRadioButton = (RadioButton)group.findViewById(checkedId);
+                // This puts the value (true/false) into the variable
+                boolean isChecked = checkedRadioButton.isChecked();
+                // If the radiobutton that has changed in check state is now checked...
+                if (isChecked)
+                {
+                    Toast.makeText(getApplicationContext(), "Checked:" + checkedRadioButton.getText(), Toast.LENGTH_SHORT).show();
+                }
+            }
+        });
     }
 
     private TextView addressDetails;
@@ -419,25 +458,28 @@ public class NewPostActivity extends BaseActivity
 
     public void addItemsOnSpinner() {
         String[] totalBedRoom = {"1","2","3","4","5","6","7"};
-        String[] flore = {"0","1st", "2nd", "3rd", "4th","5th", "6th", "7th", "8th","9th","10th" };
+        String[] floor = {"Ground","1st", "2nd", "3rd", "4th","5th", "6th", "7th", "8th","9th","10th" };
+        String[] facing = {"South","East", "West", "North"};
         //String[] totalBalcony = {"1","2","3","4","5","6","7"};
 
         // Creating adapter for spinner
         bedRoomAdapter = new ArrayAdapter<String>(this, android.R.layout.simple_spinner_item, totalBedRoom);
-        floreAdapter = new ArrayAdapter<String>(this, android.R.layout.simple_spinner_item, totalBedRoom);
+        floorAdapter = new ArrayAdapter<String>(this, android.R.layout.simple_spinner_item, floor);
+        facingAdapter = new ArrayAdapter<String>(this, android.R.layout.simple_spinner_item, facing);
 
 
 
         // Drop down layout style - list view with radio button
         bedRoomAdapter.setDropDownViewResource(android.R.layout.select_dialog_singlechoice);
-        floreAdapter.setDropDownViewResource(android.R.layout.select_dialog_singlechoice);
+        floorAdapter.setDropDownViewResource(android.R.layout.select_dialog_singlechoice);
+        facingAdapter.setDropDownViewResource(android.R.layout.select_dialog_singlechoice);
 
         // attaching data adapter to spinner
         bedRoom.setAdapter(bedRoomAdapter);
         balcony.setAdapter(bedRoomAdapter);
         bathRoom.setAdapter(bedRoomAdapter);
-        whichFloor.setAdapter(facingAdapter);
-        //bedRoom.setAdapter(bedRoomAdapter);
+        whichFloor.setAdapter(floorAdapter);
+        whichFacing.setAdapter(facingAdapter);
     }
 
     @Override
@@ -448,6 +490,16 @@ public class NewPostActivity extends BaseActivity
     @Override
     public void onNothingSelected(AdapterView<?> adapterView) {
 
+    }
+
+    @Override
+    public void onClick(View view) {
+        switch (view.getId()) {
+            case R.id.setDate: {
+                rentFromDialog.show();
+            }
+            break;
+        }
     }
 
     /**
@@ -527,6 +579,29 @@ public class NewPostActivity extends BaseActivity
                 snippetUi.setText("");
             }
         }
+    }
+    int fromYear, fromMonth, fromDay;
+    private void setDateTimeField() {
+        dateFormatter = new SimpleDateFormat("dd-MM-yyyy", Locale.US);
+        setDate.setOnClickListener(this);
+        final Calendar newFromDate = Calendar.getInstance();
+        rentFromDialog = new DatePickerDialog(this, new DatePickerDialog.OnDateSetListener() {
+            public void onDateSet(DatePicker view, int year, int monthOfYear, int dayOfMonth) {
+
+
+                fromYear = year;
+                fromMonth = monthOfYear;
+                fromDay = dayOfMonth;
+                newFromDate.set(year, monthOfYear, dayOfMonth);
+                if (newFromDate.getTimeInMillis() < newCalendar.getTimeInMillis())
+                    setDate.setText(dateFormatter.format(newCalendar.getTime()));
+                else
+                    setDate.setText(dateFormatter.format(newFromDate.getTime()));
+
+            }
+
+        }, newCalendar.get(Calendar.YEAR), newCalendar.get(Calendar.MONTH), newCalendar.get(Calendar.DAY_OF_MONTH));
+        rentFromDialog.getDatePicker().setMinDate(System.currentTimeMillis());
     }
 
 }
