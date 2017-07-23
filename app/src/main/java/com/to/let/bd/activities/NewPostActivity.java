@@ -19,6 +19,7 @@ import android.text.style.ForegroundColorSpan;
 import android.view.View;
 import android.widget.AdapterView;
 import android.widget.ArrayAdapter;
+import android.widget.CheckBox;
 import android.widget.DatePicker;
 import android.widget.EditText;
 import android.widget.FrameLayout;
@@ -68,13 +69,14 @@ public class NewPostActivity extends BaseActivity
     private EditText totalSpace;
     private Spinner bedRoom, balcony, bathRoom, whichFloor, whichFacing;
     ArrayAdapter<String> bedRoomAdapter, balconyAdapter, bathRoomAdapter, floorAdapter, facingAdapter;
+    private CheckBox waterCB, gazCB, electricityCB, liftCB, generatorCB;
 
     private DatePickerDialog rentFromDialog;
     private SimpleDateFormat dateFormatter;
     Calendar newCalendar = Calendar.getInstance();
     private TextView setDate;
-    private RadioGroup drawingDining;
-    private RadioButton drawingDiningYes, drawingDiningNo, checkedRadioButton;
+    private RadioGroup drawingDining, rentType;
+    private RadioButton drawingDiningYes, drawingDiningNo, checkedRadioButton, family, sublet, bachelor, others;
 
     // The entry point to Google Play services, used by the Places API and Fused Location Provider.
     private GoogleApiClient mGoogleApiClient;
@@ -113,6 +115,7 @@ public class NewPostActivity extends BaseActivity
         initialize();
         addItemsOnSpinner();
         setDateTimeField();
+        defaultSetup("family");
 
 
         Toolbar toolbar = (Toolbar) findViewById(R.id.toolbar);
@@ -142,6 +145,11 @@ public class NewPostActivity extends BaseActivity
     }
 
     public void initialize(){
+        rentType = (RadioGroup)findViewById(R.id.rentType);
+        family = (RadioButton)findViewById(R.id.family);
+        sublet = (RadioButton)findViewById(R.id.sublet);
+        bachelor = (RadioButton)findViewById(R.id.bachelor);
+        others = (RadioButton)findViewById(R.id.others);
 
         drawingDining = (RadioGroup)findViewById(R.id.drawingDining);
         drawingDiningYes = (RadioButton)findViewById(R.id.drawingDiningYes);
@@ -154,6 +162,12 @@ public class NewPostActivity extends BaseActivity
         whichFacing = (Spinner)findViewById(R.id.whichFacing);
         whichFloor = (Spinner)findViewById(R.id.whichFloor);
 
+        waterCB = (CheckBox)findViewById(R.id.waterCB);
+        gazCB = (CheckBox)findViewById(R.id.gazCB);
+        electricityCB = (CheckBox)findViewById(R.id.electricityCB);
+        liftCB = (CheckBox)findViewById(R.id.liftCB);
+        generatorCB = (CheckBox)findViewById(R.id.generatorCB);
+
         setDate = (TextView)findViewById(R.id.setDate);
 
         bedRoom.setOnItemSelectedListener(this);
@@ -161,6 +175,10 @@ public class NewPostActivity extends BaseActivity
         bathRoom.setOnItemSelectedListener(this);
         whichFloor.setOnItemSelectedListener(this);
         whichFacing.setOnItemSelectedListener(this);
+
+        rentTypeCheck();
+
+        //defaultSetup();
 
         checkedRadioButton = (RadioButton)drawingDining.findViewById(drawingDining.getCheckedRadioButtonId());
         drawingDining.setOnCheckedChangeListener(new RadioGroup.OnCheckedChangeListener()
@@ -178,6 +196,63 @@ public class NewPostActivity extends BaseActivity
                 }
             }
         });
+    }
+    String rentTypeSelected = "family";
+
+    public void rentTypeCheck(){
+        rentType.setOnCheckedChangeListener(new RadioGroup.OnCheckedChangeListener()
+        {
+            public void onCheckedChanged(RadioGroup group, int checkedId)
+            {
+                // This will get the radiobutton that has changed in its check state
+                RadioButton checkedRadioButton = (RadioButton)group.findViewById(checkedId);
+                // This puts the value (true/false) into the variable
+                boolean isChecked = checkedRadioButton.isChecked();
+                // If the radiobutton that has changed in check state is now checked...
+                if (isChecked)
+                {
+                    switch (checkedRadioButton.getId())
+                    {
+                        case R.id.family:
+                            rentTypeSelected = "family";
+                            defaultSetup(rentTypeSelected);
+                            break;
+                        case R.id.sublet:
+                            rentTypeSelected = "sublet";
+                            defaultSetup(rentTypeSelected);
+                            break;
+                        case R.id.bachelor:
+                            rentTypeSelected = "bachelor";
+                            defaultSetup(rentTypeSelected);
+                            break;
+                        case R.id.others:
+                            rentTypeSelected = "others";
+                            defaultSetup(rentTypeSelected);
+                            break;
+
+                    }
+                    Toast.makeText(getApplicationContext(), "Checked:" + checkedRadioButton.getText(), Toast.LENGTH_SHORT).show();
+                }
+            }
+        });
+    }
+    public void defaultSetup(String type){
+        if(type.equals("family")){
+            bedRoom.setSelection(1);
+            balcony.setSelection(1);
+            bathRoom.setSelection(1);
+            waterCB.setChecked(true);
+            gazCB.setChecked(true);
+            electricityCB.setChecked(true);
+        }
+        else {
+            bedRoom.setSelection(0);
+            balcony.setSelection(0);
+            bathRoom.setSelection(0);
+            waterCB.setChecked(true);
+            gazCB.setChecked(true);
+            electricityCB.setChecked(true);
+        }
     }
 
     private TextView addressDetails;
