@@ -1,6 +1,7 @@
 package com.to.let.bd.activities;
 
 import android.app.DatePickerDialog;
+import android.content.Intent;
 import android.content.pm.PackageManager;
 import android.graphics.Bitmap;
 import android.graphics.Color;
@@ -29,10 +30,15 @@ import android.widget.RadioGroup;
 import android.widget.ScrollView;
 import android.widget.Spinner;
 import android.widget.TextView;
-import android.widget.Toast;
 
+import com.google.android.gms.auth.api.Auth;
+import com.google.android.gms.auth.api.signin.GoogleSignInAccount;
+import com.google.android.gms.auth.api.signin.GoogleSignInOptions;
+import com.google.android.gms.auth.api.signin.GoogleSignInResult;
 import com.google.android.gms.common.ConnectionResult;
 import com.google.android.gms.common.api.GoogleApiClient;
+import com.google.android.gms.common.api.ResultCallback;
+import com.google.android.gms.common.api.Status;
 import com.google.android.gms.location.LocationServices;
 import com.google.android.gms.maps.CameraUpdateFactory;
 import com.google.android.gms.maps.GoogleMap;
@@ -43,14 +49,28 @@ import com.google.android.gms.maps.model.CameraPosition;
 import com.google.android.gms.maps.model.LatLng;
 import com.google.android.gms.maps.model.Marker;
 import com.google.android.gms.maps.model.MarkerOptions;
+import com.google.android.gms.tasks.OnCompleteListener;
+import com.google.android.gms.tasks.OnSuccessListener;
+import com.google.android.gms.tasks.Task;
+import com.google.firebase.auth.AuthCredential;
+import com.google.firebase.auth.AuthResult;
+import com.google.firebase.auth.FirebaseAuth;
+import com.google.firebase.auth.FirebaseUser;
+import com.google.firebase.auth.GoogleAuthProvider;
+import com.google.firebase.database.DatabaseReference;
+import com.google.firebase.database.FirebaseDatabase;
 import com.to.let.bd.R;
 import com.to.let.bd.common.BaseActivity;
 import com.to.let.bd.common.WorkaroundMapFragment;
+import com.to.let.bd.model.AdInfo;
+import com.to.let.bd.utils.DBConstants;
+import com.to.let.bd.utils.SmartToLetConstants;
 
 import java.io.IOException;
 import java.text.SimpleDateFormat;
 import java.util.ArrayList;
 import java.util.Calendar;
+import java.util.HashMap;
 import java.util.List;
 import java.util.Locale;
 
@@ -61,7 +81,7 @@ public class NewPostActivity extends BaseActivity
         GoogleMap.OnMapLongClickListener,
         GoogleMap.InfoWindowAdapter,
         GoogleMap.OnMapClickListener,
-        AdapterView.OnItemSelectedListener,View.OnClickListener {
+        AdapterView.OnItemSelectedListener, View.OnFocusChangeListener, View.OnClickListener {
 
     private static final String TAG = NewPostActivity.class.getSimpleName();
     private GoogleMap googleMap;
@@ -105,18 +125,79 @@ public class NewPostActivity extends BaseActivity
         }
     }
 
+    private FloatingActionButton fab;
+    private Toolbar toolbar;
+    private TextView addressDetails;
+    private ScrollView mapScrollView;
+    private EditText emailAddress, phoneNumber;
+
+    private void init() {
+        toolbar = (Toolbar) findViewById(R.id.toolbar);
+        setSupportActionBar(toolbar);
+
+        fab = (FloatingActionButton) findViewById(R.id.fab);
+        fab.setOnClickListener(this);
+
+        mapScrollView = (ScrollView) findViewById(R.id.mapScrollView);
+        addressDetails = (TextView) findViewById(R.id.addressDetails);
+
+        emailAddress = (EditText) findViewById(R.id.emailAddress);
+        phoneNumber = (EditText) findViewById(R.id.phoneNumber);
+
+        if (firebaseUser != null) {
+            if (firebaseUser.isAnonymous()) {
+                emailAddress.setOnFocusChangeListener(this);
+            } else {
+                String email = firebaseUser.getEmail();
+                if (email == null || email.isEmpty()) {
+                    emailAddress.setOnFocusChangeListener(this);
+                } else {
+                    emailAddress.setText(email);
+                    emailAddress.setEnabled(false);
+                }
+            }
+        }
+    }
+
+    @Override
+    public void onFocusChange(View view, boolean b) {
+        if (b)
+            googleSignOut();
+    }
+
+    private void reloadFirebaseUser() {
+        firebaseUser.reload().addOnSuccessListener(new OnSuccessListener<Void>() {
+            @Override
+            public void onSuccess(Void aVoid) {
+                closeProgressDialog();
+                firebaseUser = FirebaseAuth.getInstance().getCurrentUser();
+                if (firebaseUser != null) {
+                    String email = firebaseUser.getEmail();
+                    emailAddress.setText(email);
+                    emailAddress.setEnabled(false);
+                }
+            }
+        });
+    }
+
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
-
         retrieveSavedInstanceState(savedInstanceState);
-
         setContentView(R.layout.activity_new_post);
+
+        initFirebase();
+        init();
         initialize();
         addItemsOnSpinner();
         setDateTimeField();
         defaultSetup("family");
 
+        // Configure Google Sign In
+        GoogleSignInOptions gso = new GoogleSignInOptions.Builder(GoogleSignInOptions.DEFAULT_SIGN_IN)
+                .requestIdToken(getString(R.string.default_web_client_id))
+                .requestEmail()
+                .build();
 
         Toolbar toolbar = (Toolbar) findViewById(R.id.toolbar);
         setSupportActionBar(toolbar);
@@ -130,9 +211,6 @@ public class NewPostActivity extends BaseActivity
             }
         });
 
-        mapScrollView = (ScrollView) findViewById(R.id.mapScrollView);
-        addressDetails = (TextView) findViewById(R.id.addressDetails);
-
         // Build the Play services client for use by the Fused Location Provider and the Places API.
         // Use the addApi() method to request the Google Places API and the Fused Location Provider.
         mGoogleApiClient = new GoogleApiClient.Builder(this)
@@ -140,35 +218,36 @@ public class NewPostActivity extends BaseActivity
                         this /* OnConnectionFailedListener */)
                 .addConnectionCallbacks(this)
                 .addApi(LocationServices.API)
+                .addApi(Auth.GOOGLE_SIGN_IN_API, gso)
                 .build();
         mGoogleApiClient.connect();
     }
 
-    public void initialize(){
-        rentType = (RadioGroup)findViewById(R.id.rentType);
-        family = (RadioButton)findViewById(R.id.family);
-        sublet = (RadioButton)findViewById(R.id.sublet);
-        bachelor = (RadioButton)findViewById(R.id.bachelor);
-        others = (RadioButton)findViewById(R.id.others);
+    public void initialize() {
+        rentType = (RadioGroup) findViewById(R.id.rentType);
+        family = (RadioButton) findViewById(R.id.family);
+        sublet = (RadioButton) findViewById(R.id.sublet);
+        bachelor = (RadioButton) findViewById(R.id.bachelor);
+        others = (RadioButton) findViewById(R.id.others);
 
-        drawingDining = (RadioGroup)findViewById(R.id.drawingDining);
-        drawingDiningYes = (RadioButton)findViewById(R.id.drawingDiningYes);
-        drawingDiningNo = (RadioButton)findViewById(R.id.drawingDiningNo);
-        totalSpace = (EditText)findViewById(R.id.total_space);
+        drawingDining = (RadioGroup) findViewById(R.id.drawingDining);
+        drawingDiningYes = (RadioButton) findViewById(R.id.drawingDiningYes);
+        drawingDiningNo = (RadioButton) findViewById(R.id.drawingDiningNo);
+        totalSpace = (EditText) findViewById(R.id.total_space);
         totalSpace.setText("1000");
-        bedRoom = (Spinner)findViewById(R.id.bedRoom);
-        balcony = (Spinner)findViewById(R.id.balcony);
-        bathRoom = (Spinner)findViewById(R.id.bathRoom);
-        whichFacing = (Spinner)findViewById(R.id.whichFacing);
-        whichFloor = (Spinner)findViewById(R.id.whichFloor);
+        bedRoom = (Spinner) findViewById(R.id.bedRoom);
+        balcony = (Spinner) findViewById(R.id.balcony);
+        bathRoom = (Spinner) findViewById(R.id.bathRoom);
+        whichFacing = (Spinner) findViewById(R.id.whichFacing);
+        whichFloor = (Spinner) findViewById(R.id.whichFloor);
 
-        waterCB = (CheckBox)findViewById(R.id.waterCB);
-        gazCB = (CheckBox)findViewById(R.id.gazCB);
-        electricityCB = (CheckBox)findViewById(R.id.electricityCB);
-        liftCB = (CheckBox)findViewById(R.id.liftCB);
-        generatorCB = (CheckBox)findViewById(R.id.generatorCB);
+        waterCB = (CheckBox) findViewById(R.id.waterCB);
+        gazCB = (CheckBox) findViewById(R.id.gazCB);
+        electricityCB = (CheckBox) findViewById(R.id.electricityCB);
+        liftCB = (CheckBox) findViewById(R.id.liftCB);
+        generatorCB = (CheckBox) findViewById(R.id.generatorCB);
 
-        setDate = (TextView)findViewById(R.id.setDate);
+        setDate = (TextView) findViewById(R.id.setDate);
 
         bedRoom.setOnItemSelectedListener(this);
         balcony.setOnItemSelectedListener(this);
@@ -180,39 +259,33 @@ public class NewPostActivity extends BaseActivity
 
         //defaultSetup();
 
-        checkedRadioButton = (RadioButton)drawingDining.findViewById(drawingDining.getCheckedRadioButtonId());
-        drawingDining.setOnCheckedChangeListener(new RadioGroup.OnCheckedChangeListener()
-        {
-            public void onCheckedChanged(RadioGroup group, int checkedId)
-            {
+        checkedRadioButton = (RadioButton) drawingDining.findViewById(drawingDining.getCheckedRadioButtonId());
+        drawingDining.setOnCheckedChangeListener(new RadioGroup.OnCheckedChangeListener() {
+            public void onCheckedChanged(RadioGroup group, int checkedId) {
                 // This will get the radiobutton that has changed in its check state
-                RadioButton checkedRadioButton = (RadioButton)group.findViewById(checkedId);
+                RadioButton checkedRadioButton = (RadioButton) group.findViewById(checkedId);
                 // This puts the value (true/false) into the variable
                 boolean isChecked = checkedRadioButton.isChecked();
                 // If the radiobutton that has changed in check state is now checked...
-                if (isChecked)
-                {
-                    Toast.makeText(getApplicationContext(), "Checked:" + checkedRadioButton.getText(), Toast.LENGTH_SHORT).show();
+                if (isChecked) {
+                    showToast("Checked:" + checkedRadioButton.getText());
                 }
             }
         });
     }
+
     String rentTypeSelected = "family";
 
-    public void rentTypeCheck(){
-        rentType.setOnCheckedChangeListener(new RadioGroup.OnCheckedChangeListener()
-        {
-            public void onCheckedChanged(RadioGroup group, int checkedId)
-            {
+    public void rentTypeCheck() {
+        rentType.setOnCheckedChangeListener(new RadioGroup.OnCheckedChangeListener() {
+            public void onCheckedChanged(RadioGroup group, int checkedId) {
                 // This will get the radiobutton that has changed in its check state
-                RadioButton checkedRadioButton = (RadioButton)group.findViewById(checkedId);
+                RadioButton checkedRadioButton = (RadioButton) group.findViewById(checkedId);
                 // This puts the value (true/false) into the variable
                 boolean isChecked = checkedRadioButton.isChecked();
                 // If the radiobutton that has changed in check state is now checked...
-                if (isChecked)
-                {
-                    switch (checkedRadioButton.getId())
-                    {
+                if (isChecked) {
+                    switch (checkedRadioButton.getId()) {
                         case R.id.family:
                             rentTypeSelected = "family";
                             defaultSetup(rentTypeSelected);
@@ -231,21 +304,21 @@ public class NewPostActivity extends BaseActivity
                             break;
 
                     }
-                    Toast.makeText(getApplicationContext(), "Checked:" + checkedRadioButton.getText(), Toast.LENGTH_SHORT).show();
+                    showToast("Checked:" + checkedRadioButton.getText());
                 }
             }
         });
     }
-    public void defaultSetup(String type){
-        if(type.equals("family")){
+
+    public void defaultSetup(String type) {
+        if (type.equals("family")) {
             bedRoom.setSelection(1);
             balcony.setSelection(1);
             bathRoom.setSelection(1);
             waterCB.setChecked(true);
             gazCB.setChecked(true);
             electricityCB.setChecked(true);
-        }
-        else {
+        } else {
             bedRoom.setSelection(0);
             balcony.setSelection(0);
             bathRoom.setSelection(0);
@@ -255,8 +328,128 @@ public class NewPostActivity extends BaseActivity
         }
     }
 
-    private TextView addressDetails;
-    private ScrollView mapScrollView;
+    // Google login
+    private void googleLogin() {
+        Intent signInIntent = Auth.GoogleSignInApi.getSignInIntent(mGoogleApiClient);
+        startActivityForResult(signInIntent, SmartToLetConstants.GOOGLE_SIGN_IN);
+    }
+
+    // Google sign out
+    private void googleSignOut() {
+        if (mGoogleApiClient.isConnected())
+            Auth.GoogleSignInApi.signOut(mGoogleApiClient).setResultCallback(
+                    new ResultCallback<Status>() {
+                        @Override
+                        public void onResult(@NonNull Status status) {
+                            googleLogin();
+                        }
+                    });
+    }
+
+    // [START onActivityResult]
+    @Override
+    public void onActivityResult(int requestCode, int resultCode, Intent data) {
+        super.onActivityResult(requestCode, resultCode, data);
+
+        // Result returned from launching the Intent from GoogleSignInApi.getSignInIntent(...);
+        if (requestCode == SmartToLetConstants.GOOGLE_SIGN_IN) {
+            GoogleSignInResult result = Auth.GoogleSignInApi.getSignInResultFromIntent(data);
+            if (result != null && result.getStatus().isSuccess()) {
+                // Google Sign In was successful, authenticate with Firebase
+                GoogleSignInAccount account = result.getSignInAccount();
+
+                if (account != null) {
+                    firebaseAuthWithGoogle(account);
+                }
+            } else {
+                showToast(getString(R.string.google_login_failed));
+            }
+        }
+    }
+    // [END onActivityResult]
+
+    private void firebaseAuthWithGoogle(GoogleSignInAccount acct) {
+        AuthCredential credential = GoogleAuthProvider.getCredential(acct.getIdToken(), null);
+        linkedCredential(credential);
+    }
+
+    private void firebaseLoginWithGoogle(AuthCredential credential) {
+        mAuth.signInWithCredential(credential).addOnCompleteListener(this,
+                new OnCompleteListener<AuthResult>() {
+                    @Override
+                    public void onComplete(@NonNull Task<AuthResult> task) {
+                        showLog("signInWithCredential:onComplete:" + task.isSuccessful());
+                        closeProgressDialog();
+
+                        // If sign in fails, display a message to the user. If sign in succeeds
+                        // the auth state listener will be notified and logic to handle the
+                        // signed in user can be handled in the listener.
+
+                        //showLog("task Result: " + task.getResult().toString());
+                        if (!task.isSuccessful()) {
+                            String message = task.getException().getMessage();
+                            showToast(message);
+                        } else {
+                            setEmailAddress();
+                        }
+                    }
+                });
+    }
+
+    private void setEmailAddress() {
+        emailAddress.setText(firebaseUser.getEmail());
+        emailAddress.setEnabled(false);
+        updateUserInfo();
+    }
+
+    private void linkedCredential(final AuthCredential credential) {
+        showProgressDialog();
+        firebaseUser.linkWithCredential(credential).addOnCompleteListener(this,
+                new OnCompleteListener<AuthResult>() {
+                    @Override
+                    public void onComplete(@NonNull Task<AuthResult> task) {
+                        if (task.isSuccessful()) {
+                            setEmailAddress();
+                            closeProgressDialog();
+                        } else {
+                            try {
+                                String message = task.getException().getMessage();
+                                if (message != null && (message.toLowerCase().equals(SmartToLetConstants.firebaseAccountConflictMessage1.toLowerCase()) ||
+                                        message.toLowerCase().contains(SmartToLetConstants.firebaseAccountConflictMessage2.toLowerCase()))) {
+                                    firebaseLoginWithGoogle(credential);
+                                } else {
+                                    showToast(message);
+                                    closeProgressDialog();
+                                }
+                            } catch (Exception e) {
+                                e.printStackTrace();
+                                closeProgressDialog();
+                            }
+                        }
+                    }
+                });
+    }
+
+    private FirebaseAuth mAuth;
+    private FirebaseAuth.AuthStateListener mAuthListener;
+    private FirebaseUser firebaseUser;
+
+    private void initFirebase() {
+        mAuth = FirebaseAuth.getInstance();
+        firebaseUser = mAuth.getCurrentUser();
+        mAuthListener = new FirebaseAuth.AuthStateListener() {
+            @Override
+            public void onAuthStateChanged(@NonNull FirebaseAuth firebaseAuth) {
+                firebaseUser = firebaseAuth.getCurrentUser();
+                if (firebaseUser != null) {
+                    showLog("onAuthStateChanged:signed_in:" + firebaseUser.getUid());
+                } else {
+                    showLog("onAuthStateChanged:signed_out");
+                }
+            }
+        };
+        mDatabase = FirebaseDatabase.getInstance().getReference();
+    }
 
     /**
      * Saves the state of the map when the activity is paused.
@@ -532,16 +725,15 @@ public class NewPostActivity extends BaseActivity
     }
 
     public void addItemsOnSpinner() {
-        String[] totalBedRoom = {"1","2","3","4","5","6","7"};
-        String[] floor = {"Ground","1st", "2nd", "3rd", "4th","5th", "6th", "7th", "8th","9th","10th" };
-        String[] facing = {"South","East", "West", "North"};
+        String[] totalBedRoom = {"1", "2", "3", "4", "5", "6", "7"};
+        String[] floor = {"Ground", "1st", "2nd", "3rd", "4th", "5th", "6th", "7th", "8th", "9th", "10th"};
+        String[] facing = {"South", "East", "West", "North"};
         //String[] totalBalcony = {"1","2","3","4","5","6","7"};
 
         // Creating adapter for spinner
         bedRoomAdapter = new ArrayAdapter<String>(this, android.R.layout.simple_spinner_item, totalBedRoom);
         floorAdapter = new ArrayAdapter<String>(this, android.R.layout.simple_spinner_item, floor);
         facingAdapter = new ArrayAdapter<String>(this, android.R.layout.simple_spinner_item, facing);
-
 
 
         // Drop down layout style - list view with radio button
@@ -569,13 +761,49 @@ public class NewPostActivity extends BaseActivity
 
     @Override
     public void onClick(View view) {
-        switch (view.getId()) {
-            case R.id.setDate: {
-                rentFromDialog.show();
-            }
-            break;
+        if (fab == view) {
+            submitAd();
+        } else if (setDate == view) {
+            rentFromDialog.show();
         }
     }
+
+    private DatabaseReference mDatabase;
+
+    private void submitAd() {
+        if (mDatabase == null)
+            mDatabase = FirebaseDatabase.getInstance().getReference();
+
+        writeNewPost();
+    }
+
+    private void writeNewPost() {
+        String adId = mDatabase.child(DBConstants.adList).push().getKey();
+        AdInfo adInfo = new AdInfo(adId, getUid());
+        HashMap<String, Object> adValues = adInfo.toMap();
+        HashMap<String, Object> childUpdates = new HashMap<>();
+        childUpdates.put("/" + DBConstants.adList + "/" + adId, adValues);
+        mDatabase.updateChildren(childUpdates);
+    }
+
+    private void updateUserInfo() {
+        if (mDatabase == null)
+            mDatabase = FirebaseDatabase.getInstance().getReference();
+
+        if (firebaseUser == null) {
+            firebaseUser = FirebaseAuth.getInstance().getCurrentUser();
+        }
+
+        HashMap<String, Object> userValues = new HashMap<>();
+        userValues.put(DBConstants.userId, firebaseUser.getUid());
+        userValues.put(DBConstants.userEmail, firebaseUser.getEmail());
+        userValues.put(DBConstants.userDisplayName, firebaseUser.getDisplayName());
+
+        HashMap<String, Object> childUpdates = new HashMap<>();
+        childUpdates.put("/" + DBConstants.user + "/" + getUid(), userValues);
+        mDatabase.updateChildren(childUpdates);
+    }
+
 
     /**
      * Demonstrates customizing the info window and/or its contents.
@@ -655,7 +883,9 @@ public class NewPostActivity extends BaseActivity
             }
         }
     }
+
     int fromYear, fromMonth, fromDay;
+
     private void setDateTimeField() {
         dateFormatter = new SimpleDateFormat("dd-MM-yyyy", Locale.US);
         setDate.setOnClickListener(this);
@@ -678,5 +908,4 @@ public class NewPostActivity extends BaseActivity
         }, newCalendar.get(Calendar.YEAR), newCalendar.get(Calendar.MONTH), newCalendar.get(Calendar.DAY_OF_MONTH));
         rentFromDialog.getDatePicker().setMinDate(System.currentTimeMillis());
     }
-
 }

@@ -9,12 +9,15 @@
     -->
 
     <uses-permission android:name="android.permission.ACCESS_FINE_LOCATION" />
+    <uses-permission android:name="android.permission.READ_EXTERNAL_STORAGE" />
+    <uses-permission android:name="android.permission.WRITE_EXTERNAL_STORAGE" />
+    <uses-permission android:name="android.permission.CAMERA" />
 
+    <!-- android:roundIcon="@mipmap/ic_launcher_round" -->
     <application
         android:allowBackup="true"
         android:icon="@mipmap/ic_launcher"
         android:label="@string/app_name"
-        android:roundIcon="@mipmap/ic_launcher_round"
         android:supportsRtl="true"
         android:theme="@style/AppTheme">
 
@@ -62,8 +65,36 @@
         </activity>
         <activity
             android:name=".activities.NewPostActivity"
+            android:configChanges="orientation"
             android:theme="@style/AppTheme.NoActionBar"
             android:windowSoftInputMode="stateHidden" />
+        <activity
+            android:name=".activities.MediaActivity"
+            android:theme="@style/AppTheme.NoActionBar" />
+
+
+        <provider
+            android:name="android.support.v4.content.FileProvider"
+            android:authorities="com.to.let.bd.pick.photo"
+            android:exported="false"
+            android:grantUriPermissions="true">
+            <meta-data
+                android:name="android.support.FILE_PROVIDER_PATHS"
+                android:resource="@xml/file_paths" />
+        </provider>
+
+        <provider
+            android:name=".utils.pick_photo.provider.PickProvider"
+            android:authorities="com.to.let.bd.pick.photo.provider"
+            android:exported="false"
+            android:grantUriPermissions="true">
+            <meta-data
+                android:name="android.support.FILE_PROVIDER_PATHS"
+                android:resource="@xml/pick_file_paths" />
+        </provider>
+        <service
+            android:name=".utils.UploadImageService"
+            android:exported="false" />
     </application>
 
 </manifest>

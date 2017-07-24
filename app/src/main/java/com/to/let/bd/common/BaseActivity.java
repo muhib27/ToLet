@@ -133,8 +133,16 @@ public class BaseActivity extends AppCompatActivity {
 //        startActivityForResult(authenticationIntent, KgbhsConstants.LOGIN_RESULT);
 //    }
 
+    public FirebaseUser getFirebaseUser() {
+        return FirebaseAuth.getInstance().getCurrentUser();
+    }
+
     public String getUid() {
-        return FirebaseAuth.getInstance().getCurrentUser().getUid();
+        FirebaseUser user = FirebaseAuth.getInstance().getCurrentUser();
+        if (user == null) {
+            return null;
+        }
+        return user.getUid();
     }
 
     public FirebaseUser getCurrentUser() {

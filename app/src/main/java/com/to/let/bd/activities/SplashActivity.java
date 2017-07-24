@@ -11,10 +11,13 @@ import com.google.android.gms.tasks.Task;
 import com.google.firebase.auth.AuthResult;
 import com.google.firebase.auth.FirebaseAuth;
 import com.google.firebase.auth.FirebaseUser;
-import com.to.let.bd.MainActivity;
-import com.to.let.bd.MapsActivity;
+import com.google.firebase.database.DatabaseReference;
+import com.google.firebase.database.FirebaseDatabase;
 import com.to.let.bd.R;
 import com.to.let.bd.common.BaseActivity;
+import com.to.let.bd.utils.DBConstants;
+
+import java.util.HashMap;
 
 public class SplashActivity extends BaseActivity {
     private static final String TAG = SplashActivity.class.getSimpleName();
@@ -123,10 +126,24 @@ public class SplashActivity extends BaseActivity {
                     finish();
                     return;
                 }
-
+                writeNewUser();
                 startHomeActivity();
             }
         });
+    }
+
+    private DatabaseReference mDatabase;
+
+    private void writeNewUser() {
+        if (mDatabase == null)
+            mDatabase = FirebaseDatabase.getInstance().getReference();
+
+        HashMap<String, Object> userValues = new HashMap<>();
+        userValues.put(DBConstants.userId, getUid());
+
+        HashMap<String, Object> childUpdates = new HashMap<>();
+        childUpdates.put("/" + DBConstants.user + "/" + getUid(), userValues);
+        mDatabase.updateChildren(childUpdates);
     }
 
     private void startHomeActivity() {
