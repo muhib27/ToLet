@@ -76,4 +76,6 @@
     <string name="sqft">sqft</string>
     <string name="rent_from">Rent From</string>
     <string name="image_description">Image description</string>
+    <string name="user_profile_pic">Profile pic</string>
+    <string name="exit">Exit</string>
 </resources>

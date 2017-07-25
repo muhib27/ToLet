@@ -3,15 +3,15 @@
 
     <group android:checkableBehavior="single">
         <item
-            android:id="@+id/nav_all_ads"
+            android:id="@+id/navAllAds"
             android:icon="@drawable/ic_menu_share"
             android:title="@string/all_ads" />
         <item
-            android:id="@+id/nav_nearest_ads"
+            android:id="@+id/navNearestAds"
             android:icon="@drawable/ic_menu_send"
             android:title="@string/nearest_ads" />
         <item
-            android:id="@+id/nav_smart_ads"
+            android:id="@+id/navSmartAds"
             android:icon="@drawable/ic_menu_send"
             android:title="@string/smart_ads" />
     </group>
@@ -19,7 +19,7 @@
     <item android:title="@string/user_profile">
         <menu>
             <item
-                android:id="@+id/nav_my_ads"
+                android:id="@+id/navMyAds"
                 android:icon="@drawable/ic_menu_share"
                 android:title="@string/my_ads" />
             <item
@@ -30,7 +30,7 @@
     </item>
 
     <item
-        android:id="@+id/nav_logout"
+        android:id="@+id/navLogout"
         android:icon="@drawable/ic_menu_share"
         android:title="@string/logout" />
 
