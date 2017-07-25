@@ -1,4 +1,4 @@
-package com.to.let.bd;
+package com.to.let.bd.activities;
 
 import android.content.pm.PackageManager;
 import android.graphics.Color;
@@ -30,6 +30,7 @@ import com.google.android.gms.maps.model.CameraPosition;
 import com.google.android.gms.maps.model.LatLng;
 import com.google.android.gms.maps.model.Marker;
 import com.google.android.gms.maps.model.MarkerOptions;
+import com.to.let.bd.R;
 import com.to.let.bd.common.BaseActivity;
 
 import java.io.IOException;

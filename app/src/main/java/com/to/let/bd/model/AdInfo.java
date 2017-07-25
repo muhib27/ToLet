@@ -3,6 +3,7 @@ package com.to.let.bd.model;
 import com.google.firebase.database.Exclude;
 import com.to.let.bd.utils.DBConstants;
 
+import java.util.ArrayList;
 import java.util.HashMap;
 
 public class AdInfo {
@@ -44,6 +45,12 @@ public class AdInfo {
     private long othersFee;
 
     private String userId;
+
+    private ArrayList<ImageInfo> images;
+
+    public AdInfo() {
+
+    }
 
     public AdInfo(String adId, String userId) {
         this.adId = adId;
@@ -355,6 +362,14 @@ public class AdInfo {
 
     public void setUserId(String userId) {
         this.userId = userId;
+    }
+
+    public ArrayList<ImageInfo> getImages() {
+        return images;
+    }
+
+    public void setImages(ArrayList<ImageInfo> images) {
+        this.images = images;
     }
 
     // [START post_to_map]

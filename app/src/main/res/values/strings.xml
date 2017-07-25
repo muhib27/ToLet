@@ -75,4 +75,5 @@
     <string name="bdt">BDT</string>
     <string name="sqft">sqft</string>
     <string name="rent_from">Rent From</string>
+    <string name="image_description">Image description</string>
 </resources>

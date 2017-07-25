@@ -148,7 +148,7 @@ public class SplashActivity extends BaseActivity {
 
     private void startHomeActivity() {
         finish();
-        Intent intent = new Intent(this, NewPostActivity.class);
+        Intent intent = new Intent(this, AdListActivity.class);
         startActivity(intent);
     }
 }

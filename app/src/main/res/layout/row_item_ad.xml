@@ -1,0 +1,77 @@
+<?xml version="1.0" encoding="utf-8"?>
+<LinearLayout xmlns:android="http://schemas.android.com/apk/res/android"
+    android:layout_width="match_parent"
+    android:layout_height="wrap_content"
+    android:gravity="center_vertical"
+    android:orientation="horizontal"
+    android:padding="@dimen/size_10dp">
+
+    <RelativeLayout
+        android:layout_width="0dp"
+        android:layout_height="@dimen/size_50dp"
+        android:layout_weight=".3">
+
+        <ImageView
+            android:id="@+id/image"
+            android:layout_width="match_parent"
+            android:layout_height="match_parent"
+            android:contentDescription="@string/image_description"
+            android:scaleType="fitCenter"
+            android:src="@mipmap/ic_launcher" />
+
+        <ProgressBar
+            android:id="@+id/progressBar"
+            android:layout_width="match_parent"
+            android:layout_height="match_parent"
+            android:padding="@dimen/size_12dp"
+            android:visibility="gone" />
+
+    </RelativeLayout>
+
+    <LinearLayout
+        android:layout_width="0dp"
+        android:layout_height="wrap_content"
+        android:layout_marginLeft="@dimen/size_5dp"
+        android:layout_marginRight="@dimen/size_5dp"
+        android:layout_weight=".6"
+        android:orientation="vertical">
+
+        <TextView
+            android:id="@+id/title"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:ellipsize="end"
+            android:gravity="center_vertical"
+            android:maxLines="1"
+            android:text="@string/app_name"
+            android:textSize="@dimen/text_size_14sp"
+            android:textStyle="bold" />
+
+        <TextView
+            android:id="@+id/address"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:gravity="center_vertical"
+            android:textSize="@dimen/text_size_12sp" />
+
+        <TextView
+            android:id="@+id/roomDetails"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:ellipsize="end"
+            android:lines="2"
+            android:maxLines="2"
+            android:textColor="@color/black_overlay"
+            android:textSize="@dimen/text_size_10sp" />
+
+    </LinearLayout>
+
+    <ImageView
+        android:layout_width="0dp"
+        android:layout_height="wrap_content"
+        android:layout_gravity="center"
+        android:layout_weight=".1"
+        android:padding="@dimen/size_5dp"
+        android:src="@drawable/arrow_front" />
+
+</LinearLayout>

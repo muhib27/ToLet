@@ -23,7 +23,6 @@ import com.bumptech.glide.Glide;
 import com.bumptech.glide.RequestManager;
 import com.google.firebase.database.DatabaseReference;
 import com.google.firebase.database.FirebaseDatabase;
-import com.to.let.bd.MainActivity;
 import com.to.let.bd.R;
 import com.to.let.bd.common.BaseActivity;
 import com.to.let.bd.adapters.pick_photo.PickGridAdapter;
@@ -311,7 +310,7 @@ public class MediaActivity extends BaseActivity {
 
     private void completeUploading() {
         finish();
-        Intent intent = new Intent(this, MainActivity.class);
+        Intent intent = new Intent(this, AdListActivity.class);
         intent.addFlags(Intent.FLAG_ACTIVITY_CLEAR_TASK);
         startActivity(intent);
     }

@@ -74,7 +74,7 @@ import java.util.HashMap;
 import java.util.List;
 import java.util.Locale;
 
-public class NewPostActivity extends BaseActivity
+public class NewAdActivity extends BaseActivity
         implements OnMapReadyCallback,
         GoogleApiClient.ConnectionCallbacks,
         GoogleApiClient.OnConnectionFailedListener,
@@ -83,7 +83,7 @@ public class NewPostActivity extends BaseActivity
         GoogleMap.OnMapClickListener,
         AdapterView.OnItemSelectedListener, View.OnFocusChangeListener, View.OnClickListener {
 
-    private static final String TAG = NewPostActivity.class.getSimpleName();
+    private static final String TAG = NewAdActivity.class.getSimpleName();
     private GoogleMap googleMap;
     private CameraPosition mCameraPosition;
     private EditText totalSpace;

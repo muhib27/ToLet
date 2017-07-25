@@ -33,7 +33,7 @@
             android:name="com.google.android.geo.API_KEY"
             android:value="@string/google_maps_key" />
 
-        <activity android:name=".MapsActivity">
+        <activity android:name=".activities.MapsActivity">
 
             <!-- <intent-filter> -->
             <!-- <action android:name="android.intent.action.MAIN" /> -->
@@ -43,7 +43,7 @@
             <!-- </intent-filter> -->
         </activity>
         <activity
-            android:name=".MainActivity"
+            android:name=".activities.AdListActivity"
             android:theme="@style/AppTheme.NoActionBar">
 
             <!-- <intent-filter> -->
@@ -64,7 +64,7 @@
             </intent-filter>
         </activity>
         <activity
-            android:name=".activities.NewPostActivity"
+            android:name=".activities.NewAdActivity"
             android:configChanges="orientation"
             android:theme="@style/AppTheme.NoActionBar"
             android:windowSoftInputMode="stateHidden" />
