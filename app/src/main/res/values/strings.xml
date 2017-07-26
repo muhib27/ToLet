@@ -78,4 +78,6 @@
     <string name="select_date">Select Date</string>
     <string name="floor">Floor</string>
     <string name="image_description">Image description</string>
+    <string name="user_profile_pic">Profile pic</string>
+    <string name="exit">Exit</string>
 </resources>

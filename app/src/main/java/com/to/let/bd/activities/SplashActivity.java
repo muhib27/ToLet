@@ -68,12 +68,13 @@ public class SplashActivity extends BaseActivity {
         @Override
         public void run() {
             if (firebaseUser != null)
-                firebaseUser.reload().addOnSuccessListener(new OnSuccessListener<Void>() {
-                    @Override
-                    public void onSuccess(Void aVoid) {
-                        startHomeActivity();
-                    }
-                });
+//                firebaseUser.reload().addOnSuccessListener(new OnSuccessListener<Void>() {
+//                    @Override
+//                    public void onSuccess(Void aVoid) {
+//                        startHomeActivity();
+//                    }
+//                });
+                startHomeActivity();
             else
                 signInAnonymously();
         }

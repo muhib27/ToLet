@@ -104,7 +104,6 @@ public class NewAdActivity extends BaseActivity
     // The entry point to Google Play services, used by the Places API and Fused Location Provider.
     private GoogleApiClient mGoogleApiClient;
 
-
     // A default location (Sydney, Australia) and default zoom to use when location permission is
     // not granted.
     private LatLng mDefaultLatLng = new LatLng(-33.8523341, 151.2106085);
@@ -394,7 +393,7 @@ public class NewAdActivity extends BaseActivity
 
     private void firebaseAuthWithGoogle(GoogleSignInAccount acct) {
         AuthCredential credential = GoogleAuthProvider.getCredential(acct.getIdToken(), null);
-        linkedCredential(credential);
+        firebaseLoginWithGoogle(credential);
     }
 
     private void firebaseLoginWithGoogle(AuthCredential credential) {
@@ -426,33 +425,33 @@ public class NewAdActivity extends BaseActivity
         updateUserInfo();
     }
 
-    private void linkedCredential(final AuthCredential credential) {
-        showProgressDialog();
-        firebaseUser.linkWithCredential(credential).addOnCompleteListener(this,
-                new OnCompleteListener<AuthResult>() {
-                    @Override
-                    public void onComplete(@NonNull Task<AuthResult> task) {
-                        if (task.isSuccessful()) {
-                            setEmailAddress();
-                            closeProgressDialog();
-                        } else {
-                            try {
-                                String message = task.getException().getMessage();
-                                if (message != null && (message.toLowerCase().equals(SmartToLetConstants.firebaseAccountConflictMessage1.toLowerCase()) ||
-                                        message.toLowerCase().contains(SmartToLetConstants.firebaseAccountConflictMessage2.toLowerCase()))) {
-                                    firebaseLoginWithGoogle(credential);
-                                } else {
-                                    showToast(message);
-                                    closeProgressDialog();
-                                }
-                            } catch (Exception e) {
-                                e.printStackTrace();
-                                closeProgressDialog();
-                            }
-                        }
-                    }
-                });
-    }
+//    private void linkedCredential(final AuthCredential credential) {
+//        showProgressDialog();
+//        firebaseUser.linkWithCredential(credential).addOnCompleteListener(this,
+//                new OnCompleteListener<AuthResult>() {
+//                    @Override
+//                    public void onComplete(@NonNull Task<AuthResult> task) {
+//                        if (task.isSuccessful()) {
+//                            setEmailAddress();
+//                            closeProgressDialog();
+//                        } else {
+//                            try {
+//                                String message = task.getException().getMessage();
+//                                if (message != null && (message.toLowerCase().equals(SmartToLetConstants.firebaseAccountConflictMessage1.toLowerCase()) ||
+//                                        message.toLowerCase().contains(SmartToLetConstants.firebaseAccountConflictMessage2.toLowerCase()))) {
+//                                    firebaseLoginWithGoogle(credential);
+//                                } else {
+//                                    showToast(message);
+//                                    closeProgressDialog();
+//                                }
+//                            } catch (Exception e) {
+//                                e.printStackTrace();
+//                                closeProgressDialog();
+//                            }
+//                        }
+//                    }
+//                });
+//    }
 
     private FirebaseAuth mAuth;
     private FirebaseAuth.AuthStateListener mAuthListener;
