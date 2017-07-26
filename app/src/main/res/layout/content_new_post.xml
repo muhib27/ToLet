@@ -39,7 +39,7 @@
                 android:layout_width="wrap_content"
                 android:layout_height="wrap_content"
                 android:layout_weight="1"
-                android:checked="false"
+                android:checked="true"
                 android:text="@string/family" />
 
             <RadioButton
@@ -74,28 +74,38 @@
             android:gravity="center_vertical"
             android:orientation="horizontal">
 
-            <EditText
-                android:id="@+id/houseInfo"
+            <android.support.design.widget.TextInputLayout
                 android:layout_width="0dp"
                 android:layout_height="wrap_content"
-                android:layout_marginLeft="@dimen/new_post_common_padding"
-                android:layout_marginStart="@dimen/new_post_common_padding"
-                android:layout_weight="1"
-                android:hint="@string/houseInfo"
-                android:inputType="text"
-                android:paddingEnd="@dimen/size_10dp"
-                android:paddingLeft="@dimen/size_10dp"
-                android:paddingRight="@dimen/size_10dp"
-                android:paddingStart="@dimen/size_10dp"
-                android:singleLine="true" />
+                android:layout_weight="2">
 
-            <Spinner
-                android:id="@+id/whichFloor"
-                android:layout_width="wrap_content"
+                <EditText
+                    android:id="@+id/houseInfo"
+                    android:layout_width="match_parent"
+                    android:layout_height="wrap_content"
+                    android:layout_marginLeft="@dimen/new_post_common_padding"
+                    android:layout_marginStart="@dimen/new_post_common_padding"
+                    android:hint="@string/houseInfo"
+                    android:inputType="text"
+                    android:paddingEnd="@dimen/size_10dp"
+                    android:paddingLeft="@dimen/size_10dp"
+                    android:paddingRight="@dimen/size_10dp"
+                    android:paddingStart="@dimen/size_10dp"
+                    android:singleLine="true" />
+            </android.support.design.widget.TextInputLayout>
+
+            <android.support.design.widget.TextInputLayout
+                android:layout_width="0dp"
                 android:layout_height="wrap_content"
-                android:minWidth="@dimen/size_50dp"
-                android:spinnerMode="dropdown"
-                tools:listitem="@layout/common_spinner_sub_item" />
+                android:layout_weight="1">
+
+            <EditText
+                android:id="@+id/whichFloor"
+                android:layout_width="match_parent"
+                android:hint="@string/floor"
+                android:layout_height="wrap_content"
+                android:minWidth="@dimen/size_50dp" />
+            </android.support.design.widget.TextInputLayout>
 
             <Spinner
                 android:id="@+id/whichFacing"
@@ -359,7 +369,7 @@
                     android:layout_weight="2">
 
                     <EditText
-                        android:id="@+id/total_space"
+                        android:id="@+id/totalSpace"
                         android:layout_width="match_parent"
                         android:layout_height="wrap_content"
                         android:hint="@string/total_space"
@@ -392,7 +402,7 @@
                     android:layout_weight="2">
 
                     <EditText
-                        android:id="@+id/total_rent"
+                        android:id="@+id/totalRent"
                         android:layout_width="match_parent"
                         android:layout_height="wrap_content"
                         android:hint="@string/rent"
@@ -427,13 +437,14 @@
                 android:layout_weight="1"
                 android:text="@string/rent_from" />
 
-            <TextView
+            <Button
                 android:id="@+id/setDate"
                 android:layout_width="0dp"
                 android:layout_height="wrap_content"
                 android:layout_weight="2"
                 android:padding="@dimen/size_8dp"
-                android:text="@string/rent_from" />
+                android:textAllCaps="false"
+                android:text="@string/select_date" />
 
         </LinearLayout>
 

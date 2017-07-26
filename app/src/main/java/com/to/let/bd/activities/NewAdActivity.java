@@ -20,6 +20,7 @@ import android.text.style.ForegroundColorSpan;
 import android.view.View;
 import android.widget.AdapterView;
 import android.widget.ArrayAdapter;
+import android.widget.Button;
 import android.widget.CheckBox;
 import android.widget.DatePicker;
 import android.widget.EditText;
@@ -30,6 +31,7 @@ import android.widget.RadioGroup;
 import android.widget.ScrollView;
 import android.widget.Spinner;
 import android.widget.TextView;
+import android.widget.Toast;
 
 import com.google.android.gms.auth.api.Auth;
 import com.google.android.gms.auth.api.signin.GoogleSignInAccount;
@@ -86,17 +88,18 @@ public class NewAdActivity extends BaseActivity
     private static final String TAG = NewAdActivity.class.getSimpleName();
     private GoogleMap googleMap;
     private CameraPosition mCameraPosition;
-    private EditText totalSpace;
-    private Spinner bedRoom, balcony, bathRoom, whichFloor, whichFacing;
+    private EditText totalSpace, whichFloor, houseInfo, totalRent;
+    private Spinner bedRoom, balcony, bathRoom, whichFacing;
     ArrayAdapter<String> bedRoomAdapter, balconyAdapter, bathRoomAdapter, floorAdapter, facingAdapter;
     private CheckBox waterCB, gazCB, electricityCB, liftCB, generatorCB;
 
     private DatePickerDialog rentFromDialog;
     private SimpleDateFormat dateFormatter;
     Calendar newCalendar = Calendar.getInstance();
-    private TextView setDate;
+    private Button setDate;
     private RadioGroup drawingDining, rentType;
     private RadioButton drawingDiningYes, drawingDiningNo, checkedRadioButton, family, sublet, bachelor, others;
+    private boolean drawiningDiningExist, waterExist, gazExist, electricityExist, liftExist, generatorExist;
 
     // The entry point to Google Play services, used by the Places API and Fused Location Provider.
     private GoogleApiClient mGoogleApiClient;
@@ -130,6 +133,8 @@ public class NewAdActivity extends BaseActivity
     private TextView addressDetails;
     private ScrollView mapScrollView;
     private EditText emailAddress, phoneNumber;
+    private String drawingAndDining = "yes";
+    private int flatTypeInt= 1;
 
     private void init() {
         toolbar = (Toolbar) findViewById(R.id.toolbar);
@@ -191,7 +196,7 @@ public class NewAdActivity extends BaseActivity
         initialize();
         addItemsOnSpinner();
         setDateTimeField();
-        defaultSetup("family");
+        //defaultSetup("family");
 
         // Configure Google Sign In
         GoogleSignInOptions gso = new GoogleSignInOptions.Builder(GoogleSignInOptions.DEFAULT_SIGN_IN)
@@ -206,8 +211,9 @@ public class NewAdActivity extends BaseActivity
         fab.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View view) {
-                Snackbar.make(view, "Replace with your own action", Snackbar.LENGTH_LONG)
-                        .setAction("Action", null).show();
+                submitAd();
+//                Snackbar.make(view, "Replace with your own action", Snackbar.LENGTH_LONG)
+//                        .setAction("Action", null).show();
             }
         });
 
@@ -233,13 +239,16 @@ public class NewAdActivity extends BaseActivity
         drawingDining = (RadioGroup) findViewById(R.id.drawingDining);
         drawingDiningYes = (RadioButton) findViewById(R.id.drawingDiningYes);
         drawingDiningNo = (RadioButton) findViewById(R.id.drawingDiningNo);
-        totalSpace = (EditText) findViewById(R.id.total_space);
-        totalSpace.setText("1000");
+
         bedRoom = (Spinner) findViewById(R.id.bedRoom);
         balcony = (Spinner) findViewById(R.id.balcony);
         bathRoom = (Spinner) findViewById(R.id.bathRoom);
         whichFacing = (Spinner) findViewById(R.id.whichFacing);
-        whichFloor = (Spinner) findViewById(R.id.whichFloor);
+
+        houseInfo = (EditText) findViewById(R.id.houseInfo);
+        whichFloor = (EditText) findViewById(R.id.whichFloor);
+        totalSpace = (EditText) findViewById(R.id.totalSpace);
+        totalRent = (EditText) findViewById(R.id.totalRent);
 
         waterCB = (CheckBox) findViewById(R.id.waterCB);
         gazCB = (CheckBox) findViewById(R.id.gazCB);
@@ -247,17 +256,18 @@ public class NewAdActivity extends BaseActivity
         liftCB = (CheckBox) findViewById(R.id.liftCB);
         generatorCB = (CheckBox) findViewById(R.id.generatorCB);
 
-        setDate = (TextView) findViewById(R.id.setDate);
+        setDate = (Button) findViewById(R.id.setDate);
 
         bedRoom.setOnItemSelectedListener(this);
         balcony.setOnItemSelectedListener(this);
         bathRoom.setOnItemSelectedListener(this);
-        whichFloor.setOnItemSelectedListener(this);
+        //whichFloor.setOnItemSelectedListener(this);
         whichFacing.setOnItemSelectedListener(this);
 
         rentTypeCheck();
 
-        //defaultSetup();
+        defaultSetup("family");
+        drawiningDiningExist = true;
 
         checkedRadioButton = (RadioButton) drawingDining.findViewById(drawingDining.getCheckedRadioButtonId());
         drawingDining.setOnCheckedChangeListener(new RadioGroup.OnCheckedChangeListener() {
@@ -268,7 +278,16 @@ public class NewAdActivity extends BaseActivity
                 boolean isChecked = checkedRadioButton.isChecked();
                 // If the radiobutton that has changed in check state is now checked...
                 if (isChecked) {
+                    drawingAndDining = checkedRadioButton.getText().toString();
                     showToast("Checked:" + checkedRadioButton.getText());
+                    switch (checkedRadioButton.getId()) {
+                        case R.id.drawingDiningYes:
+                            drawiningDiningExist = true;
+                            break;
+                        case R.id.drawingDiningNo:
+                            drawiningDiningExist= false;
+                            break;
+                    }
                 }
             }
         });
@@ -288,18 +307,23 @@ public class NewAdActivity extends BaseActivity
                     switch (checkedRadioButton.getId()) {
                         case R.id.family:
                             rentTypeSelected = "family";
+                            flatTypeInt = 1;
                             defaultSetup(rentTypeSelected);
+
                             break;
                         case R.id.sublet:
                             rentTypeSelected = "sublet";
+                            flatTypeInt = 2;
                             defaultSetup(rentTypeSelected);
                             break;
                         case R.id.bachelor:
                             rentTypeSelected = "bachelor";
+                            flatTypeInt = 3;
                             defaultSetup(rentTypeSelected);
                             break;
                         case R.id.others:
                             rentTypeSelected = "others";
+                            flatTypeInt = 4;
                             defaultSetup(rentTypeSelected);
                             break;
 
@@ -578,7 +602,9 @@ public class NewAdActivity extends BaseActivity
 
     /**
      * Gets the current location of the device, and positions the map's camera.
+     * String fullAddress
      */
+    String fullAddress;
     private void gotoDeviceLocation() {
         /*
          * Get the best and most recent location of the device, which may be null in rare
@@ -602,7 +628,7 @@ public class NewAdActivity extends BaseActivity
             googleMap.getUiSettings().setMyLocationButtonEnabled(false);
         }
 
-        String fullAddress = getLocationBestApproximateResult(findCurrentLocationDetails(mDefaultLatLng.latitude, mDefaultLatLng.longitude), mDefaultLatLng);
+        fullAddress = getLocationBestApproximateResult(findCurrentLocationDetails(mDefaultLatLng.latitude, mDefaultLatLng.longitude), mDefaultLatLng);
         addressDetails.setText(fullAddress);
     }
 
@@ -649,6 +675,10 @@ public class NewAdActivity extends BaseActivity
     }
 
     private final int maxAddressResult = 5;
+    double longti;
+    double lat;
+    private String countryName;
+    private String division;
 
     private List<Address> findCurrentLocationDetails(double latitude, double longitude) {
         Geocoder geocoder;
@@ -656,13 +686,17 @@ public class NewAdActivity extends BaseActivity
         addressList.clear();
 
         geocoder = new Geocoder(this, Locale.ENGLISH);
-
+//
 //        latitude = 23.7929279;
 //        longitude = 90.4035839;
+        longti = longitude;
+        lat = latitude;
 
         try {
             // Here 1 represent max location result to returned, by documents it recommended 1 to 5
             addressList = geocoder.getFromLocation(latitude, longitude, maxAddressResult);
+            //countryName = addressList.g
+
         } catch (IOException e) {
             e.printStackTrace();
         }
@@ -707,10 +741,12 @@ public class NewAdActivity extends BaseActivity
             }
             if (address.getLocality() != null && !result.contains(address.getLocality())) {
                 result = result + "," + address.getLocality();
+                division  = address.getLocality();
             }
 
             if (address.getCountryName() != null && !result.contains(address.getCountryName())) {
                 result = result + "," + address.getCountryName();
+                countryName = address.getCountryName();
             }
 
             if (address.getAdminArea() != null && !result.contains(address.getAdminArea())) {
@@ -745,7 +781,7 @@ public class NewAdActivity extends BaseActivity
         bedRoom.setAdapter(bedRoomAdapter);
         balcony.setAdapter(bedRoomAdapter);
         bathRoom.setAdapter(bedRoomAdapter);
-        whichFloor.setAdapter(floorAdapter);
+        //whichFloor.setAdapter(floorAdapter);
         whichFacing.setAdapter(facingAdapter);
     }
 
@@ -778,8 +814,30 @@ public class NewAdActivity extends BaseActivity
     }
 
     private void writeNewPost() {
+
         String adId = mDatabase.child(DBConstants.adList).push().getKey();
-        AdInfo adInfo = new AdInfo(adId, getUid());
+
+        String houseInfoSt= houseInfo.getText().toString();
+        String floorSt = whichFloor.getText().toString();
+        String whichFacingSt = whichFacing.getSelectedItem().toString();
+        String bedRoomSt = bedRoom.getSelectedItem().toString();
+        String balconySt = balcony.getSelectedItem().toString();
+        if(!dateIsSet){
+            Toast.makeText(this, "set date", Toast.LENGTH_SHORT).show();
+            return;
+        }
+
+        //String rentFromSt =
+//
+        AdInfo adInfo = new AdInfo(adId, fromMonth, fromDay, fromYear, lat, longti, fullAddress, countryName,
+                division, division, division, division, flatTypeInt, houseInfo.getText().toString(), Integer.parseInt(whichFloor.getText().toString()),
+                whichFacing.getSelectedItem().toString(), Integer.parseInt(totalSpace.getText().toString()), Integer.parseInt(bedRoom.getSelectedItem().toString()), Integer.parseInt(bathRoom.getSelectedItem().toString()),
+                Integer.parseInt(balcony.getSelectedItem().toString()), 1, drawiningDiningExist, electricityCB.isChecked(), gazCB.isChecked(), waterCB.isChecked(), liftCB.isChecked(), generatorCB.isChecked(),
+                Integer.parseInt(totalRent.getText().toString()), 3000, getUid());
+//        //adInfo.settHouseNameOrNumber(houseInfo.getText().toString());
+
+        Toast.makeText(this, whichFacingSt + drawingAndDining, Toast.LENGTH_SHORT).show();
+        //AdInfo adInfo = new AdInfo(adId, getUid());
         HashMap<String, Object> adValues = adInfo.toMap();
         HashMap<String, Object> childUpdates = new HashMap<>();
         childUpdates.put("/" + DBConstants.adList + "/" + adId, adValues);
@@ -885,6 +943,7 @@ public class NewAdActivity extends BaseActivity
     }
 
     int fromYear, fromMonth, fromDay;
+    boolean dateIsSet = false;
 
     private void setDateTimeField() {
         dateFormatter = new SimpleDateFormat("dd-MM-yyyy", Locale.US);
@@ -893,15 +952,19 @@ public class NewAdActivity extends BaseActivity
         rentFromDialog = new DatePickerDialog(this, new DatePickerDialog.OnDateSetListener() {
             public void onDateSet(DatePicker view, int year, int monthOfYear, int dayOfMonth) {
 
-
+                dateIsSet = true;
                 fromYear = year;
                 fromMonth = monthOfYear;
                 fromDay = dayOfMonth;
                 newFromDate.set(year, monthOfYear, dayOfMonth);
                 if (newFromDate.getTimeInMillis() < newCalendar.getTimeInMillis())
                     setDate.setText(dateFormatter.format(newCalendar.getTime()));
-                else
+                else {
+                    fromYear = newFromDate.YEAR;
+                    fromMonth = newFromDate.MONTH+1;
+                    fromDay = newFromDate.DAY_OF_MONTH;
                     setDate.setText(dateFormatter.format(newFromDate.getTime()));
+                }
 
             }
 

@@ -35,11 +35,11 @@ public class AdInfo {
     private int balcony;
     private int kitchen;
     private boolean hasDrawingDining;
-    private int electricity;
-    private int gasFacility;
-    private int water;
-    private int lift;
-    private int generator;
+    private boolean electricity;
+    private boolean gasFacility;
+    private boolean water;
+    private boolean lift;
+    private boolean generator;
 
     private long flatRent;
     private long othersFee;
@@ -75,11 +75,11 @@ public class AdInfo {
         this.balcony = 2;
         this.kitchen = 1;
         this.hasDrawingDining = true;
-        this.electricity = -1;
-        this.gasFacility = 1;
-        this.water = 1000;
-        this.lift = 0;
-        this.generator = 1;
+        this.electricity = true;
+        this.gasFacility = false;
+        this.water = true;
+        this.lift = false;
+        this.generator = true;
         this.flatRent = 20000;
         this.othersFee = 3000;
 
@@ -90,7 +90,7 @@ public class AdInfo {
                   String fullAddress, String country, String division, String district, String subDistrict,
                   String knownAsArea, int flatType, String houseNameOrNumber, int floorNumber, String flatFacing,
                   long flatSpace, int bedRoom, int toilet, int balcony, int kitchen, boolean hasDrawingDining,
-                  int electricity, int gasFacility, int water, int lift, int generator, long flatRent, long othersFee,
+                  boolean electricity, boolean gasFacility, boolean water, boolean lift, boolean generator, long flatRent, long othersFee,
                   String userId) {
         this.adId = adId;
         this.startingMonth = startingMonth;
@@ -300,43 +300,43 @@ public class AdInfo {
         this.hasDrawingDining = hasDrawingDining;
     }
 
-    public int getElectricity() {
+    public boolean getElectricity() {
         return electricity;
     }
 
-    public void setElectricity(int electricity) {
+    public void setElectricity(boolean electricity) {
         this.electricity = electricity;
     }
 
-    public int getGasFacility() {
+    public boolean getGasFacility() {
         return gasFacility;
     }
 
-    public void setGasFacility(int gasFacility) {
+    public void setGasFacility(boolean gasFacility) {
         this.gasFacility = gasFacility;
     }
 
-    public int getWater() {
+    public boolean getWater() {
         return water;
     }
 
-    public void setWater(int water) {
+    public void setWater(boolean water) {
         this.water = water;
     }
 
-    public int getLift() {
+    public boolean getLift() {
         return lift;
     }
 
-    public void setLift(int lift) {
+    public void setLift(boolean lift) {
         this.lift = lift;
     }
 
-    public int getGenerator() {
+    public boolean getGenerator() {
         return generator;
     }
 
-    public void setGenerator(int generator) {
+    public void setGenerator(boolean generator) {
         this.generator = generator;
     }
 
