@@ -68,8 +68,7 @@ public class AdListActivity extends BaseActivity
         fab.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View view) {
-                Snackbar.make(view, "Replace with your own action", Snackbar.LENGTH_LONG)
-                        .setAction("Action", null).show();
+                startNewAdActivity();
             }
         });
 
@@ -83,6 +82,11 @@ public class AdListActivity extends BaseActivity
         initNavigationDrawer();
         updateNavHeader();
         init();
+    }
+
+    private void startNewAdActivity() {
+        Intent newAdIntent = new Intent(this, NewAdActivity.class);
+        startActivity(newAdIntent);
     }
 
     private NavigationView navigationView;

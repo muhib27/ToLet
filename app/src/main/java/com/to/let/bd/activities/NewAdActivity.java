@@ -828,19 +828,19 @@ public class NewAdActivity extends BaseActivity
 
         //String rentFromSt =
 //
-        AdInfo adInfo = new AdInfo(adId, fromMonth, fromDay, fromYear, lat, longti, fullAddress, countryName,
-                division, division, division, division, flatTypeInt, houseInfo.getText().toString(), Integer.parseInt(whichFloor.getText().toString()),
-                whichFacing.getSelectedItem().toString(), Integer.parseInt(totalSpace.getText().toString()), Integer.parseInt(bedRoom.getSelectedItem().toString()), Integer.parseInt(bathRoom.getSelectedItem().toString()),
-                Integer.parseInt(balcony.getSelectedItem().toString()), 1, drawiningDiningExist, electricityCB.isChecked(), gazCB.isChecked(), waterCB.isChecked(), liftCB.isChecked(), generatorCB.isChecked(),
-                Integer.parseInt(totalRent.getText().toString()), 3000, getUid());
+//        AdInfo adInfo = new AdInfo(adId, fromMonth, fromDay, fromYear, lat, longti, fullAddress, countryName,
+//                division, division, division, division, flatTypeInt, houseInfo.getText().toString(), Integer.parseInt(whichFloor.getText().toString()),
+//                whichFacing.getSelectedItem().toString(), Integer.parseInt(totalSpace.getText().toString()), Integer.parseInt(bedRoom.getSelectedItem().toString()), Integer.parseInt(bathRoom.getSelectedItem().toString()),
+//                Integer.parseInt(balcony.getSelectedItem().toString()), 1, drawiningDiningExist, electricityCB.isChecked(), gazCB.isChecked(), waterCB.isChecked(), liftCB.isChecked(), generatorCB.isChecked(),
+//                Integer.parseInt(totalRent.getText().toString()), 3000, getUid());
 //        //adInfo.settHouseNameOrNumber(houseInfo.getText().toString());
 
-        Toast.makeText(this, whichFacingSt + drawingAndDining, Toast.LENGTH_SHORT).show();
-        //AdInfo adInfo = new AdInfo(adId, getUid());
-        HashMap<String, Object> adValues = adInfo.toMap();
-        HashMap<String, Object> childUpdates = new HashMap<>();
-        childUpdates.put("/" + DBConstants.adList + "/" + adId, adValues);
-        mDatabase.updateChildren(childUpdates);
+//        Toast.makeText(this, whichFacingSt + drawingAndDining, Toast.LENGTH_SHORT).show();
+//        //AdInfo adInfo = new AdInfo(adId, getUid());
+//        HashMap<String, Object> adValues = adInfo.toMap();
+//        HashMap<String, Object> childUpdates = new HashMap<>();
+//        childUpdates.put("/" + DBConstants.adList + "/" + adId, adValues);
+//        mDatabase.updateChildren(childUpdates);
     }
 
     private void updateUserInfo() {
