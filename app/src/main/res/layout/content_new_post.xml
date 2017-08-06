@@ -17,210 +17,117 @@
             android:id="@+id/map"
             android:name="com.to.let.bd.common.WorkaroundMapFragment"
             android:layout_width="match_parent"
-            android:layout_height="@dimen/new_post_map_height" />
-
-        <TextView
-            android:id="@+id/addressDetails"
-            android:layout_width="match_parent"
-            android:layout_height="wrap_content"
-            android:ellipsize="end"
-            android:gravity="center_vertical"
-            android:maxLines="3" />
-
-        <RadioGroup
-            android:id="@+id/rentType"
-            android:layout_width="match_parent"
-            android:layout_height="wrap_content"
-            android:layout_marginTop="@dimen/new_post_common_padding"
-            android:orientation="horizontal">
-
-            <RadioButton
-                android:id="@+id/family"
-                android:layout_width="wrap_content"
-                android:layout_height="wrap_content"
-                android:layout_weight="1"
-                android:checked="true"
-                android:text="@string/family" />
-
-            <RadioButton
-                android:id="@+id/sublet"
-                android:layout_width="wrap_content"
-                android:layout_height="wrap_content"
-                android:layout_weight="1"
-                android:checked="false"
-                android:text="@string/sublet" />
-
-            <RadioButton
-                android:id="@+id/bachelor"
-                android:layout_width="wrap_content"
-                android:layout_height="wrap_content"
-                android:layout_weight="1"
-                android:checked="false"
-                android:text="@string/bachelor" />
-
-            <RadioButton
-                android:id="@+id/others"
-                android:layout_width="wrap_content"
-                android:layout_height="wrap_content"
-                android:layout_weight="1"
-                android:checked="false"
-                android:text="@string/others" />
-        </RadioGroup>
+            android:layout_height="@dimen/new_post_map_height"
+            android:visibility="gone" />
 
         <LinearLayout
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
-            android:layout_marginTop="@dimen/new_post_common_padding"
-            android:gravity="center_vertical"
-            android:orientation="horizontal">
+            android:orientation="vertical"
+            android:padding="@dimen/new_post_common_padding">
 
-            <android.support.design.widget.TextInputLayout
-                android:layout_width="0dp"
-                android:layout_height="wrap_content"
-                android:layout_weight="2">
-
-                <EditText
-                    android:id="@+id/houseInfo"
-                    android:layout_width="match_parent"
-                    android:layout_height="wrap_content"
-                    android:layout_marginLeft="@dimen/new_post_common_padding"
-                    android:layout_marginStart="@dimen/new_post_common_padding"
-                    android:hint="@string/houseInfo"
-                    android:inputType="text"
-                    android:paddingEnd="@dimen/size_10dp"
-                    android:paddingLeft="@dimen/size_10dp"
-                    android:paddingRight="@dimen/size_10dp"
-                    android:paddingStart="@dimen/size_10dp"
-                    android:singleLine="true" />
-            </android.support.design.widget.TextInputLayout>
-
-            <android.support.design.widget.TextInputLayout
-                android:layout_width="0dp"
-                android:layout_height="wrap_content"
-                android:layout_weight="1">
-
-            <EditText
-                android:id="@+id/whichFloor"
+            <TextView
                 android:layout_width="match_parent"
-                android:hint="@string/floor"
                 android:layout_height="wrap_content"
-                android:minWidth="@dimen/size_50dp" />
-            </android.support.design.widget.TextInputLayout>
+                android:text="@string/full_address"
+                android:textColor="@color/black"
+                android:textSize="@dimen/text_size_16sp"
+                android:textStyle="bold" />
 
-            <Spinner
-                android:id="@+id/whichFacing"
-                android:layout_width="wrap_content"
+            <TextView
+                android:id="@+id/addressDetails"
+                android:layout_width="match_parent"
                 android:layout_height="wrap_content"
-                android:minWidth="@dimen/size_50dp"
-                android:spinnerMode="dropdown"
-                tools:listitem="@layout/common_spinner_sub_item" />
-        </LinearLayout>
+                android:background="@drawable/rectangle_black_border"
+                android:gravity="center_vertical"
+                android:padding="@dimen/size_5dp"
+                android:text="@string/dummy_full_address"
+                android:textColor="@color/black"
+                android:textSize="@dimen/text_size_12sp" />
 
-        <LinearLayout
-            android:layout_width="match_parent"
-            android:layout_height="wrap_content"
-            android:layout_marginTop="@dimen/size_16dp"
-            android:background="@drawable/rounded_button_background_white"
-            android:baselineAligned="false"
-            android:orientation="horizontal"
-            android:padding="@dimen/size_8dp">
+            <TextView
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:layout_marginTop="@dimen/new_post_common_padding"
+                android:text="@string/flat_info"
+                android:textColor="@color/black"
+                android:textSize="@dimen/text_size_16sp"
+                android:textStyle="bold" />
+
+            <include layout="@layout/divider_view" />
+
+            <RadioGroup
+                android:id="@+id/rentType"
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:orientation="horizontal"
+                android:paddingBottom="@dimen/new_post_common_padding">
+
+                <RadioButton
+                    android:id="@+id/family"
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    android:layout_weight="1"
+                    android:text="@string/family" />
+
+                <RadioButton
+                    android:id="@+id/sublet"
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    android:layout_weight="1"
+                    android:text="@string/sublet" />
+
+                <RadioButton
+                    android:id="@+id/bachelor"
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    android:layout_weight="1"
+                    android:text="@string/mess" />
+
+                <RadioButton
+                    android:id="@+id/others"
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    android:layout_weight="1"
+                    android:text="@string/others" />
+            </RadioGroup>
 
             <LinearLayout
-                android:layout_width="0dp"
+                android:id="@+id/roomNumberLay"
+                android:layout_width="match_parent"
                 android:layout_height="wrap_content"
-                android:layout_gravity="center"
-                android:layout_weight="1"
+                android:baselineAligned="false"
                 android:orientation="horizontal">
 
-                <LinearLayout
-                    android:layout_width="match_parent"
-                    android:layout_height="wrap_content"
-                    android:orientation="horizontal">
-
-                    <TextView
-                        android:layout_width="0dp"
-                        android:layout_height="wrap_content"
-                        android:layout_gravity="center"
-                        android:layout_weight="1"
-                        android:text="@string/bed_room"
-                        android:textSize="@dimen/text_size_16sp" />
-
-                    <Spinner
-                        android:id="@+id/bedRoom"
-                        android:layout_width="0dp"
-                        android:layout_height="40dp"
-                        android:layout_gravity="center"
-                        android:layout_weight="1">
-
-                    </Spinner>
-                </LinearLayout>
             </LinearLayout>
 
             <LinearLayout
-                android:layout_width="0dp"
+                android:layout_width="match_parent"
                 android:layout_height="wrap_content"
-                android:layout_gravity="center"
-                android:layout_weight="1"
+                android:layout_marginBottom="@dimen/new_post_common_padding"
+                android:layout_marginTop="@dimen/new_post_common_padding"
+                android:gravity="center_vertical"
                 android:orientation="horizontal">
-
-                <LinearLayout
-                    android:layout_width="match_parent"
-                    android:layout_height="wrap_content"
-                    android:orientation="horizontal">
-
-                    <TextView
-                        android:layout_width="0dp"
-                        android:layout_height="wrap_content"
-                        android:layout_gravity="center"
-                        android:layout_weight="1"
-                        android:text="@string/balcony"
-                        android:textSize="@dimen/text_size_16sp" />
-
-                    <Spinner
-                        android:id="@+id/balcony"
-                        android:layout_width="0dp"
-                        android:layout_height="40dp"
-                        android:layout_gravity="center"
-                        android:layout_weight="1">
-
-                    </Spinner>
-                </LinearLayout>
-            </LinearLayout>
-        </LinearLayout>
-
-        <LinearLayout
-            android:layout_width="match_parent"
-            android:layout_height="wrap_content"
-            android:layout_marginTop="@dimen/size_8dp"
-            android:background="@drawable/rounded_button_background_white"
-            android:baselineAligned="false"
-            android:orientation="horizontal">
-
-            <LinearLayout
-                android:layout_width="0dp"
-                android:layout_height="wrap_content"
-                android:layout_gravity="center"
-                android:layout_weight="1"
-                android:orientation="vertical"
-                android:padding="@dimen/size_8dp">
 
                 <TextView
                     android:layout_width="wrap_content"
                     android:layout_height="wrap_content"
-                    android:text="@string/drawing_dining"
-                    android:textSize="@dimen/text_size_16sp" />
+                    android:text="@string/drawing_dining_facility"
+                    android:textColor="@color/black"
+                    android:textSize="@dimen/text_size_14sp"
+                    android:textStyle="bold" />
 
                 <RadioGroup
                     android:id="@+id/drawingDining"
-                    android:layout_width="match_parent"
+                    android:layout_width="0dp"
                     android:layout_height="wrap_content"
+                    android:layout_weight="1"
                     android:orientation="horizontal">
 
                     <RadioButton
                         android:id="@+id/drawingDiningYes"
                         android:layout_width="wrap_content"
                         android:layout_height="wrap_content"
-                        android:checked="true"
                         android:text="@string/yes"
                         android:textColor="@color/black" />
 
@@ -228,65 +135,15 @@
                         android:id="@+id/drawingDiningNo"
                         android:layout_width="wrap_content"
                         android:layout_height="wrap_content"
-                        android:layout_marginLeft="@dimen/size_16dp"
-                        android:checked="false"
                         android:text="@string/no"
                         android:textColor="@color/black" />
-
                 </RadioGroup>
             </LinearLayout>
 
             <LinearLayout
-                android:layout_width="0dp"
-                android:layout_height="match_parent"
-                android:layout_gravity="bottom"
-                android:layout_weight="1"
-                android:orientation="horizontal">
-
-                <LinearLayout
-                    android:layout_width="match_parent"
-                    android:layout_height="wrap_content"
-                    android:layout_gravity="center"
-                    android:orientation="horizontal">
-
-                    <TextView
-                        android:layout_width="0dp"
-                        android:layout_height="wrap_content"
-                        android:layout_gravity="center"
-                        android:layout_weight="1"
-                        android:text="@string/bathroom"
-                        android:textSize="@dimen/text_size_16sp" />
-
-                    <Spinner
-                        android:id="@+id/bathRoom"
-                        android:layout_width="0dp"
-                        android:layout_height="40dp"
-                        android:layout_gravity="center"
-                        android:layout_weight="1">
-
-                    </Spinner>
-                </LinearLayout>
-            </LinearLayout>
-
-        </LinearLayout>
-
-        <LinearLayout
-            android:layout_width="match_parent"
-            android:layout_height="wrap_content"
-            android:layout_marginTop="@dimen/size_16dp"
-            android:orientation="vertical"
-            android:padding="@dimen/size_8dp">
-
-            <TextView
                 android:layout_width="match_parent"
                 android:layout_height="wrap_content"
-                android:text="@string/others_facility"
-                android:textSize="@dimen/text_size_16sp" />
-
-            <LinearLayout
-                android:layout_width="match_parent"
-                android:layout_height="wrap_content"
-                android:background="@drawable/rounded_button_background_white"
+                android:layout_marginTop="@dimen/new_post_common_padding"
                 android:orientation="vertical">
 
                 <LinearLayout
@@ -299,15 +156,21 @@
                         android:layout_width="0dp"
                         android:layout_height="wrap_content"
                         android:layout_weight="1"
+                        android:checked="true"
+                        android:ellipsize="end"
+                        android:singleLine="true"
                         android:text="@string/water"
                         android:textColor="@color/black" />
 
                     <CheckBox
-                        android:id="@+id/gazCB"
+                        android:id="@+id/gasCB"
                         android:layout_width="0dp"
                         android:layout_height="wrap_content"
                         android:layout_weight="1"
-                        android:text="@string/gaz"
+                        android:checked="true"
+                        android:ellipsize="end"
+                        android:singleLine="true"
+                        android:text="@string/gas"
                         android:textColor="@color/black" />
 
                     <CheckBox
@@ -315,6 +178,9 @@
                         android:layout_width="0dp"
                         android:layout_height="wrap_content"
                         android:layout_weight="1"
+                        android:checked="true"
+                        android:ellipsize="end"
+                        android:singleLine="true"
                         android:text="@string/electricity"
                         android:textColor="@color/black" />
                 </LinearLayout>
@@ -329,6 +195,8 @@
                         android:layout_width="0dp"
                         android:layout_height="wrap_content"
                         android:layout_weight="1"
+                        android:ellipsize="end"
+                        android:singleLine="true"
                         android:text="@string/lift"
                         android:textColor="@color/black" />
 
@@ -337,155 +205,303 @@
                         android:layout_width="0dp"
                         android:layout_height="wrap_content"
                         android:layout_weight="1"
+                        android:ellipsize="end"
+                        android:singleLine="true"
                         android:text="@string/generator"
                         android:textColor="@color/black" />
 
-                    <View
+                    <CheckBox
+                        android:id="@+id/securityGuardCB"
                         android:layout_width="0dp"
                         android:layout_height="wrap_content"
-                        android:layout_weight="1" />
+                        android:layout_weight="1"
+                        android:ellipsize="end"
+                        android:singleLine="true"
+                        android:text="@string/security_guard"
+                        android:textColor="@color/black" />
                 </LinearLayout>
             </LinearLayout>
-        </LinearLayout>
 
-        <LinearLayout
-            android:layout_width="match_parent"
-            android:layout_height="wrap_content"
-            android:layout_marginTop="@dimen/size_8dp"
-            android:background="@drawable/rounded_button_background_white"
-            android:baselineAligned="false"
-            android:orientation="horizontal"
-            android:padding="@dimen/size_8dp">
+            <TextView
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:layout_marginTop="@dimen/new_post_common_padding"
+                android:text="@string/additional_info"
+                android:textColor="@color/black"
+                android:textSize="@dimen/text_size_16sp"
+                android:textStyle="bold" />
+
+            <include layout="@layout/divider_view" />
 
             <LinearLayout
-                android:layout_width="0dp"
+                android:id="@+id/flatAdditionalInfoLay"
+                android:layout_width="match_parent"
                 android:layout_height="wrap_content"
-                android:layout_weight="1"
+                android:baselineAligned="false"
+                android:gravity="center_vertical"
                 android:orientation="horizontal">
 
                 <android.support.design.widget.TextInputLayout
                     android:layout_width="0dp"
                     android:layout_height="wrap_content"
+                    android:layout_marginEnd="@dimen/size_10dp"
+                    android:layout_marginRight="@dimen/size_10dp"
                     android:layout_weight="2">
+
+                    <EditText
+                        android:id="@+id/houseInfo"
+                        android:layout_width="match_parent"
+                        android:layout_height="wrap_content"
+                        android:hint="@string/houseInfo"
+                        android:imeActionId="@+id/whichFloor"
+                        android:imeOptions="actionNext"
+                        android:inputType="textPersonName"
+                        android:singleLine="true"
+                        android:textColor="@color/black" />
+                </android.support.design.widget.TextInputLayout>
+
+                <android.support.design.widget.TextInputLayout
+                    android:layout_width="0dp"
+                    android:layout_height="wrap_content"
+                    android:layout_weight="1">
+
+                    <EditText
+                        android:id="@+id/whichFloor"
+                        android:layout_width="match_parent"
+                        android:layout_height="wrap_content"
+                        android:ems="2"
+                        android:hint="@string/floor"
+                        android:imeActionId="@+id/totalSpace"
+                        android:imeOptions="actionNext"
+                        android:inputType="numberDecimal"
+                        android:maxLength="2"
+                        android:maxLines="1"
+                        android:minWidth="@dimen/size_50dp"
+                        android:singleLine="true"
+                        android:textColor="@color/black" />
+                </android.support.design.widget.TextInputLayout>
+            </LinearLayout>
+
+            <LinearLayout
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:layout_marginTop="@dimen/new_post_common_padding"
+                android:baselineAligned="false"
+                android:gravity="center"
+                android:orientation="horizontal">
+
+                <android.support.design.widget.TextInputLayout
+                    android:layout_width="0dp"
+                    android:layout_height="wrap_content"
+                    android:layout_weight="1">
 
                     <EditText
                         android:id="@+id/totalSpace"
                         android:layout_width="match_parent"
                         android:layout_height="wrap_content"
+                        android:ems="4"
                         android:hint="@string/total_space"
-                        android:imeActionId="@+id/email"
-                        android:imeOptions="actionUnspecified"
-                        android:inputType="number"
+                        android:imeActionId="@+id/totalRent"
+                        android:imeOptions="actionNext"
+                        android:inputType="numberDecimal"
+                        android:maxLength="4"
                         android:maxLines="1"
                         android:singleLine="true" />
 
                 </android.support.design.widget.TextInputLayout>
 
                 <TextView
-                    android:layout_width="0dp"
+                    android:layout_width="wrap_content"
                     android:layout_height="wrap_content"
-                    android:layout_gravity="center"
-                    android:layout_weight="1"
-                    android:text="@string/sqft" />
-            </LinearLayout>
-
-            <LinearLayout
-                android:layout_width="0dp"
-                android:layout_height="wrap_content"
-                android:layout_gravity="center"
-                android:layout_weight="1"
-                android:orientation="horizontal">
+                    android:layout_marginEnd="@dimen/size_10dp"
+                    android:layout_marginLeft="@dimen/new_post_common_padding"
+                    android:layout_marginRight="@dimen/size_10dp"
+                    android:layout_marginStart="@dimen/new_post_common_padding"
+                    android:text="@string/sqft"
+                    android:textColor="@color/black"
+                    android:textSize="@dimen/text_size_14sp"
+                    android:textStyle="bold" />
 
                 <android.support.design.widget.TextInputLayout
                     android:layout_width="0dp"
                     android:layout_height="wrap_content"
-                    android:layout_weight="2">
+                    android:layout_weight="1">
 
                     <EditText
                         android:id="@+id/totalRent"
                         android:layout_width="match_parent"
                         android:layout_height="wrap_content"
+                        android:ems="6"
                         android:hint="@string/rent"
-                        android:imeActionId="@+id/email"
-                        android:imeOptions="actionUnspecified"
-                        android:inputType="number"
+                        android:imeActionId="@+id/emailAddress"
+                        android:imeOptions="actionNext"
+                        android:inputType="numberDecimal"
+                        android:maxLength="6"
                         android:maxLines="1"
                         android:singleLine="true" />
 
                 </android.support.design.widget.TextInputLayout>
 
                 <TextView
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    android:layout_marginLeft="@dimen/new_post_common_padding"
+                    android:layout_marginStart="@dimen/new_post_common_padding"
+                    android:text="@string/bdt"
+                    android:textColor="@color/black"
+                    android:textSize="@dimen/text_size_14sp"
+                    android:textStyle="bold" />
+            </LinearLayout>
+
+            <LinearLayout
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:layout_marginBottom="@dimen/new_post_common_padding"
+                android:layout_marginTop="@dimen/new_post_common_padding"
+                android:gravity="center_vertical"
+                android:orientation="horizontal">
+
+                <TextView
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    android:singleLine="true"
+                    android:text="@string/include_utility"
+                    android:textColor="@color/black"
+                    android:textSize="@dimen/text_size_14sp"
+                    android:textStyle="bold" />
+
+                <RadioGroup
+                    android:id="@+id/utilityBill"
                     android:layout_width="0dp"
                     android:layout_height="wrap_content"
-                    android:layout_gravity="center"
                     android:layout_weight="1"
-                    android:text="@string/bdt" />
-            </LinearLayout>
-        </LinearLayout>
+                    android:orientation="horizontal">
 
-        <LinearLayout
-            android:layout_width="match_parent"
-            android:layout_height="wrap_content"
-            android:layout_marginTop="@dimen/size_8dp"
-            android:background="@drawable/rounded_button_background_white"
-            android:orientation="horizontal"
-            android:padding="@dimen/size_8dp">
+                    <RadioButton
+                        android:id="@+id/utilityBillIncluded"
+                        android:layout_width="wrap_content"
+                        android:layout_height="wrap_content"
+                        android:text="@string/yes"
+                        android:textColor="@color/black" />
+
+                    <RadioButton
+                        android:id="@+id/utilityBillNotIncluded"
+                        android:layout_width="wrap_content"
+                        android:layout_height="wrap_content"
+                        android:text="@string/no"
+                        android:textColor="@color/black" />
+                </RadioGroup>
+
+                <android.support.design.widget.TextInputLayout
+                    android:id="@+id/totalUtilityTIL"
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content">
+
+                    <EditText
+                        android:id="@+id/totalUtility"
+                        android:layout_width="match_parent"
+                        android:layout_height="wrap_content"
+                        android:ems="4"
+                        android:hint="@string/utility_bill"
+                        android:imeActionId="@+id/emailAddress"
+                        android:imeOptions="actionNext"
+                        android:inputType="numberDecimal"
+                        android:maxLength="4"
+                        android:maxLines="1"
+                        android:singleLine="true" />
+
+                </android.support.design.widget.TextInputLayout>
+
+                <TextView
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    android:layout_marginLeft="@dimen/new_post_common_padding"
+                    android:layout_marginStart="@dimen/new_post_common_padding"
+                    android:text="@string/bdt"
+                    android:textColor="@color/black"
+                    android:textSize="@dimen/text_size_14sp"
+                    android:textStyle="bold" />
+            </LinearLayout>
+
+            <LinearLayout
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:layout_marginTop="@dimen/new_post_common_padding"
+                android:gravity="center_vertical"
+                android:orientation="horizontal">
+
+                <TextView
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    android:layout_marginEnd="@dimen/size_20dp"
+                    android:layout_marginRight="@dimen/size_20dp"
+                    android:text="@string/please_select_rent_date"
+                    android:textColor="@color/black"
+                    android:textSize="@dimen/text_size_14sp"
+                    android:textStyle="bold" />
+
+                <TextView
+                    android:id="@+id/rentDate"
+                    android:layout_width="0dp"
+                    android:layout_height="wrap_content"
+                    android:layout_weight="1"
+                    android:background="@drawable/rectangle_black_border"
+                    android:ellipsize="end"
+                    android:gravity="center"
+                    android:maxLines="2"
+                    android:padding="@dimen/new_post_common_padding"
+                    android:text="@string/select_date"
+                    android:textAllCaps="false"
+                    android:textColor="@color/black"
+                    android:textSize="@dimen/text_size_14sp"
+                    android:textStyle="bold" />
+
+            </LinearLayout>
 
             <TextView
-                android:layout_width="0dp"
+                android:layout_width="match_parent"
                 android:layout_height="wrap_content"
-                android:layout_weight="1"
-                android:text="@string/rent_from" />
+                android:layout_marginTop="@dimen/new_post_common_padding"
+                android:text="@string/contact_info"
+                android:textColor="@color/black"
+                android:textSize="@dimen/text_size_16sp"
+                android:textStyle="bold" />
 
-            <Button
-                android:id="@+id/setDate"
-                android:layout_width="0dp"
-                android:layout_height="wrap_content"
-                android:layout_weight="2"
-                android:padding="@dimen/size_8dp"
-                android:textAllCaps="false"
-                android:text="@string/select_date" />
+            <include layout="@layout/divider_view" />
 
+            <android.support.design.widget.TextInputLayout
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content">
+
+                <AutoCompleteTextView
+                    android:id="@+id/emailAddress"
+                    android:layout_width="match_parent"
+                    android:layout_height="wrap_content"
+                    android:hint="@string/emailAddress"
+                    android:imeActionId="@+id/mobileNumber"
+                    android:imeOptions="actionNext"
+                    android:inputType="textEmailAddress"
+                    android:maxLines="1"
+                    android:singleLine="true" />
+            </android.support.design.widget.TextInputLayout>
+
+            <android.support.design.widget.TextInputLayout
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content">
+
+                <EditText
+                    android:id="@+id/mobileNumber"
+                    android:layout_width="match_parent"
+                    android:layout_height="wrap_content"
+                    android:ems="14"
+                    android:hint="@string/phone_number"
+                    android:imeOptions="actionDone"
+                    android:inputType="phone"
+                    android:maxLength="14"
+                    android:maxLines="1"
+                    android:singleLine="true"
+                    android:textColor="#000000" />
+            </android.support.design.widget.TextInputLayout>
         </LinearLayout>
-
-        <TextView
-            android:layout_width="match_parent"
-            android:layout_height="wrap_content"
-            android:text="@string/contact"
-            android:textColor="@color/black"
-            android:textSize="@dimen/text_size_20sp"
-            android:textStyle="bold" />
-
-        <android.support.design.widget.TextInputLayout
-            android:layout_width="match_parent"
-            android:layout_height="wrap_content">
-
-            <AutoCompleteTextView
-                android:id="@+id/emailAddress"
-                android:layout_width="match_parent"
-                android:layout_height="wrap_content"
-                android:hint="@string/emailAddress"
-                android:imeOptions="actionNext"
-                android:inputType="textEmailAddress"
-                android:maxLines="1"
-                android:singleLine="true" />
-        </android.support.design.widget.TextInputLayout>
-
-        <android.support.design.widget.TextInputLayout
-            android:layout_width="match_parent"
-            android:layout_height="wrap_content">
-
-            <EditText
-                android:id="@+id/phoneNumber"
-                android:layout_width="match_parent"
-                android:layout_height="wrap_content"
-                android:hint="@string/phone_number"
-                android:imeActionId="@+id/email"
-                android:imeOptions="actionDone"
-                android:inputType="phone"
-                android:maxLines="1"
-                android:singleLine="true"
-                android:textColor="#000000" />
-        </android.support.design.widget.TextInputLayout>
     </LinearLayout>
 </ScrollView>

@@ -35,19 +35,21 @@
     <string name="rent_type">Rent type:</string>
     <string name="family">Family</string>
     <string name="sublet">Sublet</string>
-    <string name="bachelor">Bachelor</string>
+    <string name="mess">Mess member</string>
     <string name="others">Others</string>
-    <string name="total_space">Total Space: </string>
+    <string name="total_space">Total space</string>
     <string name="rent">Rent: </string>
     <string name="bed_room">Bed Room: </string>
     <string name="drawing_dining">Drawing Dining</string>
+    <string name="drawing_dining_facility">Have drawing dining facility?</string>
+    <string name="include_utility">Include utility bill?</string>
     <string name="yes">Yes</string>
     <string name="no">No</string>
     <string name="bathroom">Bathroom</string>
     <string name="balcony">Balcony</string>
     <string name="others_facility">Others Facility: </string>
     <string name="water">Water</string>
-    <string name="gaz">Gaz</string>
+    <string name="gas">Gas(Supply)</string>
     <string name="electricity">Electricity</string>
     <string name="lift">Lift</string>
     <string name="generator">Generator</string>
@@ -63,8 +65,7 @@
 
     <string name="submit">Submit</string>
     <string name="contact">Contact</string>
-    <string name="belcony">Belcony</string>
-
+    <string name="contact_info">Contact information</string>
 
     <string name="pick_all_photo">All Photos</string>
     <string name="pick_photos">Photo</string>
@@ -80,4 +81,17 @@
     <string name="image_description">Image description</string>
     <string name="user_profile_pic">Profile pic</string>
     <string name="exit">Exit</string>
+    <string name="mainImage">Ad main image</string>
+    <string name="adFavIcon">Ad favourite icon</string>
+    <string name="additional_info">Additional information:</string>
+    <string name="flat_info">Flat information:</string>
+    <string name="dummy_full_address">Dummy full address</string>
+    <string name="full_address">Full address:</string>
+    <string name="security_guard">Security guard</string>
+    <string name="please_select_rent_date">Please select rent date:</string>
+    <string name="facing">Facing</string>
+    <string name="flat_face">Flate face</string>
+    <string name="flat">Flat</string>
+    <string name="utility_bill">Utility bill</string>
+    <string name="error_valid_mobile_number">Please insert valid mobile number.</string>
 </resources>

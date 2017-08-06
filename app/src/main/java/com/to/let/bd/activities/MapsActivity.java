@@ -243,7 +243,7 @@ public class MapsActivity extends BaseActivity
 
     @Override
     public View getInfoContents(Marker marker) {
-        // Inflate the layouts for the info window, title and snippet.
+        // Inflate the layouts for the info window, roomFaceTitle and snippet.
         View infoWindow = getLayoutInflater().inflate(R.layout.custom_info_contents,
                 (FrameLayout) findViewById(R.id.map), false);
 
@@ -408,7 +408,7 @@ public class MapsActivity extends BaseActivity
     private class CustomInfoWindowAdapter implements GoogleMap.InfoWindowAdapter {
 
         // These are both viewgroups containing an ImageView with id "badge" and two TextViews with id
-        // "title" and "snippet".
+        // "roomFaceTitle" and "snippet".
         private final View mWindow;
 
         private final View mContents;

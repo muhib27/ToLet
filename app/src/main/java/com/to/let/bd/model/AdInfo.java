@@ -47,6 +47,7 @@ public class AdInfo {
     private String userId;
 
     private ArrayList<ImageInfo> images;
+    private String map;
 
     public AdInfo() {
 
@@ -370,6 +371,14 @@ public class AdInfo {
 
     public void setImages(ArrayList<ImageInfo> images) {
         this.images = images;
+    }
+
+    public String getMap() {
+        return map;
+    }
+
+    public void setMap(String map) {
+        this.map = map;
     }
 
     // [START post_to_map]

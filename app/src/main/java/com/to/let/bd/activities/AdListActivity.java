@@ -13,6 +13,7 @@ import android.support.v7.app.ActionBarDrawerToggle;
 import android.support.v7.widget.DefaultItemAnimator;
 import android.support.v7.widget.LinearLayoutManager;
 import android.support.v7.widget.RecyclerView;
+import android.support.v7.widget.StaggeredGridLayoutManager;
 import android.support.v7.widget.Toolbar;
 import android.view.Menu;
 import android.view.MenuItem;
@@ -331,13 +332,20 @@ public class AdListActivity extends BaseActivity
     private ArrayList<AdInfo> adList = new ArrayList<>();
     private RecyclerView adRecyclerView;
     private AdAdapter adAdapter;
+    private StaggeredGridLayoutManager staggeredGridLayoutManager;
 
     private void init() {
         adRecyclerView = (RecyclerView) findViewById(R.id.adRecyclerView);
-        adRecyclerView.setItemAnimator(new DefaultItemAnimator());
-        LinearLayoutManager layoutManager = new LinearLayoutManager(this);
-        layoutManager.setOrientation(LinearLayoutManager.VERTICAL);
-        adRecyclerView.setLayoutManager(layoutManager);
+        adRecyclerView.setHasFixedSize(true);
+
+        staggeredGridLayoutManager = new StaggeredGridLayoutManager(2, StaggeredGridLayoutManager.VERTICAL);
+        staggeredGridLayoutManager.setAutoMeasureEnabled(true);
+        adRecyclerView.setLayoutManager(staggeredGridLayoutManager);
+
+//        adRecyclerView.setItemAnimator(new DefaultItemAnimator());
+//        LinearLayoutManager layoutManager = new LinearLayoutManager(this);
+//        layoutManager.setOrientation(LinearLayoutManager.VERTICAL);
+//        adRecyclerView.setLayoutManager(layoutManager);
 
 //        adRecyclerView.addItemDecoration(new SpaceItemDecoration(PickUtils.getInstance(this).dp2px(PickConfig.ITEM_SPACE), pickData.getSpanCount()));
 //        adRecyclerView.addOnScrollListener(scrollListener);

@@ -9,29 +9,35 @@ import android.location.Address;
 import android.location.Geocoder;
 import android.location.Location;
 import android.os.Bundle;
+import android.os.Handler;
+import android.support.annotation.IdRes;
 import android.support.annotation.NonNull;
 import android.support.design.widget.FloatingActionButton;
-import android.support.design.widget.Snackbar;
+import android.support.design.widget.TextInputLayout;
 import android.support.v4.app.ActivityCompat;
 import android.support.v4.content.ContextCompat;
+import android.support.v7.app.ActionBar;
+import android.support.v7.widget.PopupMenu;
 import android.support.v7.widget.Toolbar;
+import android.text.Editable;
 import android.text.SpannableString;
+import android.text.TextWatcher;
 import android.text.style.ForegroundColorSpan;
+import android.view.KeyEvent;
+import android.view.LayoutInflater;
+import android.view.MenuItem;
 import android.view.View;
+import android.view.ViewGroup;
 import android.widget.AdapterView;
-import android.widget.ArrayAdapter;
-import android.widget.Button;
 import android.widget.CheckBox;
 import android.widget.DatePicker;
 import android.widget.EditText;
 import android.widget.FrameLayout;
 import android.widget.ImageView;
-import android.widget.RadioButton;
+import android.widget.LinearLayout;
 import android.widget.RadioGroup;
 import android.widget.ScrollView;
-import android.widget.Spinner;
 import android.widget.TextView;
-import android.widget.Toast;
 
 import com.google.android.gms.auth.api.Auth;
 import com.google.android.gms.auth.api.signin.GoogleSignInAccount;
@@ -64,14 +70,16 @@ import com.google.firebase.database.FirebaseDatabase;
 import com.to.let.bd.R;
 import com.to.let.bd.common.BaseActivity;
 import com.to.let.bd.common.WorkaroundMapFragment;
-import com.to.let.bd.model.AdInfo;
+import com.to.let.bd.utils.AppConstants;
 import com.to.let.bd.utils.DBConstants;
 import com.to.let.bd.utils.SmartToLetConstants;
 
 import java.io.IOException;
+import java.text.ParseException;
 import java.text.SimpleDateFormat;
 import java.util.ArrayList;
 import java.util.Calendar;
+import java.util.Date;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Locale;
@@ -88,17 +96,11 @@ public class NewAdActivity extends BaseActivity
     private static final String TAG = NewAdActivity.class.getSimpleName();
     private GoogleMap googleMap;
     private CameraPosition mCameraPosition;
-    private EditText totalSpace, whichFloor, houseInfo, totalRent;
-    private Spinner bedRoom, balcony, bathRoom, whichFacing;
-    ArrayAdapter<String> bedRoomAdapter, balconyAdapter, bathRoomAdapter, floorAdapter, facingAdapter;
-    private CheckBox waterCB, gazCB, electricityCB, liftCB, generatorCB;
+    //    private Spinner bedRoom, balcony, bathRoom, whichFacing;
+    private CheckBox waterCB, gasCB, electricityCB, liftCB, generatorCB, securityGuardCB;
 
-    private DatePickerDialog rentFromDialog;
-    private SimpleDateFormat dateFormatter;
-    Calendar newCalendar = Calendar.getInstance();
-    private Button setDate;
-    private RadioGroup drawingDining, rentType;
-    private RadioButton drawingDiningYes, drawingDiningNo, checkedRadioButton, family, sublet, bachelor, others;
+    private TextView rentDate;
+    private LinearLayout roomNumberLay;
     private boolean drawiningDiningExist, waterExist, gazExist, electricityExist, liftExist, generatorExist;
 
     // The entry point to Google Play services, used by the Places API and Fused Location Provider.
@@ -106,7 +108,7 @@ public class NewAdActivity extends BaseActivity
 
     // A default location (Sydney, Australia) and default zoom to use when location permission is
     // not granted.
-    private LatLng mDefaultLatLng = new LatLng(-33.8523341, 151.2106085);
+    private LatLng mDefaultLatLng = new LatLng(23.8103, 90.4125);
     private static final int DEFAULT_ZOOM = 15;
     private static final int PERMISSIONS_REQUEST_CODE = 1;
 //    private boolean mLocationPermissionGranted;
@@ -119,6 +121,37 @@ public class NewAdActivity extends BaseActivity
     private static final String KEY_CAMERA_POSITION = "camera_position";
     private static final String KEY_LOCATION = "location";
 
+    @Override
+    protected void onCreate(Bundle savedInstanceState) {
+        super.onCreate(savedInstanceState);
+        retrieveSavedInstanceState(savedInstanceState);
+        setContentView(R.layout.activity_new_post);
+
+        initFirebase();
+        initView();
+        addRoomFaceType();
+        addRoomNumberView();
+        setRentDate(getDefaultRentMonth());
+        //defaultSetup("family");
+
+        // Configure Google Sign In
+        GoogleSignInOptions gso = new GoogleSignInOptions.Builder(GoogleSignInOptions.DEFAULT_SIGN_IN)
+                .requestIdToken(getString(R.string.default_web_client_id))
+                .requestEmail()
+                .build();
+
+        // Build the Play services client for use by the Fused Location Provider and the Places API.
+        // Use the addApi() method to request the Google Places API and the Fused Location Provider.
+        mGoogleApiClient = new GoogleApiClient.Builder(this)
+                .enableAutoManage(this /* FragmentActivity */,
+                        this /* OnConnectionFailedListener */)
+                .addConnectionCallbacks(this)
+                .addApi(LocationServices.API)
+                .addApi(Auth.GOOGLE_SIGN_IN_API, gso)
+                .build();
+        mGoogleApiClient.connect();
+    }
+
     private void retrieveSavedInstanceState(Bundle savedInstanceState) {
         // Retrieve location and camera position from saved instance state.
         if (savedInstanceState != null) {
@@ -128,16 +161,26 @@ public class NewAdActivity extends BaseActivity
     }
 
     private FloatingActionButton fab;
-    private Toolbar toolbar;
     private TextView addressDetails;
     private ScrollView mapScrollView;
-    private EditText emailAddress, phoneNumber;
+    private EditText emailAddress, mobileNumber;
     private String drawingAndDining = "yes";
-    private int flatTypeInt= 1;
+    private int flatType = 1;
+    private LinearLayout flatAdditionalInfoLay;
+    private EditText totalSpace, whichFloor, houseInfo, totalRent, totalUtility;
+    private RadioGroup drawingDining, rentType, utilityBill;
+    private TextInputLayout totalUtilityTIL;
 
-    private void init() {
-        toolbar = (Toolbar) findViewById(R.id.toolbar);
+    private void initView() {
+        Toolbar toolbar = (Toolbar) findViewById(R.id.toolbar);
         setSupportActionBar(toolbar);
+
+        ActionBar actionBar = getSupportActionBar();
+        if (actionBar != null) {
+            actionBar.setDisplayHomeAsUpEnabled(true);
+            actionBar.setDisplayShowTitleEnabled(true);
+            actionBar.setTitle(R.string.post_your_add);
+        }
 
         fab = (FloatingActionButton) findViewById(R.id.fab);
         fab.setOnClickListener(this);
@@ -146,7 +189,24 @@ public class NewAdActivity extends BaseActivity
         addressDetails = (TextView) findViewById(R.id.addressDetails);
 
         emailAddress = (EditText) findViewById(R.id.emailAddress);
-        phoneNumber = (EditText) findViewById(R.id.phoneNumber);
+        mobileNumber = (EditText) findViewById(R.id.mobileNumber);
+        mobileNumber.addTextChangedListener(new TextWatcher() {
+            @Override
+            public void beforeTextChanged(CharSequence charSequence, int i, int i1, int i2) {
+
+            }
+
+            @Override
+            public void onTextChanged(CharSequence charSequence, int i, int i1, int i2) {
+
+            }
+
+            @Override
+            public void afterTextChanged(Editable editable) {
+                handler.removeCallbacks(mobileNumberValidation);
+                handler.postDelayed(mobileNumberValidation, AppConstants.textWatcherDelay);
+            }
+        });
 
         if (firebaseUser != null) {
             if (firebaseUser.isAnonymous()) {
@@ -161,7 +221,62 @@ public class NewAdActivity extends BaseActivity
                 }
             }
         }
+
+        rentType = (RadioGroup) findViewById(R.id.rentType);
+        drawingDining = (RadioGroup) findViewById(R.id.drawingDining);
+        utilityBill = (RadioGroup) findViewById(R.id.utilityBill);
+
+        roomNumberLay = (LinearLayout) findViewById(R.id.roomNumberLay);
+
+//        bedRoom = (Spinner) findViewById(R.id.bedRoom);
+//        balcony = (Spinner) findViewById(R.id.balcony);
+//        bathRoom = (Spinner) findViewById(R.id.bathRoom);
+//        whichFacing = (Spinner) findViewById(R.id.whichFacing);
+
+        flatAdditionalInfoLay = (LinearLayout) findViewById(R.id.flatAdditionalInfoLay);
+        houseInfo = (EditText) findViewById(R.id.houseInfo);
+        whichFloor = (EditText) findViewById(R.id.whichFloor);
+        totalSpace = (EditText) findViewById(R.id.totalSpace);
+        totalRent = (EditText) findViewById(R.id.totalRent);
+
+        totalUtilityTIL = (TextInputLayout) findViewById(R.id.totalUtilityTIL);
+        totalUtility = (EditText) findViewById(R.id.totalUtility);
+
+        totalUtility.setOnEditorActionListener(new TextView.OnEditorActionListener() {
+            @Override
+            public boolean onEditorAction(TextView textView, int id, KeyEvent keyEvent) {
+                if (!(emailAddress.getText() == null || emailAddress.getText().toString().isEmpty()
+                        || emailAddress.getText().toString().trim().isEmpty())) {
+                    mobileNumber.requestFocus();
+                    return true;
+                }
+                return false;
+            }
+        });
+
+        waterCB = (CheckBox) findViewById(R.id.waterCB);
+        gasCB = (CheckBox) findViewById(R.id.gasCB);
+        electricityCB = (CheckBox) findViewById(R.id.electricityCB);
+        liftCB = (CheckBox) findViewById(R.id.liftCB);
+        generatorCB = (CheckBox) findViewById(R.id.generatorCB);
+        securityGuardCB = (CheckBox) findViewById(R.id.securityGuardCB);
+
+        rentDate = (TextView) findViewById(R.id.rentDate);
+        rentDate.setOnClickListener(this);
+
+        defaultCheck();
     }
+
+    private Handler handler = new Handler();
+    private Runnable mobileNumberValidation = new Runnable() {
+        @Override
+        public void run() {
+            mobileNumber.setError(null);
+            if (!AppConstants.isMobileNumberValid(mobileNumber.getText().toString())) {
+                mobileNumber.setError(getString(R.string.error_valid_mobile_number));
+            }
+        }
+    };
 
     @Override
     public void onFocusChange(View view, boolean b) {
@@ -184,169 +299,76 @@ public class NewAdActivity extends BaseActivity
         });
     }
 
-    @Override
-    protected void onCreate(Bundle savedInstanceState) {
-        super.onCreate(savedInstanceState);
-        retrieveSavedInstanceState(savedInstanceState);
-        setContentView(R.layout.activity_new_post);
-
-        initFirebase();
-        init();
-        initialize();
-        addItemsOnSpinner();
-        setDateTimeField();
-        //defaultSetup("family");
-
-        // Configure Google Sign In
-        GoogleSignInOptions gso = new GoogleSignInOptions.Builder(GoogleSignInOptions.DEFAULT_SIGN_IN)
-                .requestIdToken(getString(R.string.default_web_client_id))
-                .requestEmail()
-                .build();
-
-        Toolbar toolbar = (Toolbar) findViewById(R.id.toolbar);
-        setSupportActionBar(toolbar);
-
-        FloatingActionButton fab = (FloatingActionButton) findViewById(R.id.fab);
-        fab.setOnClickListener(new View.OnClickListener() {
-            @Override
-            public void onClick(View view) {
-                submitAd();
-//                Snackbar.make(view, "Replace with your own action", Snackbar.LENGTH_LONG)
-//                        .setAction("Action", null).show();
-            }
-        });
-
-        // Build the Play services client for use by the Fused Location Provider and the Places API.
-        // Use the addApi() method to request the Google Places API and the Fused Location Provider.
-        mGoogleApiClient = new GoogleApiClient.Builder(this)
-                .enableAutoManage(this /* FragmentActivity */,
-                        this /* OnConnectionFailedListener */)
-                .addConnectionCallbacks(this)
-                .addApi(LocationServices.API)
-                .addApi(Auth.GOOGLE_SIGN_IN_API, gso)
-                .build();
-        mGoogleApiClient.connect();
-    }
-
-    public void initialize() {
-        rentType = (RadioGroup) findViewById(R.id.rentType);
-        family = (RadioButton) findViewById(R.id.family);
-        sublet = (RadioButton) findViewById(R.id.sublet);
-        bachelor = (RadioButton) findViewById(R.id.bachelor);
-        others = (RadioButton) findViewById(R.id.others);
-
-        drawingDining = (RadioGroup) findViewById(R.id.drawingDining);
-        drawingDiningYes = (RadioButton) findViewById(R.id.drawingDiningYes);
-        drawingDiningNo = (RadioButton) findViewById(R.id.drawingDiningNo);
-
-        bedRoom = (Spinner) findViewById(R.id.bedRoom);
-        balcony = (Spinner) findViewById(R.id.balcony);
-        bathRoom = (Spinner) findViewById(R.id.bathRoom);
-        whichFacing = (Spinner) findViewById(R.id.whichFacing);
-
-        houseInfo = (EditText) findViewById(R.id.houseInfo);
-        whichFloor = (EditText) findViewById(R.id.whichFloor);
-        totalSpace = (EditText) findViewById(R.id.totalSpace);
-        totalRent = (EditText) findViewById(R.id.totalRent);
-
-        waterCB = (CheckBox) findViewById(R.id.waterCB);
-        gazCB = (CheckBox) findViewById(R.id.gazCB);
-        electricityCB = (CheckBox) findViewById(R.id.electricityCB);
-        liftCB = (CheckBox) findViewById(R.id.liftCB);
-        generatorCB = (CheckBox) findViewById(R.id.generatorCB);
-
-        setDate = (Button) findViewById(R.id.setDate);
-
-        bedRoom.setOnItemSelectedListener(this);
-        balcony.setOnItemSelectedListener(this);
-        bathRoom.setOnItemSelectedListener(this);
-        //whichFloor.setOnItemSelectedListener(this);
-        whichFacing.setOnItemSelectedListener(this);
-
-        rentTypeCheck();
-
-        defaultSetup("family");
-        drawiningDiningExist = true;
-
-        checkedRadioButton = (RadioButton) drawingDining.findViewById(drawingDining.getCheckedRadioButtonId());
-        drawingDining.setOnCheckedChangeListener(new RadioGroup.OnCheckedChangeListener() {
-            public void onCheckedChanged(RadioGroup group, int checkedId) {
-                // This will get the radiobutton that has changed in its check state
-                RadioButton checkedRadioButton = (RadioButton) group.findViewById(checkedId);
-                // This puts the value (true/false) into the variable
-                boolean isChecked = checkedRadioButton.isChecked();
-                // If the radiobutton that has changed in check state is now checked...
-                if (isChecked) {
-                    drawingAndDining = checkedRadioButton.getText().toString();
-                    showToast("Checked:" + checkedRadioButton.getText());
-                    switch (checkedRadioButton.getId()) {
-                        case R.id.drawingDiningYes:
-                            drawiningDiningExist = true;
-                            break;
-                        case R.id.drawingDiningNo:
-                            drawiningDiningExist= false;
-                            break;
-                    }
-                }
-            }
-        });
-    }
-
     String rentTypeSelected = "family";
 
-    public void rentTypeCheck() {
-        rentType.setOnCheckedChangeListener(new RadioGroup.OnCheckedChangeListener() {
-            public void onCheckedChanged(RadioGroup group, int checkedId) {
-                // This will get the radiobutton that has changed in its check state
-                RadioButton checkedRadioButton = (RadioButton) group.findViewById(checkedId);
-                // This puts the value (true/false) into the variable
-                boolean isChecked = checkedRadioButton.isChecked();
-                // If the radiobutton that has changed in check state is now checked...
-                if (isChecked) {
-                    switch (checkedRadioButton.getId()) {
-                        case R.id.family:
-                            rentTypeSelected = "family";
-                            flatTypeInt = 1;
-                            defaultSetup(rentTypeSelected);
+    public void defaultCheck() {
+        rentType.check(R.id.family);
+        drawingDining.check(R.id.drawingDiningYes);
+        utilityBill.check(R.id.utilityBillNotIncluded);
 
-                            break;
-                        case R.id.sublet:
-                            rentTypeSelected = "sublet";
-                            flatTypeInt = 2;
-                            defaultSetup(rentTypeSelected);
-                            break;
-                        case R.id.bachelor:
-                            rentTypeSelected = "bachelor";
-                            flatTypeInt = 3;
-                            defaultSetup(rentTypeSelected);
-                            break;
-                        case R.id.others:
-                            rentTypeSelected = "others";
-                            flatTypeInt = 4;
-                            defaultSetup(rentTypeSelected);
-                            break;
-
-                    }
-                    showToast("Checked:" + checkedRadioButton.getText());
+        utilityBill.setOnCheckedChangeListener(new RadioGroup.OnCheckedChangeListener() {
+            @Override
+            public void onCheckedChanged(RadioGroup radioGroup, @IdRes int checkedId) {
+                if (checkedId == R.id.utilityBillIncluded) {
+                    totalUtilityTIL.setVisibility(View.GONE);
+                } else {
+                    totalUtilityTIL.setVisibility(View.VISIBLE);
                 }
             }
         });
+
+
+//        ((RadioButton) findViewById(rentType.getCheckedRadioButtonId())).setChecked(true);
+//        rentType.setOnCheckedChangeListener(new RadioGroup.OnCheckedChangeListener() {
+//            public void onCheckedChanged(RadioGroup group, int checkedId) {
+//                // This will get the radio button that has changed in its check state
+//                RadioButton checkedRadioButton = (RadioButton) group.findViewById(checkedId);
+//                // This puts the value (true/false) into the variable
+//                boolean isChecked = checkedRadioButton.isChecked();
+//                // If the radio button that has changed in check state is now checked...
+//                if (isChecked) {
+//                    switch (checkedRadioButton.getId()) {
+//                        case R.id.family:
+//                            rentTypeSelected = "family";
+//                            flatType = 1;
+//                            defaultSetup(rentTypeSelected);
+//
+//                            break;
+//                        case R.id.sublet:
+//                            rentTypeSelected = "sublet";
+//                            flatType = 2;
+//                            defaultSetup(rentTypeSelected);
+//                            break;
+//                        case R.id.bachelor:
+//                            rentTypeSelected = "bachelor";
+//                            flatType = 3;
+//                            defaultSetup(rentTypeSelected);
+//                            break;
+//                        case R.id.others:
+//                            rentTypeSelected = "others";
+//                            flatType = 4;
+//                            defaultSetup(rentTypeSelected);
+//                            break;
+//                    }
+//                }
+//            }
+//        });
     }
 
     public void defaultSetup(String type) {
         if (type.equals("family")) {
-            bedRoom.setSelection(1);
-            balcony.setSelection(1);
-            bathRoom.setSelection(1);
+//            bedRoom.setSelection(1);
+//            balcony.setSelection(1);
+//            bathRoom.setSelection(1);
             waterCB.setChecked(true);
-            gazCB.setChecked(true);
+            gasCB.setChecked(true);
             electricityCB.setChecked(true);
         } else {
-            bedRoom.setSelection(0);
-            balcony.setSelection(0);
-            bathRoom.setSelection(0);
+//            bedRoom.setSelection(0);
+//            balcony.setSelection(0);
+//            bathRoom.setSelection(0);
             waterCB.setChecked(true);
-            gazCB.setChecked(true);
+            gasCB.setChecked(true);
             electricityCB.setChecked(true);
         }
     }
@@ -586,7 +608,7 @@ public class NewAdActivity extends BaseActivity
 
     @Override
     public View getInfoContents(Marker marker) {
-        // Inflate the layouts for the info window, title and snippet.
+        // Inflate the layouts for the info window, roomFaceTitle and snippet.
         View infoWindow = getLayoutInflater().inflate(R.layout.custom_info_contents,
                 (FrameLayout) findViewById(R.id.map), false);
 
@@ -604,6 +626,7 @@ public class NewAdActivity extends BaseActivity
      * String fullAddress
      */
     String fullAddress;
+
     private void gotoDeviceLocation() {
         /*
          * Get the best and most recent location of the device, which may be null in rare
@@ -740,7 +763,7 @@ public class NewAdActivity extends BaseActivity
             }
             if (address.getLocality() != null && !result.contains(address.getLocality())) {
                 result = result + "," + address.getLocality();
-                division  = address.getLocality();
+                division = address.getLocality();
             }
 
             if (address.getCountryName() != null && !result.contains(address.getCountryName())) {
@@ -759,29 +782,130 @@ public class NewAdActivity extends BaseActivity
         return result;
     }
 
-    public void addItemsOnSpinner() {
-        String[] totalBedRoom = {"1", "2", "3", "4", "5", "6", "7"};
-        String[] floor = {"Ground", "1st", "2nd", "3rd", "4th", "5th", "6th", "7th", "8th", "9th", "10th"};
-        String[] facing = {"South", "East", "West", "North"};
-        //String[] totalBalcony = {"1","2","3","4","5","6","7"};
+    private final String[] roomTypes = {"Bedroom", "Bathroom", "Balcony"};
 
-        // Creating adapter for spinner
-        bedRoomAdapter = new ArrayAdapter<String>(this, android.R.layout.simple_spinner_item, totalBedRoom);
-        floorAdapter = new ArrayAdapter<String>(this, android.R.layout.simple_spinner_item, floor);
-        facingAdapter = new ArrayAdapter<String>(this, android.R.layout.simple_spinner_item, facing);
+    public void addRoomNumberView() {
+        LayoutInflater inflater = LayoutInflater.from(this);
+        for (int i = 0; i < roomTypes.length; i++) {
+            final View inflatedView = inflater.inflate(R.layout.single_room_number_lay, roomNumberLay, false);
+            LinearLayout.LayoutParams layoutParams = new LinearLayout.LayoutParams(0, ViewGroup.LayoutParams.WRAP_CONTENT);
+            layoutParams.weight = 1;
+            inflatedView.setLayoutParams(layoutParams);
+            final int pos = i;
+            inflatedView.setOnClickListener(new View.OnClickListener() {
+                @Override
+                public void onClick(View view) {
+                    showRoomNumberPopupMenu(inflatedView, roomTypes[pos]);
+                }
+            });
+            if (i == 2) {
+                updatePickerView(inflatedView, roomTypes[i], (roomArray[1] + " " + roomTypes[i]));
+            } else {
+                updatePickerView(inflatedView, roomTypes[i], (roomArray[2] + " " + roomTypes[i] + "'s"));
+            }
+            roomNumberLay.addView(inflatedView);
+        }
+//        String[] totalBedRoom = {"1", "2", "3", "4", "5", "6", "7"};
+////        String[] floor = {"Ground", "1st", "2nd", "3rd", "4th", "5th", "6th", "7th", "8th", "9th", "10th"};
+//        //String[] totalBalcony = {"1","2","3","4","5","6","7"};
+//
+//        ArrayAdapter<String> bedRoomAdapter, balconyAdapter, bathRoomAdapter, facingAdapter;
+//        // Creating adapter for spinner
+//        bedRoomAdapter = new ArrayAdapter<>(this, android.R.layout.simple_spinner_dropdown_item, totalBedRoom);
+////        floorAdapter = new ArrayAdapter<>(this, android.R.layout.simple_spinner_item, floor);
+//        facingAdapter = new ArrayAdapter<>(this, android.R.layout.simple_spinner_dropdown_item, facing);
+//
+//
+//        // Drop down layout style - list view with radio button
+//        bedRoomAdapter.setDropDownViewResource(android.R.layout.simple_spinner_dropdown_item);
+////        floorAdapter.setDropDownViewResource(android.R.layout.select_dialog_singlechoice);
+//        facingAdapter.setDropDownViewResource(android.R.layout.simple_spinner_dropdown_item);
+//
+//        // attaching data adapter to spinner
+//        bedRoom.setAdapter(bedRoomAdapter);
+//        balcony.setAdapter(bedRoomAdapter);
+//        bathRoom.setAdapter(bedRoomAdapter);
+//        //whichFloor.setAdapter(floorAdapter);
+//        whichFacing.setAdapter(facingAdapter);
+    }
 
+    private final int[] roomArray = {0, 1, 2, 3, 4, 5};
 
-        // Drop down layout style - list view with radio button
-        bedRoomAdapter.setDropDownViewResource(android.R.layout.select_dialog_singlechoice);
-        floorAdapter.setDropDownViewResource(android.R.layout.select_dialog_singlechoice);
-        facingAdapter.setDropDownViewResource(android.R.layout.select_dialog_singlechoice);
+    private void showRoomNumberPopupMenu(final View view, final String roomType) {
+        PopupMenu popup = new PopupMenu(this, view);
 
-        // attaching data adapter to spinner
-        bedRoom.setAdapter(bedRoomAdapter);
-        balcony.setAdapter(bedRoomAdapter);
-        bathRoom.setAdapter(bedRoomAdapter);
-        //whichFloor.setAdapter(floorAdapter);
-        whichFacing.setAdapter(facingAdapter);
+        for (int room : roomArray) {
+            String s = "";
+            if (room <= 1) {
+                if (room == 0 && roomType.equals(roomTypes[2])) {
+                    s = "No " + roomType;
+                } else {
+                    if (room == 0) {
+                        continue;
+                    }
+                    s = room + " " + roomType;
+                }
+            } else {
+                s = room + " " + roomType + "'s";
+            }
+            popup.getMenu().add(s);
+        }
+
+        //popup.getMenuInflater().inflate(R.menu.poupup_menu, popup.getMenu());
+        //registering popup with OnMenuItemClickListener
+        popup.setOnMenuItemClickListener(new PopupMenu.OnMenuItemClickListener() {
+            public boolean onMenuItemClick(MenuItem item) {
+                String details = String.valueOf(item.getTitle());
+                updatePickerView(view, (details.split(" "))[1].replace("'s", ""), details);
+                return true;
+            }
+        });
+        popup.show(); //showing popup menu
+    }
+
+    private void updatePickerView(View v, String title, String subTitle) {
+        if (v instanceof ViewGroup) {
+            ((TextView) v.findViewById(R.id.title)).setText(title);
+            ((TextView) v.findViewById(R.id.subTitle)).setText(subTitle);
+        }
+    }
+
+    private void addRoomFaceType() {
+        LayoutInflater inflater = LayoutInflater.from(this);
+        final View inflatedView = inflater.inflate(R.layout.single_room_number_lay, roomNumberLay, false);
+        LinearLayout.LayoutParams layoutParams = new LinearLayout.LayoutParams(ViewGroup.LayoutParams.WRAP_CONTENT, ViewGroup.LayoutParams.WRAP_CONTENT);
+        inflatedView.setLayoutParams(layoutParams);
+
+        inflatedView.setOnClickListener(new View.OnClickListener() {
+            @Override
+            public void onClick(View view) {
+                showFlatFacePopupMenu(inflatedView);
+            }
+        });
+
+        updatePickerView(inflatedView, getString(R.string.flat_face), roomFaceArray[1] + " " + getString(R.string.facing) + " " + getString(R.string.flat));
+        flatAdditionalInfoLay.addView(inflatedView);
+    }
+
+    private final String[] roomFaceArray = {"North", "South", "East", "West"};
+
+    private void showFlatFacePopupMenu(final View view) {
+        PopupMenu popup = new PopupMenu(this, view);
+
+        for (String room : roomFaceArray) {
+            String s = room + " " + getString(R.string.facing) + " " + getString(R.string.flat);
+            popup.getMenu().add(s);
+        }
+
+        //popup.getMenuInflater().inflate(R.menu.poupup_menu, popup.getMenu());
+        //registering popup with OnMenuItemClickListener
+        popup.setOnMenuItemClickListener(new PopupMenu.OnMenuItemClickListener() {
+            public boolean onMenuItemClick(MenuItem item) {
+                updatePickerView(view, getString(R.string.flat_face), String.valueOf(item.getTitle()));
+                return true;
+            }
+        });
+        popup.show(); //showing popup menu
     }
 
     @Override
@@ -798,8 +922,8 @@ public class NewAdActivity extends BaseActivity
     public void onClick(View view) {
         if (fab == view) {
             submitAd();
-        } else if (setDate == view) {
-            rentFromDialog.show();
+        } else if (rentDate == view) {
+            showDatePickerDialog();
         }
     }
 
@@ -809,29 +933,34 @@ public class NewAdActivity extends BaseActivity
         if (mDatabase == null)
             mDatabase = FirebaseDatabase.getInstance().getReference();
 
+        validateInputtedData();
         writeNewPost();
     }
 
-    private void writeNewPost() {
+    private void validateInputtedData() {
 
+    }
+
+    private void writeNewPost() {
         String adId = mDatabase.child(DBConstants.adList).push().getKey();
 
-        String houseInfoSt= houseInfo.getText().toString();
-        String floorSt = whichFloor.getText().toString();
-        String whichFacingSt = whichFacing.getSelectedItem().toString();
-        String bedRoomSt = bedRoom.getSelectedItem().toString();
-        String balconySt = balcony.getSelectedItem().toString();
-        if(!dateIsSet){
-            Toast.makeText(this, "set date", Toast.LENGTH_SHORT).show();
-            return;
-        }
+        houseInfo.getText();
+        whichFloor.getText();
+//        whichFacing.getSelectedItem();
+//        bedRoom.getSelectedItem();
+//        balcony.getSelectedItem();
+//
+//        if (!dateIsSet) {
+//            Toast.makeText(this, "set date", Toast.LENGTH_SHORT).show();
+//            return;
+//        }
 
         //String rentFromSt =
 //
 //        AdInfo adInfo = new AdInfo(adId, fromMonth, fromDay, fromYear, lat, longti, fullAddress, countryName,
-//                division, division, division, division, flatTypeInt, houseInfo.getText().toString(), Integer.parseInt(whichFloor.getText().toString()),
+//                division, division, division, division, flatType, houseInfo.getText().toString(), Integer.parseInt(whichFloor.getText().toString()),
 //                whichFacing.getSelectedItem().toString(), Integer.parseInt(totalSpace.getText().toString()), Integer.parseInt(bedRoom.getSelectedItem().toString()), Integer.parseInt(bathRoom.getSelectedItem().toString()),
-//                Integer.parseInt(balcony.getSelectedItem().toString()), 1, drawiningDiningExist, electricityCB.isChecked(), gazCB.isChecked(), waterCB.isChecked(), liftCB.isChecked(), generatorCB.isChecked(),
+//                Integer.parseInt(balcony.getSelectedItem().toString()), 1, drawiningDiningExist, electricityCB.isChecked(), gasCB.isChecked(), waterCB.isChecked(), liftCB.isChecked(), generatorCB.isChecked(),
 //                Integer.parseInt(totalRent.getText().toString()), 3000, getUid());
 //        //adInfo.settHouseNameOrNumber(houseInfo.getText().toString());
 
@@ -868,7 +997,7 @@ public class NewAdActivity extends BaseActivity
     private class CustomInfoWindowAdapter implements GoogleMap.InfoWindowAdapter {
 
         // These are both viewgroups containing an ImageView with id "badge" and two TextViews with id
-        // "title" and "snippet".
+        // "roomFaceTitle" and "snippet".
         private final View mWindow;
 
         private final View mContents;
@@ -941,33 +1070,73 @@ public class NewAdActivity extends BaseActivity
         }
     }
 
-    int fromYear, fromMonth, fromDay;
-    boolean dateIsSet = false;
+    private void showDatePickerDialog() {
+        DatePickerDialog datePickerDialog = new DatePickerDialog(this, new DatePickerDialog.OnDateSetListener() {
+            @Override
+            public void onDateSet(DatePicker datePicker, int year, int monthOfYear, int dayOfMonth) {
+                date[0] = dayOfMonth;
+                date[1] = monthOfYear;
+                date[2] = year;
+                String selectedDate = dayOfMonth + "-" + (monthOfYear + 1) + "-" + year;
+                setRentDate(selectedDate);
+            }
+        }, date[2], date[1], date[0]);
+        datePickerDialog.getDatePicker().setMinDate(System.currentTimeMillis());
+        datePickerDialog.show();
+    }
 
-    private void setDateTimeField() {
-        dateFormatter = new SimpleDateFormat("dd-MM-yyyy", Locale.US);
-        setDate.setOnClickListener(this);
-        final Calendar newFromDate = Calendar.getInstance();
-        rentFromDialog = new DatePickerDialog(this, new DatePickerDialog.OnDateSetListener() {
-            public void onDateSet(DatePicker view, int year, int monthOfYear, int dayOfMonth) {
+    private void setRentDate(String date) {
+        SimpleDateFormat dateFormatter = new SimpleDateFormat("dd-MM-yyyy", Locale.US);
+        try {
+            Date newDate = dateFormatter.parse(date);
+            dateFormatter = new SimpleDateFormat("MMM dd, yyyy", Locale.US);
+            date = dateFormatter.format(newDate);
 
-                dateIsSet = true;
-                fromYear = year;
-                fromMonth = monthOfYear;
-                fromDay = dayOfMonth;
-                newFromDate.set(year, monthOfYear, dayOfMonth);
-                if (newFromDate.getTimeInMillis() < newCalendar.getTimeInMillis())
-                    setDate.setText(dateFormatter.format(newCalendar.getTime()));
-                else {
-                    fromYear = newFromDate.YEAR;
-                    fromMonth = newFromDate.MONTH+1;
-                    fromDay = newFromDate.DAY_OF_MONTH;
-                    setDate.setText(dateFormatter.format(newFromDate.getTime()));
-                }
-
+            long differenceTime = newDate.getTime() - System.currentTimeMillis();
+            long elapsedDays = 0;
+            if (differenceTime > 1) {
+                elapsedDays = (differenceTime / (60 * 60 * 24 * 1000)) + 1;
             }
 
-        }, newCalendar.get(Calendar.YEAR), newCalendar.get(Calendar.MONTH), newCalendar.get(Calendar.DAY_OF_MONTH));
-        rentFromDialog.getDatePicker().setMinDate(System.currentTimeMillis());
+            if (elapsedDays <= 1) {
+                date = "From " + date + "\n" + elapsedDays + " day remaining.";
+            } else {
+                date = "From " + date + "\n" + elapsedDays + " days remaining.";
+            }
+        } catch (ParseException e) {
+            e.printStackTrace();
+            setRentDate(getDefaultRentMonth());
+        }
+
+        rentDate.setText(date);
+    }
+
+    private String getDefaultRentMonth() {
+        Calendar calendar = Calendar.getInstance();
+        int monthOfYear = calendar.get(Calendar.MONTH) + 1;
+        int year = calendar.get(Calendar.YEAR);
+        if (monthOfYear > 11) {
+            monthOfYear = 0;
+            year++;
+        }
+
+        date[0] = 1;
+        date[1] = monthOfYear;
+        date[2] = year;
+
+        return date[0] + "-" + (date[1] + 1) + "-" + date[2];
+    }
+
+    private int[] date = new int[3];
+
+    @Override
+    public boolean onOptionsItemSelected(MenuItem item) {
+        switch (item.getItemId()) {
+            case android.R.id.home:
+                finish();
+                return true;
+            default:
+                return super.onOptionsItemSelected(item);
+        }
     }
 }

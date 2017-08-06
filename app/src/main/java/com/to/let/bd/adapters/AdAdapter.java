@@ -1,6 +1,7 @@
 package com.to.let.bd.adapters;
 
 import android.content.Context;
+import android.net.Uri;
 import android.support.v7.widget.RecyclerView;
 import android.view.GestureDetector;
 import android.view.LayoutInflater;
@@ -12,6 +13,7 @@ import android.widget.ProgressBar;
 import android.widget.TextView;
 
 
+import com.bumptech.glide.Glide;
 import com.to.let.bd.R;
 import com.to.let.bd.model.AdInfo;
 
@@ -31,7 +33,7 @@ public class AdAdapter extends RecyclerView.Adapter<AdAdapter.MyViewHolder> {
 
     @Override
     public MyViewHolder onCreateViewHolder(ViewGroup parent, int viewType) {
-        View view = layoutInflater.inflate(R.layout.row_item_ad, parent, false);
+        View view = layoutInflater.inflate(R.layout.row_item_ad_new, parent, false);
         return new MyViewHolder(view);
     }
 
@@ -43,10 +45,25 @@ public class AdAdapter extends RecyclerView.Adapter<AdAdapter.MyViewHolder> {
     public void onBindViewHolder(final MyViewHolder holder, int position) {
         AdInfo adInfo = sampleList.get(position);
 
-        holder.title.setText("" + adInfo.getFlatType());
-        holder.address.setText("" + adInfo.getFullAddress());
-        holder.roomDetails.setText("" + adInfo.getBedRoom());
+        String title = "৳ " + adInfo.getFlatRent() + " per month.";
+        holder.adTitle.setText(title.trim());
+        String subTitle = adInfo.getBedRoom() + " bed room, " + adInfo.getToilet() + " bathroom.\n" +
+                adInfo.getFullAddress();
+        holder.adSubTitle.setText(subTitle.trim());
 
+        if (adInfo.getImages() == null || adInfo.getImages().isEmpty()) {
+            if (adInfo.getMap() == null || adInfo.getMap().isEmpty()) {
+                holder.adMainPhoto.setImageResource(R.drawable.dummy_flat_image);
+            } else {
+                Glide.with(context)
+                        .load(Uri.parse(adInfo.getMap()))
+                        .into(holder.adMainPhoto);
+            }
+        } else {
+            Glide.with(context)
+                    .load(Uri.parse(adInfo.getImages().get(0).getDownloadUrl()))
+                    .into(holder.adMainPhoto);
+        }
 //        holder.progressBar.setVisibility(View.VISIBLE);
 //
 //        String imageUrl = null;
@@ -82,18 +99,15 @@ public class AdAdapter extends RecyclerView.Adapter<AdAdapter.MyViewHolder> {
     }
 
     static class MyViewHolder extends RecyclerView.ViewHolder {
-        public ImageView image;
-        public TextView title, address, roomDetails;
-        public ProgressBar progressBar;
+        public ImageView adMainPhoto;
+        public TextView adTitle, adSubTitle;
 
         public MyViewHolder(View itemView) {
             super(itemView);
-            image = (ImageView) itemView.findViewById(R.id.image);
-            progressBar = (ProgressBar) itemView.findViewById(R.id.progressBar);
+            adMainPhoto = (ImageView) itemView.findViewById(R.id.adMainPhoto);
 
-            title = (TextView) itemView.findViewById(R.id.title);
-            address = (TextView) itemView.findViewById(R.id.address);
-            roomDetails = (TextView) itemView.findViewById(R.id.roomDetails);
+            adTitle = (TextView) itemView.findViewById(R.id.adTitle);
+            adSubTitle = (TextView) itemView.findViewById(R.id.adSubTitle);
         }
     }
 
