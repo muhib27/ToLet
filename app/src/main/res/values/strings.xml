@@ -93,5 +93,8 @@
     <string name="flat_face">Flate face</string>
     <string name="flat">Flat</string>
     <string name="utility_bill">Utility bill</string>
+    <string name="error_field_required">This input field required.</string>
     <string name="error_valid_mobile_number">Please insert valid mobile number.</string>
+    <string name="ok">OK</string>
+    <string name="success">Success</string>
 </resources>

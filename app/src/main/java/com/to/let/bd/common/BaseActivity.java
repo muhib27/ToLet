@@ -49,6 +49,10 @@ public class BaseActivity extends AppCompatActivity {
         showLog("Test log");
     }
 
+    public void showToast() {
+        showToast("Test toast");
+    }
+
     public void showToast(String message) {
         Toast.makeText(this, message, Toast.LENGTH_SHORT).show();
     }

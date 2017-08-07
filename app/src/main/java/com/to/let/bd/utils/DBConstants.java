@@ -31,6 +31,8 @@ public class DBConstants {
     public static final String water = "water";
     public static final String lift = "lift";
     public static final String generator = "generator";
+    public static final String securityGuard = "securityGuard";
+
     public static final String flatRent = "flatRent";
     public static final String othersFee = "othersFee";
     public static final String userId = "userId";

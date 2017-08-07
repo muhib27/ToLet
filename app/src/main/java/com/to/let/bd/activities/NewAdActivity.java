@@ -1,10 +1,12 @@
 package com.to.let.bd.activities;
 
 import android.app.DatePickerDialog;
+import android.app.Dialog;
 import android.content.Intent;
 import android.content.pm.PackageManager;
 import android.graphics.Bitmap;
 import android.graphics.Color;
+import android.graphics.drawable.ColorDrawable;
 import android.location.Address;
 import android.location.Geocoder;
 import android.location.Location;
@@ -20,20 +22,19 @@ import android.support.v7.app.ActionBar;
 import android.support.v7.widget.PopupMenu;
 import android.support.v7.widget.Toolbar;
 import android.text.Editable;
-import android.text.SpannableString;
 import android.text.TextWatcher;
-import android.text.style.ForegroundColorSpan;
+import android.view.Gravity;
 import android.view.KeyEvent;
 import android.view.LayoutInflater;
 import android.view.MenuItem;
 import android.view.View;
 import android.view.ViewGroup;
+import android.view.Window;
 import android.widget.AdapterView;
 import android.widget.CheckBox;
 import android.widget.DatePicker;
 import android.widget.EditText;
 import android.widget.FrameLayout;
-import android.widget.ImageView;
 import android.widget.LinearLayout;
 import android.widget.RadioGroup;
 import android.widget.ScrollView;
@@ -65,14 +66,17 @@ import com.google.firebase.auth.AuthResult;
 import com.google.firebase.auth.FirebaseAuth;
 import com.google.firebase.auth.FirebaseUser;
 import com.google.firebase.auth.GoogleAuthProvider;
+import com.google.firebase.database.DatabaseError;
 import com.google.firebase.database.DatabaseReference;
 import com.google.firebase.database.FirebaseDatabase;
 import com.to.let.bd.R;
 import com.to.let.bd.common.BaseActivity;
 import com.to.let.bd.common.WorkaroundMapFragment;
+import com.to.let.bd.model.AdInfo;
 import com.to.let.bd.utils.AppConstants;
 import com.to.let.bd.utils.DBConstants;
 import com.to.let.bd.utils.SmartToLetConstants;
+import com.to.let.bd.utils.SmartToLetPrefs;
 
 import java.io.IOException;
 import java.text.ParseException;
@@ -96,12 +100,6 @@ public class NewAdActivity extends BaseActivity
     private static final String TAG = NewAdActivity.class.getSimpleName();
     private GoogleMap googleMap;
     private CameraPosition mCameraPosition;
-    //    private Spinner bedRoom, balcony, bathRoom, whichFacing;
-    private CheckBox waterCB, gasCB, electricityCB, liftCB, generatorCB, securityGuardCB;
-
-    private TextView rentDate;
-    private LinearLayout roomNumberLay;
-    private boolean drawiningDiningExist, waterExist, gazExist, electricityExist, liftExist, generatorExist;
 
     // The entry point to Google Play services, used by the Places API and Fused Location Provider.
     private GoogleApiClient mGoogleApiClient;
@@ -111,7 +109,6 @@ public class NewAdActivity extends BaseActivity
     private LatLng mDefaultLatLng = new LatLng(23.8103, 90.4125);
     private static final int DEFAULT_ZOOM = 15;
     private static final int PERMISSIONS_REQUEST_CODE = 1;
-//    private boolean mLocationPermissionGranted;
 
     // The geographical location where the device is currently located. That is, the last-known
     // location retrieved by the Fused Location Provider.
@@ -130,9 +127,8 @@ public class NewAdActivity extends BaseActivity
         initFirebase();
         initView();
         addRoomFaceType();
-        addRoomNumberView();
         setRentDate(getDefaultRentMonth());
-        //defaultSetup("family");
+        defaultCheck();
 
         // Configure Google Sign In
         GoogleSignInOptions gso = new GoogleSignInOptions.Builder(GoogleSignInOptions.DEFAULT_SIGN_IN)
@@ -164,8 +160,6 @@ public class NewAdActivity extends BaseActivity
     private TextView addressDetails;
     private ScrollView mapScrollView;
     private EditText emailAddress, mobileNumber;
-    private String drawingAndDining = "yes";
-    private int flatType = 1;
     private LinearLayout flatAdditionalInfoLay;
     private EditText totalSpace, whichFloor, houseInfo, totalRent, totalUtility;
     private RadioGroup drawingDining, rentType, utilityBill;
@@ -190,6 +184,8 @@ public class NewAdActivity extends BaseActivity
 
         emailAddress = (EditText) findViewById(R.id.emailAddress);
         mobileNumber = (EditText) findViewById(R.id.mobileNumber);
+        mobileNumber.setText(SmartToLetPrefs.getMobileNumber());
+
         mobileNumber.addTextChangedListener(new TextWatcher() {
             @Override
             public void beforeTextChanged(CharSequence charSequence, int i, int i1, int i2) {
@@ -263,18 +259,18 @@ public class NewAdActivity extends BaseActivity
 
         rentDate = (TextView) findViewById(R.id.rentDate);
         rentDate.setOnClickListener(this);
-
-        defaultCheck();
     }
+
+    private CheckBox waterCB, gasCB, electricityCB, liftCB, generatorCB, securityGuardCB;
+    private TextView rentDate;
+    private LinearLayout roomNumberLay;
 
     private Handler handler = new Handler();
     private Runnable mobileNumberValidation = new Runnable() {
         @Override
         public void run() {
             mobileNumber.setError(null);
-            if (!AppConstants.isMobileNumberValid(mobileNumber.getText().toString())) {
-                mobileNumber.setError(getString(R.string.error_valid_mobile_number));
-            }
+            AppConstants.isMobileNumberValid(NewAdActivity.this, mobileNumber);
         }
     };
 
@@ -297,80 +293,6 @@ public class NewAdActivity extends BaseActivity
                 }
             }
         });
-    }
-
-    String rentTypeSelected = "family";
-
-    public void defaultCheck() {
-        rentType.check(R.id.family);
-        drawingDining.check(R.id.drawingDiningYes);
-        utilityBill.check(R.id.utilityBillNotIncluded);
-
-        utilityBill.setOnCheckedChangeListener(new RadioGroup.OnCheckedChangeListener() {
-            @Override
-            public void onCheckedChanged(RadioGroup radioGroup, @IdRes int checkedId) {
-                if (checkedId == R.id.utilityBillIncluded) {
-                    totalUtilityTIL.setVisibility(View.GONE);
-                } else {
-                    totalUtilityTIL.setVisibility(View.VISIBLE);
-                }
-            }
-        });
-
-
-//        ((RadioButton) findViewById(rentType.getCheckedRadioButtonId())).setChecked(true);
-//        rentType.setOnCheckedChangeListener(new RadioGroup.OnCheckedChangeListener() {
-//            public void onCheckedChanged(RadioGroup group, int checkedId) {
-//                // This will get the radio button that has changed in its check state
-//                RadioButton checkedRadioButton = (RadioButton) group.findViewById(checkedId);
-//                // This puts the value (true/false) into the variable
-//                boolean isChecked = checkedRadioButton.isChecked();
-//                // If the radio button that has changed in check state is now checked...
-//                if (isChecked) {
-//                    switch (checkedRadioButton.getId()) {
-//                        case R.id.family:
-//                            rentTypeSelected = "family";
-//                            flatType = 1;
-//                            defaultSetup(rentTypeSelected);
-//
-//                            break;
-//                        case R.id.sublet:
-//                            rentTypeSelected = "sublet";
-//                            flatType = 2;
-//                            defaultSetup(rentTypeSelected);
-//                            break;
-//                        case R.id.bachelor:
-//                            rentTypeSelected = "bachelor";
-//                            flatType = 3;
-//                            defaultSetup(rentTypeSelected);
-//                            break;
-//                        case R.id.others:
-//                            rentTypeSelected = "others";
-//                            flatType = 4;
-//                            defaultSetup(rentTypeSelected);
-//                            break;
-//                    }
-//                }
-//            }
-//        });
-    }
-
-    public void defaultSetup(String type) {
-        if (type.equals("family")) {
-//            bedRoom.setSelection(1);
-//            balcony.setSelection(1);
-//            bathRoom.setSelection(1);
-            waterCB.setChecked(true);
-            gasCB.setChecked(true);
-            electricityCB.setChecked(true);
-        } else {
-//            bedRoom.setSelection(0);
-//            balcony.setSelection(0);
-//            bathRoom.setSelection(0);
-            waterCB.setChecked(true);
-            gasCB.setChecked(true);
-            electricityCB.setChecked(true);
-        }
     }
 
     // Google login
@@ -447,34 +369,6 @@ public class NewAdActivity extends BaseActivity
         updateUserInfo();
     }
 
-//    private void linkedCredential(final AuthCredential credential) {
-//        showProgressDialog();
-//        firebaseUser.linkWithCredential(credential).addOnCompleteListener(this,
-//                new OnCompleteListener<AuthResult>() {
-//                    @Override
-//                    public void onComplete(@NonNull Task<AuthResult> task) {
-//                        if (task.isSuccessful()) {
-//                            setEmailAddress();
-//                            closeProgressDialog();
-//                        } else {
-//                            try {
-//                                String message = task.getException().getMessage();
-//                                if (message != null && (message.toLowerCase().equals(SmartToLetConstants.firebaseAccountConflictMessage1.toLowerCase()) ||
-//                                        message.toLowerCase().contains(SmartToLetConstants.firebaseAccountConflictMessage2.toLowerCase()))) {
-//                                    firebaseLoginWithGoogle(credential);
-//                                } else {
-//                                    showToast(message);
-//                                    closeProgressDialog();
-//                                }
-//                            } catch (Exception e) {
-//                                e.printStackTrace();
-//                                closeProgressDialog();
-//                            }
-//                        }
-//                    }
-//                });
-//    }
-
     private FirebaseAuth mAuth;
     private FirebaseAuth.AuthStateListener mAuthListener;
     private FirebaseUser firebaseUser;
@@ -548,12 +442,6 @@ public class NewAdActivity extends BaseActivity
      */
     @Override
     public void onMapReady(GoogleMap googleMap) {
-//        if (this.googleMap == null) {
-//            this.googleMap = ((WorkaroundMapFragment) getSupportFragmentManager().findFragmentById(R.id.map)).getMap();
-//
-//
-//        }
-
         this.googleMap = googleMap;
         this.googleMap.setMapType(GoogleMap.MAP_TYPE_NORMAL);
         this.googleMap.getUiSettings().setZoomControlsEnabled(true);
@@ -650,7 +538,7 @@ public class NewAdActivity extends BaseActivity
             googleMap.getUiSettings().setMyLocationButtonEnabled(false);
         }
 
-        fullAddress = getLocationBestApproximateResult(findCurrentLocationDetails(mDefaultLatLng.latitude, mDefaultLatLng.longitude), mDefaultLatLng);
+        fullAddress = getLocationBestApproximateResult(findSelectedLocationDetails(mDefaultLatLng.latitude, mDefaultLatLng.longitude), mDefaultLatLng);
         addressDetails.setText(fullAddress);
     }
 
@@ -697,22 +585,18 @@ public class NewAdActivity extends BaseActivity
     }
 
     private final int maxAddressResult = 5;
-    double longti;
-    double lat;
+    private double rentLatitude, rentLongitude;
     private String countryName;
     private String division;
 
-    private List<Address> findCurrentLocationDetails(double latitude, double longitude) {
+    private List<Address> findSelectedLocationDetails(double latitude, double longitude) {
         Geocoder geocoder;
         List<Address> addressList = new ArrayList<>();
         addressList.clear();
 
         geocoder = new Geocoder(this, Locale.ENGLISH);
-//
-//        latitude = 23.7929279;
-//        longitude = 90.4035839;
-        longti = longitude;
-        lat = latitude;
+        rentLatitude = latitude;
+        rentLongitude = longitude;
 
         try {
             // Here 1 represent max location result to returned, by documents it recommended 1 to 5
@@ -729,7 +613,7 @@ public class NewAdActivity extends BaseActivity
     @Override
     public void onMapLongClick(LatLng latLng) {
         googleMap.clear();
-        String fullAddress = getLocationBestApproximateResult(findCurrentLocationDetails(latLng.latitude, latLng.longitude), latLng);
+        final String fullAddress = getLocationBestApproximateResult(findSelectedLocationDetails(latLng.latitude, latLng.longitude), latLng);
         addressDetails.setText(fullAddress);
         googleMap.addMarker(new MarkerOptions()
                 .position(latLng)
@@ -783,6 +667,7 @@ public class NewAdActivity extends BaseActivity
     }
 
     private final String[] roomTypes = {"Bedroom", "Bathroom", "Balcony"};
+    private final int[] roomArray = {0, 1, 2, 3, 4, 5};
 
     public void addRoomNumberView() {
         LayoutInflater inflater = LayoutInflater.from(this);
@@ -798,11 +683,16 @@ public class NewAdActivity extends BaseActivity
                     showRoomNumberPopupMenu(inflatedView, roomTypes[pos]);
                 }
             });
+            int defaultSelection = 2;
             if (i == 2) {
+                defaultSelection = 1;
                 updatePickerView(inflatedView, roomTypes[i], (roomArray[1] + " " + roomTypes[i]));
             } else {
-                updatePickerView(inflatedView, roomTypes[i], (roomArray[2] + " " + roomTypes[i] + "'s"));
+                defaultSelection = 2;
+                updatePickerView(inflatedView, roomTypes[i], (roomArray[defaultSelection] + " " + roomTypes[i] + "'s"));
             }
+
+            familyRoom[i] = defaultSelection;
             roomNumberLay.addView(inflatedView);
         }
 //        String[] totalBedRoom = {"1", "2", "3", "4", "5", "6", "7"};
@@ -829,8 +719,6 @@ public class NewAdActivity extends BaseActivity
 //        whichFacing.setAdapter(facingAdapter);
     }
 
-    private final int[] roomArray = {0, 1, 2, 3, 4, 5};
-
     private void showRoomNumberPopupMenu(final View view, final String roomType) {
         PopupMenu popup = new PopupMenu(this, view);
 
@@ -855,8 +743,19 @@ public class NewAdActivity extends BaseActivity
         //registering popup with OnMenuItemClickListener
         popup.setOnMenuItemClickListener(new PopupMenu.OnMenuItemClickListener() {
             public boolean onMenuItemClick(MenuItem item) {
-                String details = String.valueOf(item.getTitle());
-                updatePickerView(view, (details.split(" "))[1].replace("'s", ""), details);
+                String subtitle = String.valueOf(item.getTitle());
+                String title = (subtitle.split(" "))[1].replace("'s", "");
+                int roomNumber = Integer.parseInt((subtitle.split(" "))[0]);
+
+                if (title.equalsIgnoreCase(roomTypes[0])) {
+                    familyRoom[0] = roomNumber;
+                } else if (title.equalsIgnoreCase(roomTypes[1])) {
+                    familyRoom[1] = roomNumber;
+                } else if (title.equalsIgnoreCase(roomTypes[2])) {
+                    familyRoom[2] = roomNumber;
+                }
+                updatePickerView(view, title, subtitle);
+                setCalculatedRent();
                 return true;
             }
         });
@@ -883,8 +782,11 @@ public class NewAdActivity extends BaseActivity
             }
         });
 
-        updatePickerView(inflatedView, getString(R.string.flat_face), roomFaceArray[1] + " " + getString(R.string.facing) + " " + getString(R.string.flat));
+        int defaultSelection = 1;
+        updatePickerView(inflatedView, getString(R.string.flat_face), roomFaceArray[defaultSelection] + " " + getString(R.string.facing) + " " + getString(R.string.flat));
         flatAdditionalInfoLay.addView(inflatedView);
+        familyRoom[3] = defaultSelection;
+        addRoomNumberView();
     }
 
     private final String[] roomFaceArray = {"North", "South", "East", "West"};
@@ -892,16 +794,23 @@ public class NewAdActivity extends BaseActivity
     private void showFlatFacePopupMenu(final View view) {
         PopupMenu popup = new PopupMenu(this, view);
 
-        for (String room : roomFaceArray) {
-            String s = room + " " + getString(R.string.facing) + " " + getString(R.string.flat);
-            popup.getMenu().add(s);
+        for (String face : roomFaceArray) {
+            popup.getMenu().add(face + " " + getString(R.string.facing) + " " + getString(R.string.flat));
         }
 
         //popup.getMenuInflater().inflate(R.menu.poupup_menu, popup.getMenu());
         //registering popup with OnMenuItemClickListener
         popup.setOnMenuItemClickListener(new PopupMenu.OnMenuItemClickListener() {
             public boolean onMenuItemClick(MenuItem item) {
-                updatePickerView(view, getString(R.string.flat_face), String.valueOf(item.getTitle()));
+                String subTitle = String.valueOf(item.getTitle());
+                String face = subTitle.split(" ")[0];
+                for (int i = 0; i < roomFaceArray.length; i++) {
+                    if (face.equalsIgnoreCase(roomFaceArray[i])) {
+                        familyRoom[3] = i;
+                        break;
+                    }
+                }
+                updatePickerView(view, getString(R.string.flat_face), subTitle);
                 return true;
             }
         });
@@ -934,42 +843,99 @@ public class NewAdActivity extends BaseActivity
             mDatabase = FirebaseDatabase.getInstance().getReference();
 
         validateInputtedData();
-        writeNewPost();
     }
 
     private void validateInputtedData() {
+        totalRent.setError(null);
+        emailAddress.setError(null);
+        mobileNumber.setError(null);
 
+        if (totalRent == null) {
+            showToast();
+            return;
+        } else if (totalRent.getText().length() == 0) {
+            totalRent.setError(getString(R.string.error_field_required));
+            totalRent.requestFocus();
+            return;
+        }
+
+        if (emailAddress == null) {
+            showToast();
+            return;
+        } else if (emailAddress.getText().length() == 0) {
+            emailAddress.setError(getString(R.string.error_field_required));
+            return;
+        }
+        if (!AppConstants.isMobileNumberValid(this, mobileNumber)) {
+            return;
+        }
+
+        SmartToLetPrefs.setMobileNumber(mobileNumber.getText().toString());
+        viewSummaryDialog();
+    }
+
+    private void viewSummaryDialog() {
+        final Dialog summaryDialog = new Dialog(this);
+        summaryDialog.requestWindowFeature(Window.FEATURE_NO_TITLE);
+        summaryDialog.setContentView(R.layout.dialog_ad_post_summary);
+        Window window = summaryDialog.getWindow();
+        if (window != null) {
+            window.setBackgroundDrawable(new ColorDrawable(Color.TRANSPARENT));
+            window.setLayout(ViewGroup.LayoutParams.MATCH_PARENT, ViewGroup.LayoutParams.WRAP_CONTENT);
+            window.setGravity(Gravity.CENTER_HORIZONTAL | Gravity.CENTER_VERTICAL);
+        }
+
+        summaryDialog.show();
+
+        LinearLayout okBtnLay = (LinearLayout) summaryDialog.findViewById(R.id.okBtnLay);
+        LinearLayout noBtnLay = (LinearLayout) summaryDialog.findViewById(R.id.noBtnLay);
+
+        okBtnLay.setOnClickListener(new View.OnClickListener() {
+            @Override
+            public void onClick(View view) {
+                summaryDialog.dismiss();
+                writeNewPost();
+            }
+        });
+
+        noBtnLay.setOnClickListener(new View.OnClickListener() {
+            @Override
+            public void onClick(View view) {
+                summaryDialog.dismiss();
+            }
+        });
     }
 
     private void writeNewPost() {
         String adId = mDatabase.child(DBConstants.adList).push().getKey();
+        AdInfo adInfo = new AdInfo(adId, date[0], date[1], date[2], rentLatitude, rentLongitude,
+                addressDetails.getText().toString(), "", "", "", "", "",
+                1, familyRoom[0], familyRoom[1], familyRoom[2], familyRoom[3], 1,
+                houseInfo.getText().toString(),
+                whichFloor.getText().length() == 0 ? -1 : Integer.parseInt(whichFloor.getText().toString()),
+                drawingDining.getCheckedRadioButtonId() == R.id.drawingDiningYes ? 1 : 0,
+                electricityCB.isChecked() ? 1 : 0, gasCB.isChecked() ? 1 : 0, waterCB.isChecked() ? 1 : 0,
+                liftCB.isChecked() ? 1 : 0, generatorCB.isChecked() ? 1 : 0, securityGuardCB.isChecked() ? 1 : 0,
+                totalSpace.getText().length() == 0 ? -1 : Long.parseLong(totalSpace.getText().toString()),
+                Long.parseLong(totalRent.getText().toString()),
+                utilityBill.getCheckedRadioButtonId() == R.id.utilityBillIncluded ? Long.parseLong(totalUtility.getText().toString()) : 0,
+                getUid());
 
-        houseInfo.getText();
-        whichFloor.getText();
-//        whichFacing.getSelectedItem();
-//        bedRoom.getSelectedItem();
-//        balcony.getSelectedItem();
-//
-//        if (!dateIsSet) {
-//            Toast.makeText(this, "set date", Toast.LENGTH_SHORT).show();
-//            return;
-//        }
-
-        //String rentFromSt =
-//
-//        AdInfo adInfo = new AdInfo(adId, fromMonth, fromDay, fromYear, lat, longti, fullAddress, countryName,
-//                division, division, division, division, flatType, houseInfo.getText().toString(), Integer.parseInt(whichFloor.getText().toString()),
-//                whichFacing.getSelectedItem().toString(), Integer.parseInt(totalSpace.getText().toString()), Integer.parseInt(bedRoom.getSelectedItem().toString()), Integer.parseInt(bathRoom.getSelectedItem().toString()),
-//                Integer.parseInt(balcony.getSelectedItem().toString()), 1, drawiningDiningExist, electricityCB.isChecked(), gasCB.isChecked(), waterCB.isChecked(), liftCB.isChecked(), generatorCB.isChecked(),
-//                Integer.parseInt(totalRent.getText().toString()), 3000, getUid());
-//        //adInfo.settHouseNameOrNumber(houseInfo.getText().toString());
-
-//        Toast.makeText(this, whichFacingSt + drawingAndDining, Toast.LENGTH_SHORT).show();
-//        //AdInfo adInfo = new AdInfo(adId, getUid());
-//        HashMap<String, Object> adValues = adInfo.toMap();
-//        HashMap<String, Object> childUpdates = new HashMap<>();
-//        childUpdates.put("/" + DBConstants.adList + "/" + adId, adValues);
-//        mDatabase.updateChildren(childUpdates);
+        //AdInfo adInfo = new AdInfo(adId, getUid());
+        HashMap<String, Object> adValues = adInfo.toMap();
+        HashMap<String, Object> childUpdates = new HashMap<>();
+        childUpdates.put("/" + DBConstants.adList + "/" + adId, adValues);
+        mDatabase.updateChildren(childUpdates, new DatabaseReference.CompletionListener() {
+            @Override
+            public void onComplete(DatabaseError databaseError, DatabaseReference databaseReference) {
+                if (databaseError == null) {
+                    showToast(getString(R.string.success));
+                } else {
+                    showToast(databaseError.getMessage());
+                }
+                showLog();
+            }
+        });
     }
 
     private void updateUserInfo() {
@@ -988,86 +954,6 @@ public class NewAdActivity extends BaseActivity
         HashMap<String, Object> childUpdates = new HashMap<>();
         childUpdates.put("/" + DBConstants.user + "/" + getUid(), userValues);
         mDatabase.updateChildren(childUpdates);
-    }
-
-
-    /**
-     * Demonstrates customizing the info window and/or its contents.
-     */
-    private class CustomInfoWindowAdapter implements GoogleMap.InfoWindowAdapter {
-
-        // These are both viewgroups containing an ImageView with id "badge" and two TextViews with id
-        // "roomFaceTitle" and "snippet".
-        private final View mWindow;
-
-        private final View mContents;
-
-        CustomInfoWindowAdapter() {
-            mWindow = getLayoutInflater().inflate(R.layout.custom_info_window, null);
-            mContents = getLayoutInflater().inflate(R.layout.custom_info_contents, null);
-        }
-
-        @Override
-        public View getInfoWindow(Marker marker) {
-//            if (mOptions.getCheckedRadioButtonId() != R.id.custom_info_window) {
-//                // This means that getInfoContents will be called.
-//                return null;
-//            }
-            render(marker, mWindow);
-            return mWindow;
-        }
-
-        @Override
-        public View getInfoContents(Marker marker) {
-//            if (mOptions.getCheckedRadioButtonId() != R.id.custom_info_contents) {
-//                // This means that the default info contents will be used.
-//                return null;
-//            }
-            render(marker, mContents);
-            return mContents;
-        }
-
-        private void render(Marker marker, View view) {
-            int badge = R.drawable.ic_menu_send;
-//            // Use the equals() method on a Marker to check for equals.  Do not use ==.
-//            if (marker.equals(mBrisbane)) {
-//                badge = R.drawable.badge_qld;
-//            } else if (marker.equals(mAdelaide)) {
-//                badge = R.drawable.badge_sa;
-//            } else if (marker.equals(mSydney)) {
-//                badge = R.drawable.badge_nsw;
-//            } else if (marker.equals(mMelbourne)) {
-//                badge = R.drawable.badge_victoria;
-//            } else if (marker.equals(mPerth)) {
-//                badge = R.drawable.badge_wa;
-//            } else {
-//                // Passing 0 to setImageResource will clear the image view.
-//                badge = 0;
-//            }
-            ((ImageView) view.findViewById(R.id.badge)).setImageResource(badge);
-
-            String title = marker.getTitle();
-            TextView titleUi = ((TextView) view.findViewById(R.id.title));
-            if (title != null) {
-                // Spannable string allows us to edit the formatting of the text.
-                SpannableString titleText = new SpannableString(title);
-                titleText.setSpan(new ForegroundColorSpan(Color.RED), 0, titleText.length(), 0);
-                titleUi.setText(titleText);
-            } else {
-                titleUi.setText("");
-            }
-
-            String snippet = marker.getSnippet();
-            TextView snippetUi = ((TextView) view.findViewById(R.id.snippet));
-            if (snippet != null && snippet.length() > 12) {
-                SpannableString snippetText = new SpannableString(snippet);
-                snippetText.setSpan(new ForegroundColorSpan(Color.MAGENTA), 0, 10, 0);
-                snippetText.setSpan(new ForegroundColorSpan(Color.BLUE), 12, snippet.length(), 0);
-                snippetUi.setText(snippetText);
-            } else {
-                snippetUi.setText("");
-            }
-        }
     }
 
     private void showDatePickerDialog() {
@@ -1127,7 +1013,7 @@ public class NewAdActivity extends BaseActivity
         return date[0] + "-" + (date[1] + 1) + "-" + date[2];
     }
 
-    private int[] date = new int[3];
+    private int[] date = new int[3];//0=dayOfMonth, 1=monthOfYear, 2=year
 
     @Override
     public boolean onOptionsItemSelected(MenuItem item) {
@@ -1139,4 +1025,52 @@ public class NewAdActivity extends BaseActivity
                 return super.onOptionsItemSelected(item);
         }
     }
+
+    private final int[] familyRoom = new int[4];//0=bedroom, 1=bathroom, 2=balcony, 3=flatFace
+
+    public void defaultCheck() {
+        rentType.check(R.id.family);
+        drawingDining.check(R.id.drawingDiningYes);
+        utilityBill.check(R.id.utilityBillNotIncluded);
+
+        utilityBill.setOnCheckedChangeListener(new RadioGroup.OnCheckedChangeListener() {
+            @Override
+            public void onCheckedChanged(RadioGroup radioGroup, @IdRes int checkedId) {
+                if (checkedId == R.id.utilityBillIncluded) {
+                    totalUtilityTIL.setVisibility(View.GONE);
+                } else {
+                    totalUtilityTIL.setVisibility(View.VISIBLE);
+                }
+            }
+        });
+
+        setCalculatedRent();
+    }
+
+    private void setCalculatedRent() {
+        long rentCal = (familyRoom[0] * singleBedRoomRent) + (familyRoom[1] * bathroomRent) + (familyRoom[2] * balconyRent);
+        long spaceCal = (familyRoom[0] * singleBedRoomSpace) + (familyRoom[1] * bathroomSpace) + (familyRoom[2] * balconySpace);
+
+        if (drawingDining.getCheckedRadioButtonId() == R.id.drawingDiningYes) {
+            rentCal += drawingDiningRent;
+            spaceCal += drawingDiningSpace;
+        }
+
+        totalRent.setText(String.valueOf(rentCal));
+        totalSpace.setText(String.valueOf(spaceCal));
+        totalUtility.setText(String.valueOf(waterBill + gasBill));
+    }
+
+    private final long singleBedRoomRent = 6000;//rent BDT
+    private final long bathroomRent = 1500;//rent BDT
+    private final long balconyRent = 1000;//rent BDT
+    private final long drawingDiningRent = 8000;//rent BDT
+
+    private final long singleBedRoomSpace = 210;//space sqrft
+    private final long bathroomSpace = 60;//space sqrft
+    private final long balconySpace = 50;//space sqrft
+    private final long drawingDiningSpace = 280;//space sqrft
+
+    private long waterBill = 800;
+    private long gasBill = 900;
 }

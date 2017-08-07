@@ -24,22 +24,23 @@ public class AdInfo {
     private String knownAsArea;
 
     private int flatType;
-    private String houseNameOrNumber;
-
-    private int floorNumber;
-    private String flatFacing;
-
-    private long flatSpace;
     private int bedRoom;
     private int toilet;
     private int balcony;
+
     private int kitchen;
-    private boolean hasDrawingDining;
+    private String houseNameOrNumber;
+    private int floorNumber;
+    private int flatFacing;
+
+    private long flatSpace;
+    private int hasDrawingDining;
     private int electricity;
     private int gasFacility;
     private int water;
     private int lift;
     private int generator;
+    private int securityGuard;
 
     private long flatRent;
     private long othersFee;
@@ -69,13 +70,13 @@ public class AdInfo {
         this.flatType = 1;
         this.houseNameOrNumber = "";
         this.floorNumber = 2;
-        this.flatFacing = "";
+        this.flatFacing = 1;
         this.flatSpace = 1200;
         this.bedRoom = 2;
         this.toilet = 3;
         this.balcony = 2;
         this.kitchen = 1;
-        this.hasDrawingDining = true;
+        this.hasDrawingDining = 1;
         this.electricity = -1;
         this.gasFacility = 1;
         this.water = 1000;
@@ -87,12 +88,12 @@ public class AdInfo {
         this.userId = userId;
     }
 
-    public AdInfo(String adId, int startingMonth, int startingDate, int startingYear, double latitude, double longitude,
-                  String fullAddress, String country, String division, String district, String subDistrict,
-                  String knownAsArea, int flatType, String houseNameOrNumber, int floorNumber, String flatFacing,
-                  long flatSpace, int bedRoom, int toilet, int balcony, int kitchen, boolean hasDrawingDining,
-                  int electricity, int gasFacility, int water, int lift, int generator, long flatRent, long othersFee,
-                  String userId) {
+    public AdInfo(String adId, int startingDate, int startingMonth, int startingYear, double latitude, double longitude,
+                  String fullAddress, String country, String division, String district, String subDistrict, String knownAsArea,
+                  int flatType, int bedRoom, int toilet, int balcony, int flatFacing, int kitchen,
+                  String houseNameOrNumber, int floorNumber, int hasDrawingDining,
+                  int electricity, int gasFacility, int water, int lift, int generator, int securityGuard,
+                  long flatSpace, long flatRent, long othersFee, String userId) {
         this.adId = adId;
         this.startingMonth = startingMonth;
         this.startingDate = startingDate;
@@ -120,6 +121,7 @@ public class AdInfo {
         this.water = water;
         this.lift = lift;
         this.generator = generator;
+        this.securityGuard = securityGuard;
         this.flatRent = flatRent;
         this.othersFee = othersFee;
         this.userId = userId;
@@ -245,11 +247,11 @@ public class AdInfo {
         this.floorNumber = floorNumber;
     }
 
-    public String getFlatFacing() {
+    public int getFlatFacing() {
         return flatFacing;
     }
 
-    public void setFlatFacing(String flatFacing) {
+    public void setFlatFacing(int flatFacing) {
         this.flatFacing = flatFacing;
     }
 
@@ -293,11 +295,11 @@ public class AdInfo {
         this.kitchen = kitchen;
     }
 
-    public boolean isHasDrawingDining() {
+    public int isHasDrawingDining() {
         return hasDrawingDining;
     }
 
-    public void setHasDrawingDining(boolean hasDrawingDining) {
+    public void setHasDrawingDining(int hasDrawingDining) {
         this.hasDrawingDining = hasDrawingDining;
     }
 
@@ -339,6 +341,14 @@ public class AdInfo {
 
     public void setGenerator(int generator) {
         this.generator = generator;
+    }
+
+    public int getSecurityGuard() {
+        return securityGuard;
+    }
+
+    public void setSecurityGuard(int securityGuard) {
+        this.securityGuard = securityGuard;
     }
 
     public long getFlatRent() {
@@ -386,32 +396,39 @@ public class AdInfo {
     public HashMap<String, Object> toMap() {
         HashMap<String, Object> result = new HashMap<>();
         result.put(DBConstants.adId, adId);
-        result.put(DBConstants.startingMonth, startingMonth);
         result.put(DBConstants.startingDate, startingDate);
+        result.put(DBConstants.startingMonth, startingMonth);
         result.put(DBConstants.startingYear, startingYear);
+
         result.put(DBConstants.latitude, latitude);
         result.put(DBConstants.longitude, longitude);
+
         result.put(DBConstants.fullAddress, fullAddress);
         result.put(DBConstants.country, country);
         result.put(DBConstants.division, division);
         result.put(DBConstants.district, district);
         result.put(DBConstants.subDistrict, subDistrict);
         result.put(DBConstants.knownAsArea, knownAsArea);
+
         result.put(DBConstants.flatType, flatType);
-        result.put(DBConstants.houseNameOrNumber, houseNameOrNumber);
-        result.put(DBConstants.floorNumber, floorNumber);
-        result.put(DBConstants.flatFacing, flatFacing);
-        result.put(DBConstants.flatSpace, flatSpace);
         result.put(DBConstants.bedRoom, bedRoom);
         result.put(DBConstants.toilet, toilet);
         result.put(DBConstants.balcony, balcony);
+        result.put(DBConstants.flatFacing, flatFacing);
         result.put(DBConstants.kitchen, kitchen);
+
+        result.put(DBConstants.houseNameOrNumber, houseNameOrNumber);
+        result.put(DBConstants.floorNumber, floorNumber);
         result.put(DBConstants.hasDrawingDining, hasDrawingDining);
+
         result.put(DBConstants.electricity, electricity);
         result.put(DBConstants.gasFacility, gasFacility);
         result.put(DBConstants.water, water);
         result.put(DBConstants.lift, lift);
         result.put(DBConstants.generator, generator);
+        result.put(DBConstants.securityGuard, securityGuard);
+
+        result.put(DBConstants.flatSpace, flatSpace);
         result.put(DBConstants.flatRent, flatRent);
         result.put(DBConstants.othersFee, othersFee);
         result.put(DBConstants.userId, userId);
