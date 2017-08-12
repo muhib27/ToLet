@@ -1,17 +1,16 @@
 package com.to.let.bd.activities;
 
 import android.content.Intent;
+import android.graphics.Rect;
 import android.os.Bundle;
 import android.support.annotation.NonNull;
 import android.support.annotation.Nullable;
 import android.support.design.widget.FloatingActionButton;
 import android.support.design.widget.NavigationView;
-import android.support.design.widget.Snackbar;
 import android.support.v4.view.GravityCompat;
 import android.support.v4.widget.DrawerLayout;
 import android.support.v7.app.ActionBarDrawerToggle;
-import android.support.v7.widget.DefaultItemAnimator;
-import android.support.v7.widget.LinearLayoutManager;
+import android.support.v7.widget.DividerItemDecoration;
 import android.support.v7.widget.RecyclerView;
 import android.support.v7.widget.StaggeredGridLayoutManager;
 import android.support.v7.widget.Toolbar;
@@ -51,6 +50,8 @@ import com.to.let.bd.utils.DBConstants;
 import com.to.let.bd.utils.SmartToLetConstants;
 
 import java.util.ArrayList;
+import java.util.Collections;
+import java.util.Comparator;
 import java.util.HashMap;
 
 public class AdListActivity extends BaseActivity
@@ -303,7 +304,7 @@ public class AdListActivity extends BaseActivity
     }
 
     private void loadData() {
-        Query recentAd = databaseReference.child(DBConstants.adList).limitToFirst(100);
+        Query recentAd = databaseReference.child(DBConstants.adList).limitToLast(100);
 //        showProgressDialog();
         recentAd.addListenerForSingleValueEvent(new ValueEventListener() {
             @Override
@@ -312,6 +313,13 @@ public class AdListActivity extends BaseActivity
                     AdInfo adInfo = postSnapshot.getValue(AdInfo.class);
                     adList.add(adInfo);
                 }
+
+                Collections.sort(adList, new Comparator<AdInfo>() {
+                    @Override
+                    public int compare(AdInfo o1, AdInfo o2) {
+                        return o2.getAdId().compareTo(o1.getAdId());
+                    }
+                });
                 closeProgressDialog();
                 if (adAdapter == null) {
                     adAdapter = new AdAdapter(AdListActivity.this, adList);
@@ -334,10 +342,28 @@ public class AdListActivity extends BaseActivity
     private AdAdapter adAdapter;
     private StaggeredGridLayoutManager staggeredGridLayoutManager;
 
+
+    private class ViewItemDecoration extends RecyclerView.ItemDecoration {
+
+        ViewItemDecoration() {
+        }
+
+        @Override
+        public void getItemOffsets(Rect outRect, final View view, final RecyclerView parent, RecyclerView.State state) {
+            super.getItemOffsets(outRect, view, parent, state);
+            int spanIndex = ((StaggeredGridLayoutManager.LayoutParams) view.getLayoutParams()).getSpanIndex();
+            if (spanIndex == 0) {
+                outRect.right = 5;
+            } else {
+                outRect.left = 5;
+            }
+        }
+    }
+
     private void init() {
         adRecyclerView = (RecyclerView) findViewById(R.id.adRecyclerView);
         adRecyclerView.setHasFixedSize(true);
-
+        adRecyclerView.addItemDecoration(new ViewItemDecoration());
         staggeredGridLayoutManager = new StaggeredGridLayoutManager(2, StaggeredGridLayoutManager.VERTICAL);
         staggeredGridLayoutManager.setAutoMeasureEnabled(true);
         adRecyclerView.setLayoutManager(staggeredGridLayoutManager);

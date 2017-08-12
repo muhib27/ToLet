@@ -10,6 +10,7 @@
     <color name="black_overlay">#66000000</color>
     <color name="black_transparent">#22000000</color>
     <color name="black">#000000</color>
+    <color name="grey_dark">#444444</color>
     <color name="black_light">#66000000</color>
     <color name="white">#ffffff</color>
     <color name="link">#166099</color>
@@ -28,4 +29,7 @@
     <color name="pick_blue">#35C8E6</color>
     <color name="pick_placeholder">#c5e1e1e1</color>
     <color name="pick_bottom">#E5E5E5</color>
+
+    <color name="ad_list_text_color">#ffffff</color>
+    <color name="ad_list_text_bg_color">#000000</color>
 </resources>

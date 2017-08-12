@@ -40,4 +40,5 @@ public class DBConstants {
     public static final String userEmail = "userEmail";
     public static final String userDisplayName = "userDisplayName";
     public static final String images = "images";
+    public static final String map = "map";
 }

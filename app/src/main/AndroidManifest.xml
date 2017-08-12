@@ -69,16 +69,17 @@
             android:configChanges="orientation"
             android:theme="@style/AppTheme.NoActionBar"
             android:windowSoftInputMode="stateHidden">
-            <!--<intent-filter>-->
-            <!--<action android:name="android.intent.action.MAIN" />-->
 
-            <!--<category android:name="android.intent.category.LAUNCHER" />-->
-            <!--</intent-filter>-->
+            <!-- <intent-filter> -->
+            <!-- <action android:name="android.intent.action.MAIN" /> -->
+
+
+            <!-- <category android:name="android.intent.category.LAUNCHER" /> -->
+            <!-- </intent-filter> -->
         </activity>
         <activity
             android:name=".activities.MediaActivity"
             android:theme="@style/AppTheme.NoActionBar" />
-
 
         <provider
             android:name="android.support.v4.content.FileProvider"
@@ -89,7 +90,6 @@
                 android:name="android.support.FILE_PROVIDER_PATHS"
                 android:resource="@xml/file_paths" />
         </provider>
-
         <provider
             android:name=".utils.pick_photo.provider.PickProvider"
             android:authorities="com.to.let.bd.pick.photo.provider"
@@ -102,6 +102,9 @@
 
         <service
             android:name=".utils.UploadImageService"
+            android:exported="false" />
+        <service
+            android:name=".utils.ImageUploadServiceNew"
             android:exported="false" />
     </application>
 

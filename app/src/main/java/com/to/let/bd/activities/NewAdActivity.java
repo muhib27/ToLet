@@ -1,5 +1,6 @@
 package com.to.let.bd.activities;
 
+import android.Manifest;
 import android.app.DatePickerDialog;
 import android.app.Dialog;
 import android.content.Intent;
@@ -23,6 +24,7 @@ import android.support.v7.widget.PopupMenu;
 import android.support.v7.widget.Toolbar;
 import android.text.Editable;
 import android.text.TextWatcher;
+import android.util.Patterns;
 import android.view.Gravity;
 import android.view.KeyEvent;
 import android.view.LayoutInflater;
@@ -35,6 +37,7 @@ import android.widget.CheckBox;
 import android.widget.DatePicker;
 import android.widget.EditText;
 import android.widget.FrameLayout;
+import android.widget.ImageView;
 import android.widget.LinearLayout;
 import android.widget.RadioGroup;
 import android.widget.ScrollView;
@@ -49,6 +52,7 @@ import com.google.android.gms.common.api.GoogleApiClient;
 import com.google.android.gms.common.api.ResultCallback;
 import com.google.android.gms.common.api.Status;
 import com.google.android.gms.location.LocationServices;
+import com.google.android.gms.maps.CameraUpdate;
 import com.google.android.gms.maps.CameraUpdateFactory;
 import com.google.android.gms.maps.GoogleMap;
 import com.google.android.gms.maps.OnMapReadyCallback;
@@ -56,6 +60,7 @@ import com.google.android.gms.maps.SupportMapFragment;
 import com.google.android.gms.maps.model.BitmapDescriptorFactory;
 import com.google.android.gms.maps.model.CameraPosition;
 import com.google.android.gms.maps.model.LatLng;
+import com.google.android.gms.maps.model.LatLngBounds;
 import com.google.android.gms.maps.model.Marker;
 import com.google.android.gms.maps.model.MarkerOptions;
 import com.google.android.gms.tasks.OnCompleteListener;
@@ -71,6 +76,7 @@ import com.google.firebase.database.DatabaseReference;
 import com.google.firebase.database.FirebaseDatabase;
 import com.to.let.bd.R;
 import com.to.let.bd.common.BaseActivity;
+import com.to.let.bd.common.BaseImageUploadActivity;
 import com.to.let.bd.common.WorkaroundMapFragment;
 import com.to.let.bd.model.AdInfo;
 import com.to.let.bd.utils.AppConstants;
@@ -78,6 +84,7 @@ import com.to.let.bd.utils.DBConstants;
 import com.to.let.bd.utils.SmartToLetConstants;
 import com.to.let.bd.utils.SmartToLetPrefs;
 
+import java.io.ByteArrayOutputStream;
 import java.io.IOException;
 import java.text.ParseException;
 import java.text.SimpleDateFormat;
@@ -88,7 +95,7 @@ import java.util.HashMap;
 import java.util.List;
 import java.util.Locale;
 
-public class NewAdActivity extends BaseActivity
+public class NewAdActivity extends BaseImageUploadActivity
         implements OnMapReadyCallback,
         GoogleApiClient.ConnectionCallbacks,
         GoogleApiClient.OnConnectionFailedListener,
@@ -164,6 +171,7 @@ public class NewAdActivity extends BaseActivity
     private EditText totalSpace, whichFloor, houseInfo, totalRent, totalUtility;
     private RadioGroup drawingDining, rentType, utilityBill;
     private TextInputLayout totalUtilityTIL;
+    private TextView utilityBdt;
 
     private void initView() {
         Toolbar toolbar = (Toolbar) findViewById(R.id.toolbar);
@@ -237,6 +245,7 @@ public class NewAdActivity extends BaseActivity
 
         totalUtilityTIL = (TextInputLayout) findViewById(R.id.totalUtilityTIL);
         totalUtility = (EditText) findViewById(R.id.totalUtility);
+        utilityBdt = (TextView) findViewById(R.id.utilityBdt);
 
         totalUtility.setOnEditorActionListener(new TextView.OnEditorActionListener() {
             @Override
@@ -366,6 +375,7 @@ public class NewAdActivity extends BaseActivity
     private void setEmailAddress() {
         emailAddress.setText(firebaseUser.getEmail());
         emailAddress.setEnabled(false);
+        validateInputtedData();
         updateUserInfo();
     }
 
@@ -513,7 +523,6 @@ public class NewAdActivity extends BaseActivity
      * Gets the current location of the device, and positions the map's camera.
      * String fullAddress
      */
-    String fullAddress;
 
     private void gotoDeviceLocation() {
         /*
@@ -538,8 +547,22 @@ public class NewAdActivity extends BaseActivity
             googleMap.getUiSettings().setMyLocationButtonEnabled(false);
         }
 
-        fullAddress = getLocationBestApproximateResult(findSelectedLocationDetails(mDefaultLatLng.latitude, mDefaultLatLng.longitude), mDefaultLatLng);
+        String fullAddress = getLocationBestApproximateResult(findSelectedLocationDetails(mDefaultLatLng.latitude, mDefaultLatLng.longitude), mDefaultLatLng);
         addressDetails.setText(fullAddress);
+
+        addMarker(mDefaultLatLng, fullAddress);
+    }
+
+    private Marker selectedLocation;
+
+    private void addMarker(LatLng latLng, String details) {
+        googleMap.clear();
+        selectedLocation = googleMap.addMarker(new MarkerOptions()
+                .position(latLng)
+                .snippet(details)
+                .title(getString(R.string.your_selected_location))
+                .icon(BitmapDescriptorFactory.defaultMarker(BitmapDescriptorFactory.HUE_RED)));
+        selectedLocation.setTag(0);
     }
 
     private LatLng getLatLng(Location location) {
@@ -612,26 +635,15 @@ public class NewAdActivity extends BaseActivity
 
     @Override
     public void onMapLongClick(LatLng latLng) {
-        googleMap.clear();
         final String fullAddress = getLocationBestApproximateResult(findSelectedLocationDetails(latLng.latitude, latLng.longitude), latLng);
         addressDetails.setText(fullAddress);
-        googleMap.addMarker(new MarkerOptions()
-                .position(latLng)
-                .snippet(fullAddress)
-                .title("You tap here")
-                .icon(BitmapDescriptorFactory.defaultMarker(BitmapDescriptorFactory.HUE_RED)));
-
+        addMarker(latLng, fullAddress);
 //        googleMap.setInfoWindowAdapter(new CustomInfoWindowAdapter());
     }
 
     @Override
     public void onMapClick(LatLng latLng) {
-        this.googleMap.snapshot(new GoogleMap.SnapshotReadyCallback() {
-            @Override
-            public void onSnapshotReady(Bitmap bitmap) {
-                googleMap.clear();
-            }
-        });
+        googleMap.clear();
     }
 
     private String getLocationBestApproximateResult(List<Address> addressList, LatLng latLng) {
@@ -723,7 +735,7 @@ public class NewAdActivity extends BaseActivity
         PopupMenu popup = new PopupMenu(this, view);
 
         for (int room : roomArray) {
-            String s = "";
+            String s;
             if (room <= 1) {
                 if (room == 0 && roomType.equals(roomTypes[2])) {
                     s = "No " + roomType;
@@ -745,7 +757,13 @@ public class NewAdActivity extends BaseActivity
             public boolean onMenuItemClick(MenuItem item) {
                 String subtitle = String.valueOf(item.getTitle());
                 String title = (subtitle.split(" "))[1].replace("'s", "");
-                int roomNumber = Integer.parseInt((subtitle.split(" "))[0]);
+
+                int roomNumber;
+                if ((subtitle.split(" "))[0].equalsIgnoreCase("no")) {
+                    roomNumber = 0;
+                } else {
+                    roomNumber = Integer.parseInt((subtitle.split(" "))[0]);
+                }
 
                 if (title.equalsIgnoreCase(roomTypes[0])) {
                     familyRoom[0] = roomNumber;
@@ -859,13 +877,24 @@ public class NewAdActivity extends BaseActivity
             return;
         }
 
-        if (emailAddress == null) {
-            showToast();
-            return;
-        } else if (emailAddress.getText().length() == 0) {
-            emailAddress.setError(getString(R.string.error_field_required));
+//        if (emailAddress == null) {
+//            showToast();
+//            return;
+//        } else if (emailAddress.getText().length() == 0) {
+//            emailAddress.setError(getString(R.string.error_field_required));
+//            emailAddress.requestFocus();
+//            return;
+//        } else if (Patterns.EMAIL_ADDRESS.matcher(emailAddress.getText().toString()).matches()) {
+//            emailAddress.setError(getString(R.string.error_field_required));
+//            emailAddress.requestFocus();
+//            return;
+//        }
+
+        if (firebaseUser == null || firebaseUser.isAnonymous()) {
+            googleSignOut();
             return;
         }
+
         if (!AppConstants.isMobileNumberValid(this, mobileNumber)) {
             return;
         }
@@ -887,10 +916,30 @@ public class NewAdActivity extends BaseActivity
 
         summaryDialog.show();
 
-        LinearLayout okBtnLay = (LinearLayout) summaryDialog.findViewById(R.id.okBtnLay);
-        LinearLayout noBtnLay = (LinearLayout) summaryDialog.findViewById(R.id.noBtnLay);
+        TextView title = (TextView) summaryDialog.findViewById(R.id.title);
+        title.setText(getString(R.string.is_everything_ok));
 
-        okBtnLay.setOnClickListener(new View.OnClickListener() {
+        TextView roomDetails = (TextView) summaryDialog.findViewById(R.id.roomDetails);
+        TextView address = (TextView) summaryDialog.findViewById(R.id.address);
+        TextView totalRent = (TextView) summaryDialog.findViewById(R.id.totalRent);
+
+        String r = familyRoom[0] + " bedroom, " + familyRoom[1] + " bathroom, " + familyRoom[2] + " balcony.";
+        roomDetails.setText(r);
+
+        address.setText(addressDetails.getText());
+
+        long totalR = Long.parseLong(this.totalRent.getText().toString());
+        long totalU = utilityBill.getCheckedRadioButtonId() == R.id.utilityBillIncluded ? 0 :
+                totalUtility.getText().length() > 0 ? Long.parseLong(totalUtility.getText().toString()) : 0;
+        totalR = totalR + totalU;
+        String tr = "Total Rent: " + String.valueOf(totalR) + " (include utility bill)";
+
+        totalRent.setText(tr);
+
+        ImageView okBtn = (ImageView) summaryDialog.findViewById(R.id.okBtn);
+        ImageView noBtn = (ImageView) summaryDialog.findViewById(R.id.noBtn);
+
+        okBtn.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View view) {
                 summaryDialog.dismiss();
@@ -898,16 +947,35 @@ public class NewAdActivity extends BaseActivity
             }
         });
 
-        noBtnLay.setOnClickListener(new View.OnClickListener() {
+        noBtn.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View view) {
                 summaryDialog.dismiss();
             }
         });
+
+//        LinearLayout okBtnLay = (LinearLayout) summaryDialog.findViewById(R.id.okBtnLay);
+//        LinearLayout noBtnLay = (LinearLayout) summaryDialog.findViewById(R.id.noBtnLay);
+//
+//        okBtnLay.setOnClickListener(new View.OnClickListener() {
+//            @Override
+//            public void onClick(View view) {
+//                summaryDialog.dismiss();
+//                writeNewPost();
+//            }
+//        });
+//
+//        noBtnLay.setOnClickListener(new View.OnClickListener() {
+//            @Override
+//            public void onClick(View view) {
+//                summaryDialog.dismiss();
+//            }
+//        });
     }
 
     private void writeNewPost() {
-        String adId = mDatabase.child(DBConstants.adList).push().getKey();
+        showProgressDialog();
+        final String adId = mDatabase.child(DBConstants.adList).push().getKey();
         AdInfo adInfo = new AdInfo(adId, date[0], date[1], date[2], rentLatitude, rentLongitude,
                 addressDetails.getText().toString(), "", "", "", "", "",
                 1, familyRoom[0], familyRoom[1], familyRoom[2], familyRoom[3], 1,
@@ -918,7 +986,8 @@ public class NewAdActivity extends BaseActivity
                 liftCB.isChecked() ? 1 : 0, generatorCB.isChecked() ? 1 : 0, securityGuardCB.isChecked() ? 1 : 0,
                 totalSpace.getText().length() == 0 ? -1 : Long.parseLong(totalSpace.getText().toString()),
                 Long.parseLong(totalRent.getText().toString()),
-                utilityBill.getCheckedRadioButtonId() == R.id.utilityBillIncluded ? Long.parseLong(totalUtility.getText().toString()) : 0,
+                utilityBill.getCheckedRadioButtonId() == R.id.utilityBillIncluded || totalUtility.getText().length() > 0 ?
+                        Long.parseLong(totalUtility.getText().toString()) : 0,
                 getUid());
 
         //AdInfo adInfo = new AdInfo(adId, getUid());
@@ -929,9 +998,34 @@ public class NewAdActivity extends BaseActivity
             @Override
             public void onComplete(DatabaseError databaseError, DatabaseReference databaseReference) {
                 if (databaseError == null) {
-                    showToast(getString(R.string.success));
+                    if (selectedLocation != null) {
+                        googleMap.moveCamera(CameraUpdateFactory.newLatLngZoom(selectedLocation.getPosition(), DEFAULT_ZOOM));
+                        if (selectedLocation.isInfoWindowShown()) {
+                            selectedLocation.hideInfoWindow();
+                        }
+                    }
+                    if (googleMap.isMyLocationEnabled()) {
+                        if (!(ActivityCompat.checkSelfPermission(NewAdActivity.this, Manifest.permission.ACCESS_FINE_LOCATION) != PackageManager.PERMISSION_GRANTED && ActivityCompat.checkSelfPermission(NewAdActivity.this, Manifest.permission.ACCESS_COARSE_LOCATION) != PackageManager.PERMISSION_GRANTED)) {
+                            googleMap.setMyLocationEnabled(false);
+                        }
+                    }
+                    googleMap.setOnMapLoadedCallback(new GoogleMap.OnMapLoadedCallback() {
+                        @Override
+                        public void onMapLoaded() {
+                            googleMap.snapshot(new GoogleMap.SnapshotReadyCallback() {
+                                @Override
+                                public void onSnapshotReady(Bitmap bitmap) {
+                                    ByteArrayOutputStream stream = new ByteArrayOutputStream();
+                                    bitmap.compress(Bitmap.CompressFormat.PNG, 50, stream);
+                                    byte[] byteArray = stream.toByteArray();
+                                    uploadImage(SmartToLetConstants.adMapImageType, adId, byteArray);
+                                }
+                            });
+                        }
+                    });
                 } else {
                     showToast(databaseError.getMessage());
+                    closeProgressDialog();
                 }
                 showLog();
             }
@@ -1038,9 +1132,18 @@ public class NewAdActivity extends BaseActivity
             public void onCheckedChanged(RadioGroup radioGroup, @IdRes int checkedId) {
                 if (checkedId == R.id.utilityBillIncluded) {
                     totalUtilityTIL.setVisibility(View.GONE);
+                    utilityBdt.setVisibility(View.GONE);
                 } else {
                     totalUtilityTIL.setVisibility(View.VISIBLE);
+                    utilityBdt.setVisibility(View.VISIBLE);
                 }
+            }
+        });
+
+        drawingDining.setOnCheckedChangeListener(new RadioGroup.OnCheckedChangeListener() {
+            @Override
+            public void onCheckedChanged(RadioGroup radioGroup, @IdRes int checkedId) {
+                setCalculatedRent();
             }
         });
 
@@ -1073,4 +1176,19 @@ public class NewAdActivity extends BaseActivity
 
     private long waterBill = 800;
     private long gasBill = 900;
+
+    @Override
+    protected void imageUploadSuccess() {
+        closeProgressDialog();
+        showToast(getString(R.string.success));
+        finish();
+        Intent intent = new Intent(this, AdListActivity.class);
+        intent.addFlags(Intent.FLAG_ACTIVITY_CLEAR_TASK);
+        startActivity(intent);
+    }
+
+    @Override
+    protected void imageUploadFailed() {
+        closeProgressDialog();
+    }
 }

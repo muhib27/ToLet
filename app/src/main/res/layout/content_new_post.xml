@@ -261,9 +261,8 @@
                 </android.support.design.widget.TextInputLayout>
 
                 <android.support.design.widget.TextInputLayout
-                    android:layout_width="0dp"
-                    android:layout_height="wrap_content"
-                    android:layout_weight="1">
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content">
 
                     <EditText
                         android:id="@+id/whichFloor"
@@ -291,9 +290,8 @@
                 android:orientation="horizontal">
 
                 <android.support.design.widget.TextInputLayout
-                    android:layout_width="0dp"
-                    android:layout_height="wrap_content"
-                    android:layout_weight="1">
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content">
 
                     <EditText
                         android:id="@+id/totalSpace"
@@ -311,21 +309,21 @@
                 </android.support.design.widget.TextInputLayout>
 
                 <TextView
-                    android:layout_width="wrap_content"
+                    android:layout_width="0dp"
                     android:layout_height="wrap_content"
                     android:layout_marginEnd="@dimen/size_10dp"
                     android:layout_marginLeft="@dimen/new_post_common_padding"
                     android:layout_marginRight="@dimen/size_10dp"
                     android:layout_marginStart="@dimen/new_post_common_padding"
+                    android:layout_weight="1"
                     android:text="@string/sqft"
                     android:textColor="@color/black"
                     android:textSize="@dimen/text_size_14sp"
                     android:textStyle="bold" />
 
                 <android.support.design.widget.TextInputLayout
-                    android:layout_width="0dp"
-                    android:layout_height="wrap_content"
-                    android:layout_weight="1">
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content">
 
                     <EditText
                         android:id="@+id/totalRent"
@@ -343,10 +341,11 @@
                 </android.support.design.widget.TextInputLayout>
 
                 <TextView
-                    android:layout_width="wrap_content"
+                    android:layout_width="0dp"
                     android:layout_height="wrap_content"
                     android:layout_marginLeft="@dimen/new_post_common_padding"
                     android:layout_marginStart="@dimen/new_post_common_padding"
+                    android:layout_weight="1"
                     android:text="@string/bdt"
                     android:textColor="@color/black"
                     android:textSize="@dimen/text_size_14sp"
@@ -372,9 +371,9 @@
 
                 <RadioGroup
                     android:id="@+id/utilityBill"
-                    android:layout_width="0dp"
+                    android:layout_width="wrap_content"
                     android:layout_height="wrap_content"
-                    android:layout_weight="1"
+                    android:layout_margin="@dimen/size_5dp"
                     android:orientation="horizontal">
 
                     <RadioButton
@@ -413,10 +412,12 @@
                 </android.support.design.widget.TextInputLayout>
 
                 <TextView
-                    android:layout_width="wrap_content"
+                    android:id="@+id/utilityBdt"
+                    android:layout_width="0dp"
                     android:layout_height="wrap_content"
                     android:layout_marginLeft="@dimen/new_post_common_padding"
                     android:layout_marginStart="@dimen/new_post_common_padding"
+                    android:layout_weight="1"
                     android:text="@string/bdt"
                     android:textColor="@color/black"
                     android:textSize="@dimen/text_size_14sp"

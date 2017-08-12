@@ -46,10 +46,12 @@ public class WorkaroundMapFragment extends SupportMapFragment {
         public boolean dispatchTouchEvent(MotionEvent event) {
             switch (event.getAction()) {
                 case MotionEvent.ACTION_DOWN:
-                    mListener.onTouch();
+                    if (mListener != null)
+                        mListener.onTouch();
                     break;
                 case MotionEvent.ACTION_UP:
-                    mListener.onTouch();
+                    if (mListener != null)
+                        mListener.onTouch();
                     break;
             }
             return super.dispatchTouchEvent(event);

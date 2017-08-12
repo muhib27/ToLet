@@ -97,4 +97,14 @@
     <string name="error_valid_mobile_number">Please insert valid mobile number.</string>
     <string name="ok">OK</string>
     <string name="success">Success</string>
+    <string name="title_bar_icon">Title bar icon</string>
+
+    <string name="image_upload_title">Image uploading started</string>
+    <string name="image_upload_message">Your selected image(\'s), you can\'t stop it right now, but you can change it later.</string>
+    <string name="image_upload_status" formatted="false">Your uploading image progress %s.</string>
+    <string name="image_upload_starting">Your image uploading is going to start.</string>
+
+    <string name="your_selected_location">Your selected location</string>
+    <string name="map">map</string>
+    <string name="is_everything_ok">Is Everything OK?</string>
 </resources>

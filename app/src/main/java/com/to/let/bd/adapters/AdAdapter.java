@@ -9,9 +9,7 @@ import android.view.MotionEvent;
 import android.view.View;
 import android.view.ViewGroup;
 import android.widget.ImageView;
-import android.widget.ProgressBar;
 import android.widget.TextView;
-
 
 import com.bumptech.glide.Glide;
 import com.to.let.bd.R;
@@ -45,18 +43,17 @@ public class AdAdapter extends RecyclerView.Adapter<AdAdapter.MyViewHolder> {
     public void onBindViewHolder(final MyViewHolder holder, int position) {
         AdInfo adInfo = sampleList.get(position);
 
-        String title = "৳ " + adInfo.getFlatRent() + " per month.";
+        String title = "৳" + adInfo.getFlatRent() + ", " + adInfo.getBedRoom() + " bed, " + adInfo.getToilet() + " bath";
         holder.adTitle.setText(title.trim());
-        String subTitle = adInfo.getBedRoom() + " bed room, " + adInfo.getToilet() + " bathroom.\n" +
-                adInfo.getFullAddress();
+        String subTitle = adInfo.getFullAddress();
         holder.adSubTitle.setText(subTitle.trim());
 
         if (adInfo.getImages() == null || adInfo.getImages().isEmpty()) {
-            if (adInfo.getMap() == null || adInfo.getMap().isEmpty()) {
+            if (adInfo.getMap() == null) {
                 holder.adMainPhoto.setImageResource(R.drawable.dummy_flat_image);
             } else {
                 Glide.with(context)
-                        .load(Uri.parse(adInfo.getMap()))
+                        .load(Uri.parse(adInfo.getMap().getDownloadUrl()))
                         .into(holder.adMainPhoto);
             }
         } else {

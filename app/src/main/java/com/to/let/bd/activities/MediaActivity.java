@@ -1,58 +1,57 @@
 package com.to.let.bd.activities;
 
 import android.Manifest;
-import android.content.BroadcastReceiver;
-import android.content.Context;
 import android.content.Intent;
 import android.content.pm.PackageManager;
-import android.net.Uri;
 import android.os.Bundle;
 import android.support.annotation.NonNull;
 import android.support.design.widget.FloatingActionButton;
 import android.support.v4.app.ActivityCompat;
 import android.support.v4.content.ContextCompat;
-import android.support.v4.content.LocalBroadcastManager;
 import android.support.v7.app.ActionBar;
 import android.support.v7.widget.DefaultItemAnimator;
 import android.support.v7.widget.GridLayoutManager;
 import android.support.v7.widget.RecyclerView;
 import android.support.v7.widget.Toolbar;
+import android.view.MenuItem;
 import android.view.View;
 
 import com.bumptech.glide.Glide;
 import com.bumptech.glide.RequestManager;
-import com.google.firebase.database.DatabaseReference;
-import com.google.firebase.database.FirebaseDatabase;
 import com.to.let.bd.R;
-import com.to.let.bd.common.BaseActivity;
 import com.to.let.bd.adapters.pick_photo.PickGridAdapter;
-import com.to.let.bd.utils.pick_photo.SpaceItemDecoration;
+import com.to.let.bd.common.BaseImageUploadActivity;
 import com.to.let.bd.model.pick_photo.GroupImage;
 import com.to.let.bd.model.pick_photo.PickData;
+import com.to.let.bd.utils.SmartToLetConstants;
 import com.to.let.bd.utils.pick_photo.PickConfig;
 import com.to.let.bd.utils.pick_photo.PickPhotoHelper;
 import com.to.let.bd.utils.pick_photo.PickPhotoListener;
 import com.to.let.bd.utils.pick_photo.PickPreferences;
 import com.to.let.bd.utils.pick_photo.PickUtils;
-import com.to.let.bd.utils.DBConstants;
-import com.to.let.bd.utils.SmartToLetConstants;
-import com.to.let.bd.utils.UploadImageService;
+import com.to.let.bd.utils.pick_photo.SpaceItemDecoration;
 
 import java.util.ArrayList;
-import java.util.HashMap;
 
-public class MediaActivity extends BaseActivity {
-
-    private String adId;
+public class MediaActivity extends BaseImageUploadActivity {
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_media);
+
         Toolbar toolbar = (Toolbar) findViewById(R.id.toolbar);
         setSupportActionBar(toolbar);
+
+        ActionBar actionBar = getSupportActionBar();
+        if (actionBar != null) {
+            actionBar.setDisplayHomeAsUpEnabled(true);
+            actionBar.setDisplayShowTitleEnabled(true);
+            actionBar.setTitle(R.string.post_your_add);
+        }
+
         requestStoragePermission();
-        initBroadcast();
+//        initBroadcast();
     }
 
     private static final int PERMISSIONS_REQUEST_CODE = 1;
@@ -85,13 +84,9 @@ public class MediaActivity extends BaseActivity {
 //        }
 //    }
 
-    private void executeStorageAction() {
-        ActionBar actionBar = getSupportActionBar();
-        if (actionBar != null) {
-            actionBar.setDisplayShowHomeEnabled(true);
-            actionBar.setDisplayHomeAsUpEnabled(true);
-        }
+    private String adId;
 
+    private void executeStorageAction() {
         Intent intent = getIntent();
         if (intent != null) {
             Bundle bundle = intent.getBundleExtra(SmartToLetConstants.mediaExtra);
@@ -108,8 +103,6 @@ public class MediaActivity extends BaseActivity {
         fab.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View view) {
-                imagePathList.clear();
-                imagePathList.addAll(pickGridAdapter.getSelectPath());
                 submitImages();
             }
         });
@@ -191,7 +184,6 @@ public class MediaActivity extends BaseActivity {
 
     public void updateSelectText(int selectSize) {
         ActionBar actionBar = getSupportActionBar();
-
         if (actionBar != null) {
             if (selectSize <= 1) {
                 actionBar.setTitle("(" + selectSize + ") item selected.");
@@ -221,118 +213,28 @@ public class MediaActivity extends BaseActivity {
     };
 
     private void submitImages() {
+        ArrayList<String> imagePathList = new ArrayList<>();
+        imagePathList.clear();
+        imagePathList.addAll(pickGridAdapter.getSelectPath());
+
         if (imagePathList.isEmpty()) {
             showToast(getString(R.string.please_select_photo));
         } else {
-            showProgressDialog();
-            uploadImage();
+            uploadImages(imagePathList, adId, SmartToLetConstants.adImageType);
         }
     }
 
-    private ArrayList<String> imagePathList = new ArrayList<>();
-    private int imageIndex = 0;
-
-    private void uploadImage() {
-        imageIndex = imagePathList.size() - 1;
-        if (imageIndex >= imagePathList.size()) {
-            return;
-        }
-
-        // Start StorageUploadService to upload the file, so that the file is uploaded
-        // even if this Activity is killed or put in the background
-        startService(new Intent(this, UploadImageService.class)
-                .putExtra(SmartToLetConstants.fileUri, Uri.parse("file://" + pickGridAdapter.getSelectPath().get(imageIndex)))
-                .putExtra(SmartToLetConstants.keyType, SmartToLetConstants.adImageType)
-                .putExtra(SmartToLetConstants.adId, adId)
-                .putExtra(SmartToLetConstants.imageIndex, imageIndex)
-                .setAction(SmartToLetConstants.actionUpload));
-    }
-
     @Override
-    public boolean onSupportNavigateUp() {
-        onBackPressed();
-        return true;
-    }
-
-    @Override
-    public void onStart() {
-        super.onStart();
-        // Register receiver for uploads and downloads
-        LocalBroadcastManager manager = LocalBroadcastManager.getInstance(this);
-        manager.registerReceiver(mBroadcastReceiver, UploadImageService.getIntentFilter());
-    }
-
-    @Override
-    public void onStop() {
-        super.onStop();
-
-        // Unregister download receiver
-        LocalBroadcastManager.getInstance(this).unregisterReceiver(mBroadcastReceiver);
-
-//        if (mUserBasicInfoListener != null) {
-//            databaseReference.removeEventListener(mUserBasicInfoListener);
-//        }
-//        if (mUserPhotoIdsListener != null) {
-//            databaseReference.removeEventListener(mUserBasicInfoListener);
-//        }
-    }
-
-    private BroadcastReceiver mBroadcastReceiver;
-
-    private void initBroadcast() {
-        // Local broadcast receiver
-        mBroadcastReceiver = new BroadcastReceiver() {
-            @Override
-            public void onReceive(Context context, Intent intent) {
-                showLog("onReceive:" + intent);
-                switch (intent.getAction()) {
-                    case SmartToLetConstants.uploadComplete:
-                        int imageIndex = intent.getIntExtra(SmartToLetConstants.imageIndex, 0);
-                        String[] imageContents = intent.getStringArrayExtra(SmartToLetConstants.imageContents);
-                        String downloadUrl = intent.getStringExtra(SmartToLetConstants.downloadUrl);
-
-                        updateDatabase(imageIndex, imageContents);
-                        if (imageIndex != 0) {
-                            imagePathList.remove(imageIndex);
-                            uploadImage();
-                        } else {
-                            closeProgressDialog();
-                            completeUploading();
-                        }
-                        break;
-                    case SmartToLetConstants.uploadError:
-                        closeProgressDialog();
-                        break;
-                }
-            }
-        };
-    }
-
-    private void completeUploading() {
+    protected void imageUploadSuccess() {
         finish();
         Intent intent = new Intent(this, AdListActivity.class);
         intent.addFlags(Intent.FLAG_ACTIVITY_CLEAR_TASK);
         startActivity(intent);
     }
 
-    private void updateDatabase(int imageIndex, String[] imageContents) {
-        firebaseInit();
+    @Override
+    protected void imageUploadFailed() {
 
-        HashMap<String, Object> adValues = new HashMap<>();
-        adValues.put(SmartToLetConstants.downloadUrl, imageContents[0]);
-        adValues.put(SmartToLetConstants.imageName, imageContents[1]);
-        adValues.put(SmartToLetConstants.imagePath, imageContents[2]);
-
-        HashMap<String, Object> childUpdates = new HashMap<>();
-        childUpdates.put("/" + DBConstants.adList + "/" + adId + "/" + DBConstants.images + "/" + imageIndex, adValues);
-        mDatabase.updateChildren(childUpdates);
-    }
-
-    private DatabaseReference mDatabase;
-
-    private void firebaseInit() {
-        if (mDatabase == null)
-            mDatabase = FirebaseDatabase.getInstance().getReference();
     }
 
     @Override
@@ -343,5 +245,16 @@ public class MediaActivity extends BaseActivity {
     @Override
     protected void onPause() {
         super.onPause();
+    }
+
+    @Override
+    public boolean onOptionsItemSelected(MenuItem item) {
+        switch (item.getItemId()) {
+            case android.R.id.home:
+                finish();
+                return true;
+            default:
+                return super.onOptionsItemSelected(item);
+        }
     }
 }

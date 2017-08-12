@@ -1,0 +1,41 @@
+<?xml version="1.0" encoding="utf-8"?>
+<LinearLayout xmlns:android="http://schemas.android.com/apk/res/android"
+    android:layout_width="match_parent"
+    android:layout_height="wrap_content"
+    android:layout_margin="@dimen/size_10dp"
+    android:background="@color/white"
+    android:orientation="vertical">
+
+    <include layout="@layout/alert_title_bar" />
+
+    <LinearLayout
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:gravity="end"
+        android:orientation="vertical"
+        android:padding="@dimen/size_20dp">
+
+        <TextView
+            android:id="@+id/progressMessage"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:maxLines="2"
+            android:singleLine="false"
+            android:textSize="@dimen/text_size_14sp" />
+
+        <TextView
+            android:id="@+id/progressStatus"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:maxLines="1"
+            android:singleLine="true"
+            android:textSize="@dimen/text_size_12sp" />
+
+        <ProgressBar
+            android:id="@+id/progressBar"
+            style="@android:style/Widget.DeviceDefault.ProgressBar.Horizontal"
+            android:layout_width="match_parent"
+            android:layout_height="@dimen/size_20dp"
+            android:max="100" />
+    </LinearLayout>
+</LinearLayout>

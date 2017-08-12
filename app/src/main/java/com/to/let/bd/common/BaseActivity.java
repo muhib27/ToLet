@@ -27,10 +27,20 @@ public class BaseActivity extends AppCompatActivity {
     }
 
     public void showProgressDialog(String title, String message) {
-        if (progressDialog == null || !progressDialog.isShowing()) {
+        showProgressDialog(title, message, false);
+    }
+
+    public void showProgressDialog(String title, String message, boolean cancelable) {
+        if (progressDialog == null) {
             progressDialog = ProgressDialog.show(this, title, message);
-            progressDialog.setCancelable(false);
+            progressDialog.setCancelable(cancelable);
+        } else {
+            progressDialog.show();
         }
+    }
+
+    public ProgressDialog getProgressDialog() {
+        return progressDialog;
     }
 
     public void closeProgressDialog() {
