@@ -1,8 +1,11 @@
 package com.to.let.bd.model;
 
 import com.google.firebase.database.Exclude;
+import com.google.firebase.database.ServerValue;
 import com.to.let.bd.utils.DBConstants;
+import com.to.let.bd.utils.SmartToLetConstants;
 
+import java.io.Serializable;
 import java.util.ArrayList;
 import java.util.HashMap;
 
@@ -25,7 +28,7 @@ public class AdInfo {
 
     private int flatType;
     private int bedRoom;
-    private int toilet;
+    private int bathroom;
     private int balcony;
 
     private int kitchen;
@@ -73,7 +76,7 @@ public class AdInfo {
         this.flatFacing = 1;
         this.flatSpace = 1200;
         this.bedRoom = 2;
-        this.toilet = 3;
+        this.bathroom = 3;
         this.balcony = 2;
         this.kitchen = 1;
         this.hasDrawingDining = 1;
@@ -90,7 +93,7 @@ public class AdInfo {
 
     public AdInfo(String adId, int startingDate, int startingMonth, int startingYear, double latitude, double longitude,
                   String fullAddress, String country, String division, String district, String subDistrict, String knownAsArea,
-                  int flatType, int bedRoom, int toilet, int balcony, int flatFacing, int kitchen,
+                  int flatType, int bedRoom, int bathroom, int balcony, int flatFacing, int kitchen,
                   String houseNameOrNumber, int floorNumber, int hasDrawingDining,
                   int electricity, int gasFacility, int water, int lift, int generator, int securityGuard,
                   long flatSpace, long flatRent, long othersFee, String userId) {
@@ -112,7 +115,7 @@ public class AdInfo {
         this.flatFacing = flatFacing;
         this.flatSpace = flatSpace;
         this.bedRoom = bedRoom;
-        this.toilet = toilet;
+        this.bathroom = bathroom;
         this.balcony = balcony;
         this.kitchen = kitchen;
         this.hasDrawingDining = hasDrawingDining;
@@ -271,12 +274,12 @@ public class AdInfo {
         this.bedRoom = bedRoom;
     }
 
-    public int getToilet() {
-        return toilet;
+    public int getBathroom() {
+        return bathroom;
     }
 
-    public void setToilet(int toilet) {
-        this.toilet = toilet;
+    public void setBathroom(int bathroom) {
+        this.bathroom = bathroom;
     }
 
     public int getBalcony() {
@@ -412,7 +415,7 @@ public class AdInfo {
 
         result.put(DBConstants.flatType, flatType);
         result.put(DBConstants.bedRoom, bedRoom);
-        result.put(DBConstants.toilet, toilet);
+        result.put(DBConstants.bathroom, bathroom);
         result.put(DBConstants.balcony, balcony);
         result.put(DBConstants.flatFacing, flatFacing);
         result.put(DBConstants.kitchen, kitchen);
@@ -432,6 +435,7 @@ public class AdInfo {
         result.put(DBConstants.flatRent, flatRent);
         result.put(DBConstants.othersFee, othersFee);
         result.put(DBConstants.userId, userId);
+        result.put(SmartToLetConstants.keyTimestamp, ServerValue.TIMESTAMP);
         return result;
     }
     // [END post_to_map]

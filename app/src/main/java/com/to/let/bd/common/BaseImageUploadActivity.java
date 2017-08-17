@@ -75,7 +75,7 @@ public abstract class BaseImageUploadActivity extends BaseActivity {
         startService(new Intent(this, UploadImageService.class)
                 .putExtra(SmartToLetConstants.keyType, type)
                 .putExtra(SmartToLetConstants.fileUri, imageByte)
-                .putExtra(SmartToLetConstants.adId, adId)
+                .putExtra(DBConstants.adId, adId)
                 .putExtra(SmartToLetConstants.imageIndex, 0)
                 .setAction(SmartToLetConstants.actionUpload));
     }
@@ -89,7 +89,7 @@ public abstract class BaseImageUploadActivity extends BaseActivity {
         startService(new Intent(this, UploadImageService.class)
                 .putExtra(SmartToLetConstants.keyType, type)
                 .putExtra(SmartToLetConstants.fileUri, Uri.parse("file://" + imagePathList.get(imageIndex)))
-                .putExtra(SmartToLetConstants.adId, adId)
+                .putExtra(DBConstants.adId, adId)
                 .putExtra(SmartToLetConstants.imageIndex, imageIndex)
                 .setAction(SmartToLetConstants.actionUpload));
     }
@@ -105,7 +105,7 @@ public abstract class BaseImageUploadActivity extends BaseActivity {
                         break;
                     case SmartToLetConstants.uploadComplete: {
                         int type = intent.getIntExtra(SmartToLetConstants.keyType, 0);
-                        String adId = intent.getStringExtra(SmartToLetConstants.adId);
+                        String adId = intent.getStringExtra(DBConstants.adId);
                         int imageIndex = intent.getIntExtra(SmartToLetConstants.imageIndex, 0);
                         String[] imageContents = intent.getStringArrayExtra(SmartToLetConstants.imageContents);
                         completeSingleImageUpload(type, adId, imageIndex, imageContents);
@@ -113,7 +113,7 @@ public abstract class BaseImageUploadActivity extends BaseActivity {
                     break;
                     case SmartToLetConstants.uploadProgress: {
                         int type = intent.getIntExtra(SmartToLetConstants.keyType, 0);
-                        String adId = intent.getStringExtra(SmartToLetConstants.adId);
+                        String adId = intent.getStringExtra(DBConstants.adId);
                         int imageIndex = intent.getIntExtra(SmartToLetConstants.imageIndex, 0);
                         int progress = intent.getIntExtra(SmartToLetConstants.progress, -1);
 

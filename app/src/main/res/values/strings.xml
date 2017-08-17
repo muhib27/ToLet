@@ -25,7 +25,7 @@
     <string name="default_user_name">Makinul Hasan</string>
     <string name="default_user_email">md.makinul.nasim@gmail.com</string>
     <string name="default_contact_info">md.makinul.nasim@gmail.com</string>
-    <string name="post_your_add">Post Your Add</string>
+    <string name="post_your_ad">Post Your Ad</string>
 
     <string name="dummy_button">Dummy Button</string>
     <string name="dummy_content">DUMMY\nCONTENT</string>
@@ -60,7 +60,7 @@
     <string name="sub_title">Sub Title</string>
     <string name="google_login_failed">Login failed please try again later.</string>
     <string name="title_activity_media">MediaActivity</string>
-    <string name="email">Your Email</string>
+    <string name="your_email">Your Email</string>
     <string name="phone_no">Phone no</string>
 
     <string name="submit">Submit</string>
@@ -107,4 +107,17 @@
     <string name="your_selected_location">Your selected location</string>
     <string name="map">map</string>
     <string name="is_everything_ok">Is Everything OK?</string>
+    <string name="please_pick_a_location_into_the_map">Please pick a location into the map.</string>
+    <string name="ad_posted_successfully">Ad published successfully</string>
+    <string name="your_ad_posted_successfully_would_u_like">Your ad posted successfully, would you like to add some picture/image, that represent your flat type?</string>
+    <string name="dummy_photo_count">0 Photo</string>
+    <string name="title_activity_ad_details">AdDetailsActivity</string>
+    <string name="call">Call</string>
+    <string name="email">Email</string>
+    <string name="flat_description">Flat description</string>
+    <string name="report_this">Report this</string>
+    <string name="icon">Icon</string>
+    <string name="map_view">Map View</string>
+    <string name="school_college">School College</string>
+    <string name="grocery_store">Grocery Store</string>
 </resources>

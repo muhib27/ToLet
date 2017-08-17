@@ -49,7 +49,7 @@ public class UploadImageService extends BaseTaskService {
 
         if (SmartToLetConstants.actionUpload.equals(intent.getAction())) {
             int type = intent.getIntExtra(SmartToLetConstants.keyType, -1);
-            String adId = intent.getStringExtra(SmartToLetConstants.adId);
+            String adId = intent.getStringExtra(DBConstants.adId);
             if (adId == null || adId.isEmpty()) {
                 adId = SmartToLetConstants.storageCommonFolderName;
             }
@@ -145,7 +145,7 @@ public class UploadImageService extends BaseTaskService {
     private boolean broadcastUploadingProgress(int type, String adId, int imageIndex, double progress) {
         Intent broadcast = new Intent(SmartToLetConstants.uploadProgress)
                 .putExtra(SmartToLetConstants.keyType, type)
-                .putExtra(SmartToLetConstants.adId, adId)
+                .putExtra(DBConstants.adId, adId)
                 .putExtra(SmartToLetConstants.imageIndex, imageIndex)
                 .putExtra(SmartToLetConstants.progress, (int) progress);
         return LocalBroadcastManager.getInstance(getApplicationContext()).sendBroadcast(broadcast);
@@ -161,7 +161,7 @@ public class UploadImageService extends BaseTaskService {
         String action = success ? SmartToLetConstants.uploadComplete : SmartToLetConstants.uploadError;
         Intent broadcast = new Intent(action)
                 .putExtra(SmartToLetConstants.keyType, type)
-                .putExtra(SmartToLetConstants.adId, adId)
+                .putExtra(DBConstants.adId, adId)
                 .putExtra(SmartToLetConstants.imageIndex, imageIndex)
                 .putExtra(SmartToLetConstants.imageContents, imageContents);
         return LocalBroadcastManager.getInstance(getApplicationContext()).sendBroadcast(broadcast);

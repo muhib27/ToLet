@@ -3,6 +3,7 @@ package com.to.let.bd.activities;
 import android.Manifest;
 import android.app.DatePickerDialog;
 import android.app.Dialog;
+import android.content.DialogInterface;
 import android.content.Intent;
 import android.content.pm.PackageManager;
 import android.graphics.Bitmap;
@@ -20,11 +21,11 @@ import android.support.design.widget.TextInputLayout;
 import android.support.v4.app.ActivityCompat;
 import android.support.v4.content.ContextCompat;
 import android.support.v7.app.ActionBar;
+import android.support.v7.app.AlertDialog;
 import android.support.v7.widget.PopupMenu;
 import android.support.v7.widget.Toolbar;
 import android.text.Editable;
 import android.text.TextWatcher;
-import android.util.Patterns;
 import android.view.Gravity;
 import android.view.KeyEvent;
 import android.view.LayoutInflater;
@@ -52,7 +53,6 @@ import com.google.android.gms.common.api.GoogleApiClient;
 import com.google.android.gms.common.api.ResultCallback;
 import com.google.android.gms.common.api.Status;
 import com.google.android.gms.location.LocationServices;
-import com.google.android.gms.maps.CameraUpdate;
 import com.google.android.gms.maps.CameraUpdateFactory;
 import com.google.android.gms.maps.GoogleMap;
 import com.google.android.gms.maps.OnMapReadyCallback;
@@ -60,7 +60,6 @@ import com.google.android.gms.maps.SupportMapFragment;
 import com.google.android.gms.maps.model.BitmapDescriptorFactory;
 import com.google.android.gms.maps.model.CameraPosition;
 import com.google.android.gms.maps.model.LatLng;
-import com.google.android.gms.maps.model.LatLngBounds;
 import com.google.android.gms.maps.model.Marker;
 import com.google.android.gms.maps.model.MarkerOptions;
 import com.google.android.gms.tasks.OnCompleteListener;
@@ -74,8 +73,8 @@ import com.google.firebase.auth.GoogleAuthProvider;
 import com.google.firebase.database.DatabaseError;
 import com.google.firebase.database.DatabaseReference;
 import com.google.firebase.database.FirebaseDatabase;
+import com.google.firebase.database.ServerValue;
 import com.to.let.bd.R;
-import com.to.let.bd.common.BaseActivity;
 import com.to.let.bd.common.BaseImageUploadActivity;
 import com.to.let.bd.common.WorkaroundMapFragment;
 import com.to.let.bd.model.AdInfo;
@@ -181,7 +180,7 @@ public class NewAdActivity extends BaseImageUploadActivity
         if (actionBar != null) {
             actionBar.setDisplayHomeAsUpEnabled(true);
             actionBar.setDisplayShowTitleEnabled(true);
-            actionBar.setTitle(R.string.post_your_add);
+            actionBar.setTitle(R.string.post_your_ad);
         }
 
         fab = (FloatingActionButton) findViewById(R.id.fab);
@@ -644,6 +643,7 @@ public class NewAdActivity extends BaseImageUploadActivity
     @Override
     public void onMapClick(LatLng latLng) {
         googleMap.clear();
+        selectedLocation = null;
     }
 
     private String getLocationBestApproximateResult(List<Address> addressList, LatLng latLng) {
@@ -864,6 +864,12 @@ public class NewAdActivity extends BaseImageUploadActivity
     }
 
     private void validateInputtedData() {
+        if (selectedLocation == null) {
+            mapScrollView.smoothScrollTo(0, 0);
+            showToast(getString(R.string.please_pick_a_location_into_the_map));
+            return;
+        }
+
         totalRent.setError(null);
         emailAddress.setError(null);
         mobileNumber.setError(null);
@@ -973,10 +979,19 @@ public class NewAdActivity extends BaseImageUploadActivity
 //        });
     }
 
+    @Override
+    protected void onResume() {
+        super.onResume();
+
+        adId = null;
+    }
+
+    private String adId = null;
+
     private void writeNewPost() {
         showProgressDialog();
-        final String adId = mDatabase.child(DBConstants.adList).push().getKey();
-        AdInfo adInfo = new AdInfo(adId, date[0], date[1], date[2], rentLatitude, rentLongitude,
+        adId = mDatabase.child(DBConstants.adList).push().getKey();
+        final AdInfo adInfo = new AdInfo(adId, date[0], (date[1] + 1), date[2], rentLatitude, rentLongitude,
                 addressDetails.getText().toString(), "", "", "", "", "",
                 1, familyRoom[0], familyRoom[1], familyRoom[2], familyRoom[3], 1,
                 houseInfo.getText().toString(),
@@ -992,6 +1007,9 @@ public class NewAdActivity extends BaseImageUploadActivity
 
         //AdInfo adInfo = new AdInfo(adId, getUid());
         HashMap<String, Object> adValues = adInfo.toMap();
+
+//        showLog("server time: " + ServerValue.TIMESTAMP + " device time: " + System.currentTimeMillis());
+
         HashMap<String, Object> childUpdates = new HashMap<>();
         childUpdates.put("/" + DBConstants.adList + "/" + adId, adValues);
         mDatabase.updateChildren(childUpdates, new DatabaseReference.CompletionListener() {
@@ -1181,14 +1199,41 @@ public class NewAdActivity extends BaseImageUploadActivity
     protected void imageUploadSuccess() {
         closeProgressDialog();
         showToast(getString(R.string.success));
-        finish();
-        Intent intent = new Intent(this, AdListActivity.class);
-        intent.addFlags(Intent.FLAG_ACTIVITY_CLEAR_TASK);
-        startActivity(intent);
+        mediaAlertDialog();
     }
 
     @Override
     protected void imageUploadFailed() {
         closeProgressDialog();
+    }
+
+    private void mediaAlertDialog() {
+        AlertDialog.Builder builder = new AlertDialog.Builder(this);
+        builder.setTitle(R.string.ad_posted_successfully);
+        builder.setIcon(R.mipmap.ic_launcher);
+        builder.setMessage(R.string.your_ad_posted_successfully_would_u_like);
+        builder.setPositiveButton(getString(R.string.yes), new DialogInterface.OnClickListener() {
+            @Override
+            public void onClick(DialogInterface dialogInterface, int i) {
+                startActivity(MediaActivity.class);
+            }
+        });
+
+        builder.setNegativeButton(getString(R.string.no), new DialogInterface.OnClickListener() {
+            @Override
+            public void onClick(DialogInterface dialogInterface, int i) {
+                startActivity(AdListActivity.class);
+            }
+        });
+        final AlertDialog dialog = builder.create();
+        dialog.show();
+    }
+
+    private <T> void startActivity(Class<T> var) {
+        finish();
+        Intent intent = new Intent(this, var);
+        intent.putExtra(DBConstants.adId, adId);
+        intent.addFlags(Intent.FLAG_ACTIVITY_CLEAR_TASK);
+        startActivity(intent);
     }
 }

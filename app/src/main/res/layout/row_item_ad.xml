@@ -1,77 +1,68 @@
 <?xml version="1.0" encoding="utf-8"?>
 <LinearLayout xmlns:android="http://schemas.android.com/apk/res/android"
     android:layout_width="match_parent"
-    android:layout_height="wrap_content"
-    android:gravity="center_vertical"
-    android:orientation="horizontal"
-    android:padding="@dimen/size_10dp">
+    android:layout_height="@dimen/ad_cell_height"
+    android:layout_marginBottom="@dimen/size_2dp"
+    android:background="@drawable/list_item_bg"
+    android:orientation="vertical">
 
     <RelativeLayout
-        android:layout_width="0dp"
-        android:layout_height="@dimen/size_50dp"
-        android:layout_weight=".3">
+        android:layout_width="match_parent"
+        android:layout_height="match_parent"
+        android:background="?android:attr/selectableItemBackground">
 
         <ImageView
-            android:id="@+id/image"
+            android:id="@+id/adMainPhoto"
             android:layout_width="match_parent"
             android:layout_height="match_parent"
-            android:contentDescription="@string/image_description"
-            android:scaleType="fitCenter"
-            android:src="@mipmap/ic_launcher" />
+            android:layout_above="@+id/adDetailsLay"
+            android:background="@color/grey_dark"
+            android:contentDescription="@string/mainImage"
+            android:scaleType="centerCrop"
+            android:src="@drawable/dummy_flat_image" />
 
-        <ProgressBar
-            android:id="@+id/progressBar"
+        <include layout="@layout/photo_count_lay" />
+
+        <ImageView
+            android:id="@+id/favIcon"
+            android:layout_width="@dimen/fab_ic_width"
+            android:layout_height="@dimen/fab_ic_width"
+            android:layout_alignParentEnd="true"
+            android:layout_alignParentRight="true"
+            android:layout_alignParentTop="true"
+            android:contentDescription="@string/adFavIcon"
+            android:src="@drawable/ic_fav_normal" />
+
+        <LinearLayout
+            android:id="@+id/adDetailsLay"
             android:layout_width="match_parent"
-            android:layout_height="match_parent"
-            android:padding="@dimen/size_12dp"
-            android:visibility="gone" />
+            android:layout_height="wrap_content"
+            android:layout_alignParentBottom="true"
+            android:gravity="bottom|start"
+            android:orientation="vertical"
+            android:padding="@dimen/size_5dp">
 
+            <TextView
+                android:id="@+id/adTitle"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:ellipsize="none"
+                android:maxLines="1"
+                android:singleLine="true"
+                android:text="@string/app_name"
+                android:textColor="@color/ad_list_text_color"
+                android:textSize="@dimen/text_size_12sp" />
+
+            <TextView
+                android:id="@+id/adSubTitle"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:ellipsize="end"
+                android:maxLines="1"
+                android:singleLine="true"
+                android:text="@string/app_name"
+                android:textColor="@color/ad_list_text_color"
+                android:textSize="@dimen/text_size_10sp" />
+        </LinearLayout>
     </RelativeLayout>
-
-    <LinearLayout
-        android:layout_width="0dp"
-        android:layout_height="wrap_content"
-        android:layout_marginLeft="@dimen/size_5dp"
-        android:layout_marginRight="@dimen/size_5dp"
-        android:layout_weight=".6"
-        android:orientation="vertical">
-
-        <TextView
-            android:id="@+id/title"
-            android:layout_width="match_parent"
-            android:layout_height="wrap_content"
-            android:ellipsize="end"
-            android:gravity="center_vertical"
-            android:maxLines="1"
-            android:text="@string/app_name"
-            android:textSize="@dimen/text_size_14sp"
-            android:textStyle="bold" />
-
-        <TextView
-            android:id="@+id/address"
-            android:layout_width="match_parent"
-            android:layout_height="wrap_content"
-            android:gravity="center_vertical"
-            android:textSize="@dimen/text_size_12sp" />
-
-        <TextView
-            android:id="@+id/roomDetails"
-            android:layout_width="match_parent"
-            android:layout_height="wrap_content"
-            android:ellipsize="end"
-            android:lines="2"
-            android:maxLines="2"
-            android:textColor="@color/black_overlay"
-            android:textSize="@dimen/text_size_10sp" />
-
-    </LinearLayout>
-
-    <ImageView
-        android:layout_width="0dp"
-        android:layout_height="wrap_content"
-        android:layout_gravity="center"
-        android:layout_weight=".1"
-        android:padding="@dimen/size_5dp"
-        android:src="@drawable/arrow_front" />
-
 </LinearLayout>

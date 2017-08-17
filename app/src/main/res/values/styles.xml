@@ -33,4 +33,8 @@
         <item name="android:background">@color/black_overlay</item>
     </style>
 
+    <style name="MyGreenButton">
+        <item name="colorButtonNormal">#009900</item>
+    </style>
+
 </resources>

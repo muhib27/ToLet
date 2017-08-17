@@ -22,7 +22,7 @@ public class DBConstants {
     public static final String flatFacing = "flatFacing";
     public static final String flatSpace = "flatSpace";
     public static final String bedRoom = "bedRoom";
-    public static final String toilet = "toilet";
+    public static final String bathroom = "bathroom";
     public static final String balcony = "balcony";
     public static final String kitchen = "kitchen";
     public static final String hasDrawingDining = "hasDrawingDining";

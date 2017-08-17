@@ -3,9 +3,7 @@ package com.to.let.bd.adapters;
 import android.content.Context;
 import android.net.Uri;
 import android.support.v7.widget.RecyclerView;
-import android.view.GestureDetector;
 import android.view.LayoutInflater;
-import android.view.MotionEvent;
 import android.view.View;
 import android.view.ViewGroup;
 import android.widget.ImageView;
@@ -22,16 +20,18 @@ public class AdAdapter extends RecyclerView.Adapter<AdAdapter.MyViewHolder> {
     private LayoutInflater layoutInflater;
     private ArrayList<AdInfo> sampleList;
     private Context context;
+    private ClickListener clickListener;
 
-    public AdAdapter(Context context, ArrayList<AdInfo> sampleList) {
+    public AdAdapter(Context context, ArrayList<AdInfo> sampleList, ClickListener clickListener) {
         layoutInflater = LayoutInflater.from(context);
         this.context = context;
         this.sampleList = sampleList;
+        this.clickListener = clickListener;
     }
 
     @Override
     public MyViewHolder onCreateViewHolder(ViewGroup parent, int viewType) {
-        View view = layoutInflater.inflate(R.layout.row_item_ad_new, parent, false);
+        View view = layoutInflater.inflate(R.layout.row_item_ad, parent, false);
         return new MyViewHolder(view);
     }
 
@@ -43,7 +43,7 @@ public class AdAdapter extends RecyclerView.Adapter<AdAdapter.MyViewHolder> {
     public void onBindViewHolder(final MyViewHolder holder, int position) {
         AdInfo adInfo = sampleList.get(position);
 
-        String title = "৳" + adInfo.getFlatRent() + ", " + adInfo.getBedRoom() + " bed, " + adInfo.getToilet() + " bath";
+        String title = "৳" + adInfo.getFlatRent() + ", " + adInfo.getBedRoom() + " bed, " + adInfo.getBathroom() + " bath";
         holder.adTitle.setText(title.trim());
         String subTitle = adInfo.getFullAddress();
         holder.adSubTitle.setText(subTitle.trim());
@@ -56,10 +56,14 @@ public class AdAdapter extends RecyclerView.Adapter<AdAdapter.MyViewHolder> {
                         .load(Uri.parse(adInfo.getMap().getDownloadUrl()))
                         .into(holder.adMainPhoto);
             }
+            holder.photoCount.setText(context.getString(R.string.dummy_photo_count));
         } else {
             Glide.with(context)
                     .load(Uri.parse(adInfo.getImages().get(0).getDownloadUrl()))
                     .into(holder.adMainPhoto);
+
+            String photoCount = adInfo.getImages().size() > 1 ? adInfo.getImages().size() + " Photo's" : adInfo.getImages().size() + " Photos";
+            holder.photoCount.setText(photoCount);
         }
 //        holder.progressBar.setVisibility(View.VISIBLE);
 //
@@ -95,65 +99,39 @@ public class AdAdapter extends RecyclerView.Adapter<AdAdapter.MyViewHolder> {
         return sampleList.size();
     }
 
-    static class MyViewHolder extends RecyclerView.ViewHolder {
-        public ImageView adMainPhoto;
-        public TextView adTitle, adSubTitle;
+    class MyViewHolder extends RecyclerView.ViewHolder {
+        ImageView adMainPhoto, favIcon;
+        TextView adTitle, adSubTitle, photoCount;
 
-        public MyViewHolder(View itemView) {
+        MyViewHolder(final View itemView) {
             super(itemView);
             adMainPhoto = (ImageView) itemView.findViewById(R.id.adMainPhoto);
+            favIcon = (ImageView) itemView.findViewById(R.id.favIcon);
 
             adTitle = (TextView) itemView.findViewById(R.id.adTitle);
             adSubTitle = (TextView) itemView.findViewById(R.id.adSubTitle);
+            photoCount = (TextView) itemView.findViewById(R.id.photoCount);
+
+            itemView.setOnClickListener(new View.OnClickListener() {
+                @Override
+                public void onClick(View view) {
+                    if (clickListener != null)
+                        clickListener.onItemClick(itemView, getLayoutPosition(), sampleList.get(getLayoutPosition()));
+                }
+            });
+            favIcon.setOnClickListener(new View.OnClickListener() {
+                @Override
+                public void onClick(View view) {
+                    if (clickListener != null)
+                        clickListener.onFavClick(favIcon, getLayoutPosition(), sampleList.get(getLayoutPosition()));
+                }
+            });
         }
     }
 
     public interface ClickListener {
-        void onClick(View view, int position);
+        void onItemClick(View view, int position, AdInfo adInfo);
 
-        void onLongClick(View view, int position);
-    }
-
-    public static class RecyclerTouchListener implements RecyclerView.OnItemTouchListener {
-
-        private GestureDetector gestureDetector;
-        private ClickListener clickListener;
-
-        public RecyclerTouchListener(Context context, final RecyclerView recyclerView, final ClickListener clickListener) {
-            this.clickListener = clickListener;
-            gestureDetector = new GestureDetector(context, new GestureDetector.SimpleOnGestureListener() {
-                @Override
-                public boolean onSingleTapUp(MotionEvent e) {
-                    return true;
-                }
-
-                @Override
-                public void onLongPress(MotionEvent e) {
-                    View child = recyclerView.findChildViewUnder(e.getX(), e.getY());
-                    if (child != null && clickListener != null) {
-                        clickListener.onLongClick(child, recyclerView.getChildPosition(child));
-                    }
-                }
-            });
-        }
-
-        @Override
-        public boolean onInterceptTouchEvent(RecyclerView rv, MotionEvent e) {
-
-            View child = rv.findChildViewUnder(e.getX(), e.getY());
-            if (child != null && clickListener != null && gestureDetector.onTouchEvent(e)) {
-                clickListener.onClick(child, rv.getChildPosition(child));
-            }
-            return false;
-        }
-
-        @Override
-        public void onTouchEvent(RecyclerView rv, MotionEvent e) {
-        }
-
-        @Override
-        public void onRequestDisallowInterceptTouchEvent(boolean disallowIntercept) {
-
-        }
+        void onFavClick(View view, int position, AdInfo adInfo);
     }
 }

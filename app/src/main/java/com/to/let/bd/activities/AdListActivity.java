@@ -2,6 +2,7 @@ package com.to.let.bd.activities;
 
 import android.content.Intent;
 import android.graphics.Rect;
+import android.net.Uri;
 import android.os.Bundle;
 import android.support.annotation.NonNull;
 import android.support.annotation.Nullable;
@@ -10,7 +11,6 @@ import android.support.design.widget.NavigationView;
 import android.support.v4.view.GravityCompat;
 import android.support.v4.widget.DrawerLayout;
 import android.support.v7.app.ActionBarDrawerToggle;
-import android.support.v7.widget.DividerItemDecoration;
 import android.support.v7.widget.RecyclerView;
 import android.support.v7.widget.StaggeredGridLayoutManager;
 import android.support.v7.widget.Toolbar;
@@ -18,9 +18,12 @@ import android.view.Menu;
 import android.view.MenuItem;
 import android.view.View;
 import android.widget.Button;
+import android.widget.ImageView;
 import android.widget.LinearLayout;
 import android.widget.TextView;
 
+import com.bumptech.glide.Glide;
+import com.bumptech.glide.request.RequestOptions;
 import com.google.android.gms.auth.api.Auth;
 import com.google.android.gms.auth.api.signin.GoogleSignInAccount;
 import com.google.android.gms.auth.api.signin.GoogleSignInOptions;
@@ -46,6 +49,7 @@ import com.to.let.bd.R;
 import com.to.let.bd.adapters.AdAdapter;
 import com.to.let.bd.common.BaseActivity;
 import com.to.let.bd.model.AdInfo;
+import com.to.let.bd.model.ImageInfo;
 import com.to.let.bd.utils.DBConstants;
 import com.to.let.bd.utils.SmartToLetConstants;
 
@@ -60,7 +64,7 @@ public class AdListActivity extends BaseActivity
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
-        setContentView(R.layout.activity_main);
+        setContentView(R.layout.activity_ad_list);
         Toolbar toolbar = (Toolbar) findViewById(R.id.toolbar);
         setSupportActionBar(toolbar);
 
@@ -88,11 +92,13 @@ public class AdListActivity extends BaseActivity
 
     private void startNewAdActivity() {
         Intent newAdIntent = new Intent(this, NewAdActivity.class);
+        newAdIntent.addFlags(Intent.FLAG_ACTIVITY_CLEAR_TASK);
         startActivity(newAdIntent);
     }
 
     private NavigationView navigationView;
     private LinearLayout profileInfoLay;
+    private ImageView userPic;
     private TextView userName, contactInfo;
     private Button postYourAdd;
 
@@ -103,6 +109,7 @@ public class AdListActivity extends BaseActivity
         View navigationViewHeaderView = navigationView.getHeaderView(0);
 
         profileInfoLay = (LinearLayout) navigationViewHeaderView.findViewById(R.id.profileInfoLay);
+        userPic = (ImageView) navigationViewHeaderView.findViewById(R.id.userPic);
         userName = (TextView) navigationViewHeaderView.findViewById(R.id.userName);
         contactInfo = (TextView) navigationViewHeaderView.findViewById(R.id.contactInfo);
         postYourAdd = (Button) navigationViewHeaderView.findViewById(R.id.postYourAdd);
@@ -200,34 +207,6 @@ public class AdListActivity extends BaseActivity
                 });
     }
 
-//    private void linkedCredential(final AuthCredential credential) {
-//        showProgressDialog();
-//        firebaseUser.linkWithCredential(credential).addOnCompleteListener(this,
-//                new OnCompleteListener<AuthResult>() {
-//                    @Override
-//                    public void onComplete(@NonNull Task<AuthResult> task) {
-//                        if (task.isSuccessful()) {
-//                            updateNavHeader();
-//                            closeProgressDialog();
-//                        } else {
-//                            try {
-//                                String message = task.getException().getMessage();
-//                                if (message != null && (message.toLowerCase().equals(SmartToLetConstants.firebaseAccountConflictMessage1.toLowerCase()) ||
-//                                        message.toLowerCase().contains(SmartToLetConstants.firebaseAccountConflictMessage2.toLowerCase()))) {
-//                                    firebaseLoginWithGoogle(credential);
-//                                } else {
-//                                    showToast(message);
-//                                    closeProgressDialog();
-//                                }
-//                            } catch (Exception e) {
-//                                e.printStackTrace();
-//                                closeProgressDialog();
-//                            }
-//                        }
-//                    }
-//                });
-//    }
-
     @Override
     public void onClick(View view) {
         if (view == postYourAdd) {
@@ -259,6 +238,12 @@ public class AdListActivity extends BaseActivity
                 if (email != null) {
                     contactInfo.setText(email);
                 }
+
+                if (firebaseUser.getPhotoUrl() != null)
+                    Glide.with(this)
+                            .load(firebaseUser.getPhotoUrl())
+                            .apply(RequestOptions.circleCropTransform())
+                            .into(userPic);
 
                 logoutItem.setTitle(R.string.logout);
             }
@@ -322,7 +307,19 @@ public class AdListActivity extends BaseActivity
                 });
                 closeProgressDialog();
                 if (adAdapter == null) {
-                    adAdapter = new AdAdapter(AdListActivity.this, adList);
+                    adAdapter = new AdAdapter(AdListActivity.this, adList, new AdAdapter.ClickListener() {
+                        @Override
+                        public void onItemClick(View view, int position, AdInfo adInfo) {
+                            startAdDetailsActivity(adInfo);
+                        }
+
+                        @Override
+                        public void onFavClick(View view, int position, AdInfo adInfo) {
+                            if (view instanceof ImageView) {
+                                ((ImageView) view).setImageResource(R.drawable.ic_fav_selected);
+                            }
+                        }
+                    });
                     adRecyclerView.setAdapter(adAdapter);
                 } else {
                     adAdapter.setData(adList);
@@ -342,7 +339,6 @@ public class AdListActivity extends BaseActivity
     private AdAdapter adAdapter;
     private StaggeredGridLayoutManager staggeredGridLayoutManager;
 
-
     private class ViewItemDecoration extends RecyclerView.ItemDecoration {
 
         ViewItemDecoration() {
@@ -352,10 +348,12 @@ public class AdListActivity extends BaseActivity
         public void getItemOffsets(Rect outRect, final View view, final RecyclerView parent, RecyclerView.State state) {
             super.getItemOffsets(outRect, view, parent, state);
             int spanIndex = ((StaggeredGridLayoutManager.LayoutParams) view.getLayoutParams()).getSpanIndex();
+
+            float space = SplashActivity.metrics.density * 2.5f;
             if (spanIndex == 0) {
-                outRect.right = 5;
+                outRect.right = (int) space;
             } else {
-                outRect.left = 5;
+                outRect.left = (int) space;
             }
         }
     }
@@ -367,31 +365,6 @@ public class AdListActivity extends BaseActivity
         staggeredGridLayoutManager = new StaggeredGridLayoutManager(2, StaggeredGridLayoutManager.VERTICAL);
         staggeredGridLayoutManager.setAutoMeasureEnabled(true);
         adRecyclerView.setLayoutManager(staggeredGridLayoutManager);
-
-//        adRecyclerView.setItemAnimator(new DefaultItemAnimator());
-//        LinearLayoutManager layoutManager = new LinearLayoutManager(this);
-//        layoutManager.setOrientation(LinearLayoutManager.VERTICAL);
-//        adRecyclerView.setLayoutManager(layoutManager);
-
-//        adRecyclerView.addItemDecoration(new SpaceItemDecoration(PickUtils.getInstance(this).dp2px(PickConfig.ITEM_SPACE), pickData.getSpanCount()));
-//        adRecyclerView.addOnScrollListener(scrollListener);
-//        PickPhotoHelper helper = new PickPhotoHelper(this, new PickPhotoListener() {
-//            @Override
-//            public void pickSuccess() {
-//                GroupImage groupImage = PickPreferences.getInstance(MediaActivity.this).getListImage();
-//                allPhotos = groupImage.mGroupMap.get(PickConfig.ALL_PHOTOS);
-//                if (allPhotos == null) {
-//                    showLog("PickPhotoView:" + "Image is Empty");
-//                } else {
-//                    showLog("All photos size: " + String.valueOf(allPhotos.size()));
-//                }
-//                if (allPhotos != null && !allPhotos.isEmpty()) {
-//                    pickGridAdapter = new PickGridAdapter(MediaActivity.this, allPhotos, pickData);
-//                    adRecyclerView.setAdapter(pickGridAdapter);
-//                }
-//            }
-//        });
-//        helper.getImages(pickData.isShowGif());
         if (adList.isEmpty()) {
             loadData();
         }
@@ -487,5 +460,39 @@ public class AdListActivity extends BaseActivity
         HashMap<String, Object> childUpdates = new HashMap<>();
         childUpdates.put("/" + DBConstants.user + "/" + getUid(), userValues);
         mDatabase.updateChildren(childUpdates);
+    }
+
+    private void startAdDetailsActivity(AdInfo adInfo) {
+        Intent adDetailsIntent = new Intent(this, AdDetailsActivity.class);
+        adDetailsIntent.putExtra(DBConstants.adId, adInfo.getAdId());
+        adDetailsIntent.putExtra(DBConstants.flatRent, adInfo.getFlatRent());
+        adDetailsIntent.putExtra(DBConstants.othersFee, adInfo.getOthersFee());
+
+        adDetailsIntent.putExtra(DBConstants.bedRoom, adInfo.getBedRoom());
+        adDetailsIntent.putExtra(DBConstants.bathroom, adInfo.getBathroom());
+        adDetailsIntent.putExtra(DBConstants.balcony, adInfo.getBalcony());
+
+        adDetailsIntent.putExtra(DBConstants.startingDate, adInfo.getStartingDate());
+        adDetailsIntent.putExtra(DBConstants.startingMonth, adInfo.getStartingMonth());
+        adDetailsIntent.putExtra(DBConstants.startingYear, adInfo.getStartingYear());
+
+        adDetailsIntent.putExtra(DBConstants.latitude, adInfo.getLatitude());
+        adDetailsIntent.putExtra(DBConstants.longitude, adInfo.getLongitude());
+        adDetailsIntent.putExtra(DBConstants.flatSpace, adInfo.getFlatSpace());
+
+        adDetailsIntent.putExtra(DBConstants.fullAddress, adInfo.getFullAddress());
+
+        if (!(adInfo.getImages() == null || adInfo.getImages().isEmpty())) {
+            String[] images = new String[adInfo.getImages().size()];
+            for (int i = 0; i < adInfo.getImages().size(); i++) {
+                images[i] = adInfo.getImages().get(i).getDownloadUrl();
+            }
+            adDetailsIntent.putExtra(DBConstants.images, images);
+        }
+
+        if (adInfo.getMap() != null) {
+            adDetailsIntent.putExtra(DBConstants.map, adInfo.getMap().getDownloadUrl());
+        }
+        startActivity(adDetailsIntent);
     }
 }

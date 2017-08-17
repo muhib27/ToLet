@@ -23,6 +23,7 @@ import com.to.let.bd.adapters.pick_photo.PickGridAdapter;
 import com.to.let.bd.common.BaseImageUploadActivity;
 import com.to.let.bd.model.pick_photo.GroupImage;
 import com.to.let.bd.model.pick_photo.PickData;
+import com.to.let.bd.utils.DBConstants;
 import com.to.let.bd.utils.SmartToLetConstants;
 import com.to.let.bd.utils.pick_photo.PickConfig;
 import com.to.let.bd.utils.pick_photo.PickPhotoHelper;
@@ -47,7 +48,7 @@ public class MediaActivity extends BaseImageUploadActivity {
         if (actionBar != null) {
             actionBar.setDisplayHomeAsUpEnabled(true);
             actionBar.setDisplayShowTitleEnabled(true);
-            actionBar.setTitle(R.string.post_your_add);
+            actionBar.setTitle(R.string.post_your_ad);
         }
 
         requestStoragePermission();
@@ -89,10 +90,7 @@ public class MediaActivity extends BaseImageUploadActivity {
     private void executeStorageAction() {
         Intent intent = getIntent();
         if (intent != null) {
-            Bundle bundle = intent.getBundleExtra(SmartToLetConstants.mediaExtra);
-            if (bundle != null) {
-                adId = bundle.getString(SmartToLetConstants.adId, SmartToLetConstants.storageCommonFolderName);
-            }
+            adId = intent.getStringExtra(DBConstants.adId);
         }
 
         if (adId == null || adId.isEmpty()) {
