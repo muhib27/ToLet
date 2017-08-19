@@ -5,14 +5,14 @@ import android.graphics.Matrix;
 import android.graphics.PointF;
 import android.graphics.drawable.Drawable;
 import android.support.annotation.Nullable;
+import android.support.v7.widget.AppCompatImageView;
 import android.util.AttributeSet;
 import android.util.Log;
 import android.view.MotionEvent;
 import android.view.ScaleGestureDetector;
 import android.view.View;
-import android.widget.ImageView;
 
-public class ImageViewZoomT extends ImageView {
+public class ImageViewZoomT extends AppCompatImageView {
     public ImageViewZoomT(Context context) {
         super(context);
         sharedConstructing(context);
@@ -55,7 +55,7 @@ public class ImageViewZoomT extends ImageView {
         matrix = new Matrix();
         m = new float[9];
         setImageMatrix(matrix);
-        setScaleType(ScaleType.MATRIX);
+//        setScaleType(ScaleType.MATRIX);
 
         setOnTouchListener(new OnTouchListener() {
 

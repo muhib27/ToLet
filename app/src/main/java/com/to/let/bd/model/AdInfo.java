@@ -11,9 +11,12 @@ import java.util.HashMap;
 
 public class AdInfo {
     private String adId;
+
     private int startingMonth;
     private int startingDate;
     private int startingYear;
+
+    private String startingFinalDate;
 
     private double latitude;
     private double longitude;
@@ -47,6 +50,9 @@ public class AdInfo {
 
     private long flatRent;
     private long othersFee;
+
+    private long createdTime;
+    private long modifiedTime;
 
     private String userId;
 
@@ -298,7 +304,7 @@ public class AdInfo {
         this.kitchen = kitchen;
     }
 
-    public int isHasDrawingDining() {
+    public int getHasDrawingDining() {
         return hasDrawingDining;
     }
 
@@ -394,6 +400,30 @@ public class AdInfo {
         this.map = map;
     }
 
+    public String getStartingFinalDate() {
+        return startingFinalDate;
+    }
+
+    public void setStartingFinalDate(String startingFinalDate) {
+        this.startingFinalDate = startingFinalDate;
+    }
+
+    public long getCreatedTime() {
+        return createdTime;
+    }
+
+    public void setCreatedTime(long createdTime) {
+        this.createdTime = createdTime;
+    }
+
+    public long getModifiedTime() {
+        return modifiedTime;
+    }
+
+    public void setModifiedTime(long modifiedTime) {
+        this.modifiedTime = modifiedTime;
+    }
+
     // [START post_to_map]
     @Exclude
     public HashMap<String, Object> toMap() {
@@ -402,6 +432,10 @@ public class AdInfo {
         result.put(DBConstants.startingDate, startingDate);
         result.put(DBConstants.startingMonth, startingMonth);
         result.put(DBConstants.startingYear, startingYear);
+
+        startingFinalDate = startingYear + "-" + startingMonth + "-" + startingDate;
+
+        result.put(DBConstants.startingFinalDate, startingFinalDate);
 
         result.put(DBConstants.latitude, latitude);
         result.put(DBConstants.longitude, longitude);
@@ -435,7 +469,6 @@ public class AdInfo {
         result.put(DBConstants.flatRent, flatRent);
         result.put(DBConstants.othersFee, othersFee);
         result.put(DBConstants.userId, userId);
-        result.put(SmartToLetConstants.keyTimestamp, ServerValue.TIMESTAMP);
         return result;
     }
     // [END post_to_map]

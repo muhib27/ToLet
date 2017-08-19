@@ -5,6 +5,7 @@ import android.graphics.Color;
 import android.location.Address;
 import android.location.Geocoder;
 import android.location.Location;
+import android.os.Build;
 import android.os.Bundle;
 import android.support.annotation.NonNull;
 import android.support.design.widget.BottomNavigationView;
@@ -30,15 +31,25 @@ import com.google.android.gms.maps.model.CameraPosition;
 import com.google.android.gms.maps.model.LatLng;
 import com.google.android.gms.maps.model.Marker;
 import com.google.android.gms.maps.model.MarkerOptions;
+import com.google.gson.JsonObject;
 import com.to.let.bd.R;
 import com.to.let.bd.common.BaseActivity;
+import com.to.let.bd.model.google_place.GooglePlace;
+import com.to.let.bd.model.google_place.GooglePlaceResult;
+import com.to.let.bd.utils.DBConstants;
+import com.to.let.bd.utils.SmartToLetConstants;
+import com.to.let.bd.utils.retrofit.RetrofitConstants;
 
 import java.io.IOException;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Locale;
 
-public class MapsActivity extends BaseActivity
+import retrofit2.Call;
+import retrofit2.Callback;
+import retrofit2.Response;
+
+public class MapActivity extends BaseActivity
         implements OnMapReadyCallback,
         GoogleApiClient.ConnectionCallbacks,
         GoogleApiClient.OnConnectionFailedListener,
@@ -67,7 +78,7 @@ public class MapsActivity extends BaseActivity
         }
     };
 
-    private static final String TAG = MapsActivity.class.getSimpleName();
+    private static final String TAG = MapActivity.class.getSimpleName();
     private GoogleMap googleMap;
     private CameraPosition mCameraPosition;
 
@@ -76,7 +87,7 @@ public class MapsActivity extends BaseActivity
 
     // A default location (Sydney, Australia) and default zoom to use when location permission is
     // not granted.
-    private final LatLng mDefaultLatLng = new LatLng(-33.8523341, 151.2106085);
+    private LatLng mDefaultLatLng;
     private static final int DEFAULT_ZOOM = 15;
     private static final int PERMISSIONS_REQUEST_CODE = 1;
 //    private boolean mLocationPermissionGranted;
@@ -97,6 +108,10 @@ public class MapsActivity extends BaseActivity
         }
     }
 
+    public static final String[] googlePlaceType = {"school", "department_store", "bank", "bus_station"};
+    private int type = 0;
+    private double latitude, longitude;
+
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
@@ -104,7 +119,13 @@ public class MapsActivity extends BaseActivity
         retrieveSavedInstanceState(savedInstanceState);
 
         // Retrieve the content view that renders the map.
-        setContentView(R.layout.activity_maps);
+        setContentView(R.layout.activity_map);
+
+        type = getIntent().getIntExtra(SmartToLetConstants.keyType, 0);
+        latitude = getIntent().getDoubleExtra(DBConstants.latitude, SmartToLetConstants.defaultLatitude);
+        longitude = getIntent().getDoubleExtra(DBConstants.longitude, SmartToLetConstants.defaultLongitude);
+
+        mDefaultLatLng = new LatLng(latitude, longitude);
 
         // Build the Play services client for use by the Fused Location Provider and the Places API.
         // Use the addApi() method to request the Google Places API and the Fused Location Provider.
@@ -186,8 +207,9 @@ public class MapsActivity extends BaseActivity
         this.googleMap = googleMap;
         this.googleMap.getUiSettings().setZoomControlsEnabled(true);
 
-        requestLocationPermission();
+        initPlacesRequest();
 
+        requestLocationPermission();
 //        googleMap.setOnMapLoadedCallback(new GoogleMap.OnMapLoadedCallback() {
 //            @Override
 //            public void onMapLoaded() {
@@ -302,6 +324,12 @@ public class MapsActivity extends BaseActivity
         }
     }
 
+    private void initPlacesRequest() {
+        String location = latitude + "," + longitude;
+        googlePlaceCall = RetrofitConstants.getGooglePlaces(location, googlePlaceType[type]);
+        startRequest(googlePlaceCall);
+    }
+
     /**
      * Updates the map's UI settings based on whether the user has granted location permission.
      */
@@ -347,20 +375,20 @@ public class MapsActivity extends BaseActivity
 
     @Override
     public void onMapLongClick(LatLng latLng) {
-        googleMap.clear();
-        getLocationBestApproximateResult(findCurrentLocationDetails(latLng.latitude, latLng.longitude));
-        googleMap.addMarker(new MarkerOptions()
-                .position(latLng)
-                .snippet("your full address")
-                .title("You are here")
-                .icon(BitmapDescriptorFactory.defaultMarker(BitmapDescriptorFactory.HUE_RED)));
-
-        googleMap.setInfoWindowAdapter(new CustomInfoWindowAdapter());
+//        googleMap.clear();
+//        getLocationBestApproximateResult(findCurrentLocationDetails(latLng.latitude, latLng.longitude));
+//        googleMap.addMarker(new MarkerOptions()
+//                .position(latLng)
+//                .snippet("your full address")
+//                .title("You are here")
+//                .icon(BitmapDescriptorFactory.defaultMarker(BitmapDescriptorFactory.HUE_RED)));
+//
+//        googleMap.setInfoWindowAdapter(new CustomInfoWindowAdapter());
     }
 
     @Override
     public void onMapClick(LatLng latLng) {
-        googleMap.clear();
+//        googleMap.clear();
     }
 
     private String getLocationBestApproximateResult(List<Address> addressList) {
@@ -480,4 +508,65 @@ public class MapsActivity extends BaseActivity
             }
         }
     }
+
+    private Call<GooglePlace> googlePlaceCall;
+
+    private <T> void startRequest(Call<T> call) {
+        call.enqueue(new Callback<T>() {
+            @Override
+            public void onResponse(@NonNull Call<T> call, @NonNull Response<T> response) {
+                T t = response.body();
+                if (t instanceof GooglePlace) {
+                    addPlaceMarker((GooglePlace) t);
+                }
+                showLog();
+            }
+
+            @Override
+            public void onFailure(@NonNull Call<T> call, @NonNull Throwable t) {
+
+            }
+        });
+    }
+
+    private boolean isDestroyed;
+
+    @Override
+    protected void onDestroy() {
+        super.onDestroy();
+    }
+
+    private void addPlaceMarker(GooglePlace googlePlace) {
+        if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.JELLY_BEAN_MR1) {
+            if (isDestroyed()) {
+                return;
+            }
+        } else {
+            if (isDestroyed) {
+                return;
+            }
+        }
+
+        googleMap.clear();
+        googleMap.addMarker(new MarkerOptions()
+                .position(new LatLng(latitude, longitude))
+                .icon(BitmapDescriptorFactory.defaultMarker(BitmapDescriptorFactory.HUE_RED)));
+
+        if (googlePlace.getStatus().equals("OK") || googlePlace.getStatus().equalsIgnoreCase("OK")) {
+            for (GooglePlaceResult googlePlaceResult : googlePlace.getResults()) {
+                if (googlePlaceResult.getGeometry().has(DBConstants.location)) {
+                    JsonObject jsonObject = googlePlaceResult.getGeometry().getAsJsonObject(DBConstants.location);
+                    if (jsonObject.has(DBConstants.lat) && jsonObject.has(DBConstants.lng)) {
+                        googleMap.addMarker(new MarkerOptions()
+                                .position(new LatLng(jsonObject.get(DBConstants.lat).getAsDouble(), jsonObject.get(DBConstants.lng).getAsDouble()))
+                                .snippet(googlePlaceResult.getVicinity())
+                                .title(googlePlaceResult.getName())
+                                .icon(BitmapDescriptorFactory.defaultMarker(BitmapDescriptorFactory.HUE_RED)));
+                    }
+                }
+            }
+        }
+    }
+
+
 }

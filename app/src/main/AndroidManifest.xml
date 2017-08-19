@@ -34,7 +34,7 @@
             android:name="com.google.android.geo.API_KEY"
             android:value="@string/google_maps_key" />
 
-        <activity android:name=".activities.MapsActivity">
+        <activity android:name=".activities.MapActivity">
 
             <!-- <intent-filter> -->
             <!-- <action android:name="android.intent.action.MAIN" /> -->
@@ -103,14 +103,10 @@
         <service
             android:name=".utils.UploadImageService"
             android:exported="false" />
-        <service
-            android:name=".utils.ImageUploadServiceNew"
-            android:exported="false" />
 
         <activity
             android:name=".activities.AdDetailsActivity"
-            android:label="@string/title_activity_ad_details"
-            android:theme="@style/AppTheme.NoActionBar"></activity>
+            android:theme="@style/AppTheme.NoActionBar"/>
     </application>
 
 </manifest>

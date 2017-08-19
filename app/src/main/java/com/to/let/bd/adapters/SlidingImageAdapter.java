@@ -7,6 +7,7 @@ import android.support.v4.view.PagerAdapter;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
+import android.widget.ImageView;
 import android.widget.ProgressBar;
 
 import com.bumptech.glide.Glide;
@@ -17,10 +18,12 @@ public class SlidingImageAdapter extends PagerAdapter {
     private String[] images;
     private LayoutInflater inflater;
     private Context context;
+    private ImageClickListener imageClickListener;
 
-    public SlidingImageAdapter(Context context, String[] images) {
+    public SlidingImageAdapter(Context context, String[] images, ImageClickListener imageClickListener) {
         this.context = context;
         this.images = images;
+        this.imageClickListener = imageClickListener;
         inflater = LayoutInflater.from(context);
     }
 
@@ -40,18 +43,28 @@ public class SlidingImageAdapter extends PagerAdapter {
         assert imageLayout != null;
 
 
-        ImageViewZoomT imageView = (ImageViewZoomT) imageLayout.findViewById(R.id.imageView);
+        ImageView imageView = (ImageView) imageLayout.findViewById(R.id.imageView);
         ProgressBar progressBar = (ProgressBar) imageLayout.findViewById(R.id.progressBar);
-
-        imageView.setMaxZoom(4f);
 
         progressBar.setVisibility(View.VISIBLE);
         Glide.with(context)
                 .load(Uri.parse(images[position]))
                 .into(imageView);
 
+        imageView.setOnClickListener(new View.OnClickListener() {
+            @Override
+            public void onClick(View view) {
+                if (imageClickListener != null)
+                    imageClickListener.imageClick(position);
+            }
+        });
+
         view.addView(imageLayout, 0);
         return imageLayout;
+    }
+
+    public interface ImageClickListener {
+        void imageClick(int position);
     }
 
     @Override

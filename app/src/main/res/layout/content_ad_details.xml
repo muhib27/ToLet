@@ -21,7 +21,7 @@
             <RelativeLayout
                 android:layout_width="match_parent"
                 android:layout_height="@dimen/new_post_map_height"
-                android:background="@color/colorPrimaryNew">
+                android:visibility="visible">
 
                 <android.support.v4.view.ViewPager
                     android:id="@+id/pager"
@@ -65,7 +65,7 @@
                     android:padding="@dimen/size_10dp"
                     android:textAllCaps="true"
                     android:textColor="@color/white"
-                    android:textSize="@dimen/text_size_16sp"
+                    android:textSize="@dimen/text_size_12sp"
                     android:textStyle="bold" />
 
                 <TextView
@@ -112,20 +112,40 @@
                     android:textSize="@dimen/text_size_12sp"
                     android:textStyle="normal" />
 
-                <TextView
-                    android:id="@+id/reportThis"
+                <LinearLayout
                     android:layout_width="match_parent"
                     android:layout_height="wrap_content"
-                    android:layout_gravity="center_horizontal"
                     android:background="?android:attr/selectableItemBackground"
                     android:clickable="true"
-                    android:gravity="center"
-                    android:padding="@dimen/size_40dp"
-                    android:text="@string/report_this"
-                    android:textAllCaps="true"
-                    android:textColor="@color/red"
-                    android:textSize="@dimen/text_size_16sp"
-                    android:textStyle="bold" />
+                    android:orientation="vertical"
+                    android:padding="@dimen/size_10dp">
+
+                    <TextView
+                        android:id="@+id/privacyPolicy"
+                        android:layout_width="match_parent"
+                        android:layout_height="wrap_content"
+                        android:background="?android:attr/selectableItemBackground"
+                        android:clickable="true"
+                        android:gravity="center"
+                        android:singleLine="false"
+                        android:textSize="@dimen/text_size_10sp"
+                        android:textStyle="normal" />
+
+                    <TextView
+                        android:id="@+id/reportThis"
+                        android:layout_width="match_parent"
+                        android:layout_height="wrap_content"
+                        android:layout_gravity="center_horizontal"
+                        android:background="?android:attr/selectableItemBackground"
+                        android:clickable="true"
+                        android:gravity="center"
+                        android:padding="@dimen/size_10dp"
+                        android:text="@string/report_this"
+                        android:textAllCaps="true"
+                        android:textColor="@color/red"
+                        android:textSize="@dimen/text_size_16sp"
+                        android:textStyle="bold" />
+                </LinearLayout>
             </LinearLayout>
         </LinearLayout>
     </ScrollView>

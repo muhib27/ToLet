@@ -7,6 +7,9 @@ public class SmartToLetConstants {
     public static final int adImageType = 1003;
     public static final int adMapImageType = 1004;
 
+    public static final double defaultLatitude = 23.8103d;
+    public static final double defaultLongitude = 90.4125d;
+
     public static final String firebaseAccountConflictMessage1 = "This credential is already associated with a different user account.";
     public static final String firebaseAccountConflictMessage2 = "different user account";
     public static final String mediaExtra = "mediaExtra";
@@ -25,6 +28,4 @@ public class SmartToLetConstants {
     public static final String imageName = "imageName";
     public static final String imagePath = "imagePath";
     public static final String progress = "progress";
-
-    public static final String keyTimestamp = "timestamp";
 }

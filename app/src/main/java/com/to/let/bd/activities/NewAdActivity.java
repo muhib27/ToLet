@@ -1007,6 +1007,8 @@ public class NewAdActivity extends BaseImageUploadActivity
 
         //AdInfo adInfo = new AdInfo(adId, getUid());
         HashMap<String, Object> adValues = adInfo.toMap();
+        adValues.put(DBConstants.createdTime, ServerValue.TIMESTAMP);
+        adValues.put(DBConstants.modifiedTime, ServerValue.TIMESTAMP);
 
 //        showLog("server time: " + ServerValue.TIMESTAMP + " device time: " + System.currentTimeMillis());
 

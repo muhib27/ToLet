@@ -1,21 +1,30 @@
 package com.to.let.bd.activities;
 
+import android.app.Dialog;
+import android.content.Intent;
+import android.graphics.Color;
+import android.graphics.drawable.ColorDrawable;
+import android.net.Uri;
 import android.os.Bundle;
 import android.os.Handler;
 import android.support.v4.view.ViewPager;
 import android.support.v7.widget.LinearLayoutManager;
 import android.support.v7.widget.RecyclerView;
 import android.support.v7.widget.Toolbar;
+import android.view.Gravity;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
+import android.view.Window;
 import android.widget.Button;
 import android.widget.ImageView;
 import android.widget.TextView;
 
+import com.bumptech.glide.Glide;
 import com.to.let.bd.R;
 import com.to.let.bd.adapters.SlidingImageAdapter;
 import com.to.let.bd.common.BaseActivity;
+import com.to.let.bd.components.ImageViewZoomT;
 import com.to.let.bd.model.AdInfo;
 import com.to.let.bd.utils.DBConstants;
 import com.to.let.bd.utils.SmartToLetConstants;
@@ -74,7 +83,8 @@ public class AdDetailsActivity extends BaseActivity implements View.OnClickListe
         map = getIntent().getStringExtra(DBConstants.map);
     }
 
-    private TextView rentDate, totalRent, roomDetails, addressDetails, descriptionDetails, reportThis, photoCount;
+    private TextView rentDate, totalRent, roomDetails, addressDetails,
+            descriptionDetails, reportThis, photoCount, privacyPolicy;
     private Button callBtn, emailBtn;
 
     private void init() {
@@ -83,7 +93,11 @@ public class AdDetailsActivity extends BaseActivity implements View.OnClickListe
         roomDetails = (TextView) findViewById(R.id.roomDetails);
         addressDetails = (TextView) findViewById(R.id.addressDetails);
         descriptionDetails = (TextView) findViewById(R.id.descriptionDetails);
+
+        privacyPolicy = (TextView) findViewById(R.id.privacyPolicy);
+        privacyPolicy.setText(getString(R.string.privacy_policy_note, getString(R.string.terms_of_use), getString(R.string.privacy_policy)));
         reportThis = (TextView) findViewById(R.id.reportThis);
+
         photoCount = (TextView) findViewById(R.id.photoCount);
 
         callBtn = (Button) findViewById(R.id.callBtn);
@@ -108,6 +122,7 @@ public class AdDetailsActivity extends BaseActivity implements View.OnClickListe
 
         callBtn.setOnClickListener(this);
         emailBtn.setOnClickListener(this);
+        privacyPolicy.setOnClickListener(this);
         reportThis.setOnClickListener(this);
     }
 
@@ -116,6 +131,8 @@ public class AdDetailsActivity extends BaseActivity implements View.OnClickListe
         if (view == callBtn) {
 
         } else if (view == emailBtn) {
+
+        } else if (view == privacyPolicy) {
 
         } else if (view == reportThis) {
 
@@ -151,7 +168,13 @@ public class AdDetailsActivity extends BaseActivity implements View.OnClickListe
     private void initSlider() {
         pager = (ViewPager) findViewById(R.id.pager);
 
-        SlidingImageAdapter slidingImageAdapter = new SlidingImageAdapter(this, images);
+        SlidingImageAdapter slidingImageAdapter = new SlidingImageAdapter(this, images, new SlidingImageAdapter.ImageClickListener() {
+            @Override
+            public void imageClick(int position) {
+                showImageDialog(position);
+            }
+        });
+
         pager.setAdapter(slidingImageAdapter);
         pager.post(new Runnable() {
             @Override
@@ -277,10 +300,45 @@ public class AdDetailsActivity extends BaseActivity implements View.OnClickListe
                 itemView.setOnClickListener(new View.OnClickListener() {
                     @Override
                     public void onClick(View view) {
-
+                        openMapActivity(getLayoutPosition());
                     }
                 });
             }
         }
+    }
+
+    private void openMapActivity(int typePosition) {
+        if (adInfo == null)
+            return;
+
+        Intent mapIntent = new Intent(this, MapActivity.class);
+        mapIntent.putExtra(SmartToLetConstants.keyType, typePosition);
+        mapIntent.putExtra(DBConstants.latitude, adInfo.getLatitude());
+        mapIntent.putExtra(DBConstants.longitude, adInfo.getLongitude());
+        startActivity(mapIntent);
+    }
+
+    private Dialog imageDialog;
+
+    private void showImageDialog(final int imagePosition) {
+        if (imageDialog == null) {
+            imageDialog = new Dialog(this);
+            imageDialog.requestWindowFeature(Window.FEATURE_NO_TITLE);
+            imageDialog.setContentView(R.layout.dialog_image);
+            Window window = imageDialog.getWindow();
+            if (window != null) {
+                window.setBackgroundDrawable(new ColorDrawable(Color.TRANSPARENT));
+                window.setLayout(ViewGroup.LayoutParams.MATCH_PARENT, ViewGroup.LayoutParams.MATCH_PARENT);
+                window.setGravity(Gravity.CENTER_HORIZONTAL | Gravity.CENTER_VERTICAL);
+            }
+        }
+
+        if (!imageDialog.isShowing())
+            imageDialog.show();
+
+        final ImageViewZoomT zoomableImageView = (ImageViewZoomT) imageDialog.findViewById(R.id.zoomableImageView);
+        Glide.with(this)
+                .load(Uri.parse(images[imagePosition]))
+                .into(zoomableImageView);
     }
 }

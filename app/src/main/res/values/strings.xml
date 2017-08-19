@@ -120,4 +120,7 @@
     <string name="map_view">Map View</string>
     <string name="school_college">School College</string>
     <string name="grocery_store">Grocery Store</string>
+    <string name="privacy_policy_note" formatted="false">We value your privacy.\nOur %s and %s</string>
+    <string name="terms_of_use">Terms Of Use</string>
+    <string name="privacy_policy">Privacy Policy</string>
 </resources>

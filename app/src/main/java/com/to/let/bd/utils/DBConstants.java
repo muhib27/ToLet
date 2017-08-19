@@ -8,6 +8,7 @@ public class DBConstants {
     public static final String startingMonth = "startingMonth";
     public static final String startingDate = "startingDate";
     public static final String startingYear = "startingYear";
+    public static final String startingFinalDate = "startingFinalDate";
     public static final String latitude = "latitude";
     public static final String longitude = "longitude";
     public static final String fullAddress = "fullAddress";
@@ -37,8 +38,15 @@ public class DBConstants {
     public static final String othersFee = "othersFee";
     public static final String userId = "userId";
 
+    public static final String createdTime = "createdTime";
+    public static final String modifiedTime = "modifiedTime";
+
     public static final String userEmail = "userEmail";
     public static final String userDisplayName = "userDisplayName";
     public static final String images = "images";
     public static final String map = "map";
+    public static final String location = "location";
+
+    public static final String lat = "lat";
+    public static final String lng = "lng";
 }
