@@ -40,7 +40,7 @@
                 android:layout_height="wrap_content"
                 android:background="@drawable/rectangle_black_border"
                 android:gravity="center_vertical"
-                android:padding="@dimen/size_5dp"
+                android:padding="@dimen/size_10dp"
                 android:text="@string/dummy_full_address"
                 android:textColor="@color/black"
                 android:textSize="@dimen/text_size_12sp" />
@@ -97,7 +97,9 @@
                 android:layout_width="match_parent"
                 android:layout_height="wrap_content"
                 android:baselineAligned="false"
-                android:orientation="horizontal">
+                android:orientation="horizontal"
+                android:paddingBottom="@dimen/new_post_common_padding"
+                android:paddingTop="@dimen/new_post_common_padding">
 
             </LinearLayout>
 
@@ -149,6 +151,8 @@
                 <LinearLayout
                     android:layout_width="match_parent"
                     android:layout_height="wrap_content"
+                    android:layout_marginBottom="@dimen/new_post_common_padding"
+                    android:layout_marginTop="@dimen/new_post_common_padding"
                     android:orientation="horizontal">
 
                     <CheckBox
@@ -188,6 +192,8 @@
                 <LinearLayout
                     android:layout_width="match_parent"
                     android:layout_height="wrap_content"
+                    android:layout_marginBottom="@dimen/new_post_common_padding"
+                    android:layout_marginTop="@dimen/new_post_common_padding"
                     android:orientation="horizontal">
 
                     <CheckBox
@@ -244,8 +250,8 @@
                 <android.support.design.widget.TextInputLayout
                     android:layout_width="0dp"
                     android:layout_height="wrap_content"
-                    android:layout_marginEnd="@dimen/size_10dp"
-                    android:layout_marginRight="@dimen/size_10dp"
+                    android:layout_marginEnd="@dimen/new_post_common_padding"
+                    android:layout_marginRight="@dimen/new_post_common_padding"
                     android:layout_weight="2">
 
                     <EditText
@@ -472,7 +478,8 @@
 
             <android.support.design.widget.TextInputLayout
                 android:layout_width="match_parent"
-                android:layout_height="wrap_content">
+                android:layout_height="wrap_content"
+                android:layout_marginTop="@dimen/new_post_common_padding">
 
                 <AutoCompleteTextView
                     android:id="@+id/emailAddress"
@@ -488,7 +495,9 @@
 
             <android.support.design.widget.TextInputLayout
                 android:layout_width="match_parent"
-                android:layout_height="wrap_content">
+                android:layout_height="wrap_content"
+                android:layout_marginBottom="@dimen/new_post_common_padding"
+                android:layout_marginTop="@dimen/new_post_common_padding">
 
                 <EditText
                     android:id="@+id/mobileNumber"

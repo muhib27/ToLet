@@ -49,10 +49,10 @@
                 android:layout_width="match_parent"
                 android:layout_height="wrap_content"
                 android:orientation="vertical"
-                android:paddingEnd="@dimen/size_20dp"
-                android:paddingLeft="@dimen/size_20dp"
-                android:paddingRight="@dimen/size_20dp"
-                android:paddingStart="@dimen/size_20dp">
+                android:paddingEnd="@dimen/new_post_common_padding"
+                android:paddingLeft="@dimen/new_post_common_padding"
+                android:paddingRight="@dimen/new_post_common_padding"
+                android:paddingStart="@dimen/new_post_common_padding">
 
                 <TextView
                     android:id="@+id/rentDate"

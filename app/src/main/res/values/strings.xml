@@ -111,7 +111,7 @@
     <string name="ad_posted_successfully">Ad published successfully</string>
     <string name="your_ad_posted_successfully_would_u_like">Your ad posted successfully, would you like to add some picture/image, that represent your flat type?</string>
     <string name="dummy_photo_count">0 Photo</string>
-    <string name="title_activity_ad_details">AdDetailsActivity</string>
+    <string name="ad_details">Ad Details</string>
     <string name="call">Call</string>
     <string name="email">Email</string>
     <string name="flat_description">Flat description</string>

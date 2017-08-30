@@ -1,5 +1,13 @@
 package com.to.let.bd.utils;
 
+import android.content.Context;
+import android.graphics.Bitmap;
+import android.graphics.BitmapFactory;
+import android.graphics.Canvas;
+import android.graphics.Color;
+import android.graphics.Paint;
+import android.graphics.Typeface;
+
 public class SmartToLetConstants {
     public static final long autoScrollDuration = 5000;
     public static final int GOOGLE_SIGN_IN = 1001;
@@ -28,4 +36,26 @@ public class SmartToLetConstants {
     public static final String imageName = "imageName";
     public static final String imagePath = "imagePath";
     public static final String progress = "progress";
+
+    public Bitmap writeOnDrawable(Context context, int drawableId, String text) {
+
+        Bitmap bm = BitmapFactory.decodeResource(context.getResources(), drawableId).copy(Bitmap.Config.ARGB_8888, true);
+
+        final float scale = context.getResources().getDisplayMetrics().density;
+
+        int size = (int) (12.0 * scale + 0.5f);
+
+        Paint paint = new Paint();
+        paint.setTextAlign(Paint.Align.CENTER);
+        paint.setTextSize(size);
+        paint.setColor(Color.WHITE);
+
+        Typeface tf = Typeface.create(Typeface.SANS_SERIF, Typeface.BOLD);
+        paint.setTypeface(tf);
+
+        Canvas canvas = new Canvas(bm);
+        canvas.drawText(text, bm.getWidth() / 2, (float) ((bm.getHeight() / 2) - 1.5), paint);
+
+        return bm;
+    }
 }

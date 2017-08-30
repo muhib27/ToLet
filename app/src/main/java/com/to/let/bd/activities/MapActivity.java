@@ -11,6 +11,8 @@ import android.support.annotation.NonNull;
 import android.support.design.widget.BottomNavigationView;
 import android.support.v4.app.ActivityCompat;
 import android.support.v4.content.ContextCompat;
+import android.support.v7.app.ActionBar;
+import android.support.v7.widget.Toolbar;
 import android.text.SpannableString;
 import android.text.style.ForegroundColorSpan;
 import android.view.MenuItem;
@@ -120,6 +122,16 @@ public class MapActivity extends BaseActivity
 
         // Retrieve the content view that renders the map.
         setContentView(R.layout.activity_map);
+
+        Toolbar toolbar = (Toolbar) findViewById(R.id.toolbar);
+        setSupportActionBar(toolbar);
+
+        ActionBar actionBar = getSupportActionBar();
+        if (actionBar != null) {
+            actionBar.setDisplayHomeAsUpEnabled(true);
+            actionBar.setDisplayShowTitleEnabled(true);
+            actionBar.setTitle(R.string.map);
+        }
 
         type = getIntent().getIntExtra(SmartToLetConstants.keyType, 0);
         latitude = getIntent().getDoubleExtra(DBConstants.latitude, SmartToLetConstants.defaultLatitude);
@@ -327,7 +339,7 @@ public class MapActivity extends BaseActivity
     private void initPlacesRequest() {
         String location = latitude + "," + longitude;
         googlePlaceCall = RetrofitConstants.getGooglePlaces(location, googlePlaceType[type]);
-        startRequest(googlePlaceCall);
+        startRequest();
     }
 
     /**
@@ -511,29 +523,36 @@ public class MapActivity extends BaseActivity
 
     private Call<GooglePlace> googlePlaceCall;
 
-    private <T> void startRequest(Call<T> call) {
-        call.enqueue(new Callback<T>() {
+    private void startRequest() {
+        googlePlaceCall.enqueue(new Callback<GooglePlace>() {
             @Override
-            public void onResponse(@NonNull Call<T> call, @NonNull Response<T> response) {
-                T t = response.body();
-                if (t instanceof GooglePlace) {
-                    addPlaceMarker((GooglePlace) t);
-                }
+            public void onResponse(@NonNull Call<GooglePlace> call, @NonNull Response<GooglePlace> response) {
+                GooglePlace googlePlace = response.body();
+                addPlaceMarker(googlePlace);
                 showLog();
             }
 
             @Override
-            public void onFailure(@NonNull Call<T> call, @NonNull Throwable t) {
+            public void onFailure(@NonNull Call<GooglePlace> call, @NonNull Throwable t) {
 
             }
         });
     }
 
-    private boolean isDestroyed;
+    @Override
+    protected void onResume() {
+        super.onResume();
+
+        isCanceled = false;
+    }
+
+    private boolean isCanceled;
 
     @Override
     protected void onDestroy() {
         super.onDestroy();
+
+        isCanceled = true;
     }
 
     private void addPlaceMarker(GooglePlace googlePlace) {
@@ -541,10 +560,14 @@ public class MapActivity extends BaseActivity
             if (isDestroyed()) {
                 return;
             }
-        } else {
-            if (isDestroyed) {
-                return;
-            }
+        }
+
+        if (isCanceled) {
+            return;
+        }
+
+        if (googleMap == null || googlePlace == null) {
+            return;
         }
 
         googleMap.clear();
@@ -561,7 +584,7 @@ public class MapActivity extends BaseActivity
                                 .position(new LatLng(jsonObject.get(DBConstants.lat).getAsDouble(), jsonObject.get(DBConstants.lng).getAsDouble()))
                                 .snippet(googlePlaceResult.getVicinity())
                                 .title(googlePlaceResult.getName())
-                                .icon(BitmapDescriptorFactory.defaultMarker(BitmapDescriptorFactory.HUE_RED)));
+                                .icon(BitmapDescriptorFactory.fromResource(R.drawable.marker_blue)));
                     }
                 }
             }

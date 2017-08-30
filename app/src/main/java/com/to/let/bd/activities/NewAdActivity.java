@@ -606,7 +606,7 @@ public class NewAdActivity extends BaseImageUploadActivity
         gotoDeviceLocation();
     }
 
-    private final int maxAddressResult = 5;
+    private final int maxAddressResult = 3;
     private double rentLatitude, rentLongitude;
     private String countryName;
     private String division;
@@ -670,9 +670,10 @@ public class NewAdActivity extends BaseImageUploadActivity
             if (address.getAdminArea() != null && !result.contains(address.getAdminArea())) {
                 result = result + "," + address.getAdminArea();
             }
-//            String postalCode = address.getPostalCode();
-//            // Only if available else return NULL
-//            String knownName = address.getFeatureName();
+
+            if (address.getFeatureName() != null && !result.contains(address.getFeatureName())) {
+                result = result + "," + address.getAdminArea();
+            }
         }
 
         return result;
