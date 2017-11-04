@@ -15,7 +15,7 @@ import com.to.let.bd.model.AdInfo;
 
 import java.util.ArrayList;
 
-public class AdAdapter extends RecyclerView.Adapter<AdAdapter.MyViewHolder> {
+public class AdAdapter extends RecyclerView.Adapter<RecyclerView.ViewHolder> {
 
     private LayoutInflater layoutInflater;
     private ArrayList<AdInfo> sampleList;
@@ -23,16 +23,14 @@ public class AdAdapter extends RecyclerView.Adapter<AdAdapter.MyViewHolder> {
     private ClickListener clickListener;
 
     public AdAdapter(Context context, ArrayList<AdInfo> sampleList, ClickListener clickListener) {
-        layoutInflater = LayoutInflater.from(context);
         this.context = context;
         this.sampleList = sampleList;
         this.clickListener = clickListener;
     }
 
     @Override
-    public MyViewHolder onCreateViewHolder(ViewGroup parent, int viewType) {
-        View view = layoutInflater.inflate(R.layout.row_item_ad, parent, false);
-        return new MyViewHolder(view);
+    public RecyclerView.ViewHolder onCreateViewHolder(ViewGroup parent, int viewType) {
+        return new MyViewHolder(LayoutInflater.from(context).inflate(R.layout.row_item_ad, parent, false));
     }
 
     public void setData(ArrayList<AdInfo> sampleList) {
@@ -40,30 +38,38 @@ public class AdAdapter extends RecyclerView.Adapter<AdAdapter.MyViewHolder> {
     }
 
     @Override
-    public void onBindViewHolder(final MyViewHolder holder, int position) {
-        AdInfo adInfo = sampleList.get(position);
+    public void onBindViewHolder(final RecyclerView.ViewHolder holder, int position) {
+        if (holder instanceof MyViewHolder) {
+            MyViewHolder myViewHolder = (MyViewHolder) holder;
 
-        String title = "৳" + adInfo.getFlatRent() + ", " + adInfo.getBedRoom() + " bed, " + adInfo.getBathroom() + " bath";
-        holder.adTitle.setText(title.trim());
-        String subTitle = adInfo.getFullAddress();
-        holder.adSubTitle.setText(subTitle.trim());
+            AdInfo adInfo = sampleList.get(position);
 
-        if (adInfo.getImages() == null || adInfo.getImages().isEmpty()) {
-            if (adInfo.getMap() == null) {
-                holder.adMainPhoto.setImageResource(R.drawable.dummy_flat_image);
+            String title = "৳" + adInfo.getFlatRent() + ", " + adInfo.getBedRoom() + " bed, " + adInfo.getBathroom() + " bath";
+            myViewHolder.adTitle.setText(title.trim());
+            String subTitle = adInfo.getFullAddress();
+            myViewHolder.adSubTitle.setText(subTitle.trim());
+
+            String imagePath = null;
+            int imageCount = 0;
+
+            if (adInfo.getImages() == null || adInfo.getImages().isEmpty()) {
+                if (adInfo.getMap() != null) {
+                    imagePath = adInfo.getMap().getDownloadUrl();
+                }
             } else {
-                Glide.with(context)
-                        .load(Uri.parse(adInfo.getMap().getDownloadUrl()))
-                        .into(holder.adMainPhoto);
+                imageCount = adInfo.getImages().size();
+                imagePath = adInfo.getImages().get(0).getDownloadUrl();
             }
-            holder.photoCount.setText(context.getString(R.string.dummy_photo_count));
-        } else {
-            Glide.with(context)
-                    .load(Uri.parse(adInfo.getImages().get(0).getDownloadUrl()))
-                    .into(holder.adMainPhoto);
 
-            String photoCount = adInfo.getImages().size() > 1 ? adInfo.getImages().size() + " Photo's" : adInfo.getImages().size() + " Photos";
-            holder.photoCount.setText(photoCount);
+            if (imagePath != null)
+                Glide.with(context)
+                        .load(Uri.parse(imagePath))
+                        .into(myViewHolder.adMainPhoto);
+            else
+                myViewHolder.adMainPhoto.setImageResource(R.drawable.dummy_flat_image);
+
+            String photoCount = imageCount > 1 ? imageCount + " Photo's" : imageCount + " Photo";
+            myViewHolder.photoCount.setText(photoCount);
         }
 //        holder.progressBar.setVisibility(View.VISIBLE);
 //
@@ -95,11 +101,25 @@ public class AdAdapter extends RecyclerView.Adapter<AdAdapter.MyViewHolder> {
     }
 
     @Override
+    public int getItemViewType(int position) {
+        return position;
+    }
+
+    @Override
     public int getItemCount() {
         return sampleList.size();
     }
 
-    class MyViewHolder extends RecyclerView.ViewHolder {
+    @Override
+    public void onViewRecycled(RecyclerView.ViewHolder holder) {
+        if (holder instanceof MyViewHolder) {
+            MyViewHolder myViewHolder = (MyViewHolder) holder;
+            Glide.with(context).clear(myViewHolder.adMainPhoto);
+        }
+        super.onViewRecycled(holder);
+    }
+
+    private class MyViewHolder extends RecyclerView.ViewHolder {
         ImageView adMainPhoto, favIcon;
         TextView adTitle, adSubTitle, photoCount;
 

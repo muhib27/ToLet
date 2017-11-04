@@ -13,13 +13,17 @@
         android:id="@+id/adRecyclerView"
         android:layout_width="match_parent"
         android:layout_height="0dp"
-        android:layout_weight="1"/>
+        android:layout_weight="1" />
 
-    <!--<Button-->
-    <!--android:layout_width="match_parent"-->
-    <!--android:layout_height="wrap_content"-->
-    <!--android:background="@drawable/custom_button_bg"-->
-    <!--android:text="TestButton" />-->
+    <Button
+        android:id="@+id/postYourAdd"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:background="@drawable/custom_button_bg"
+        android:text="@string/post_your_ad"
+        android:textColor="@color/white"
+        android:textStyle="bold"
+        android:textAllCaps="true" />
 
     <!--<android.support.v7.widget.AppCompatButton-->
     <!--android:layout_width="match_parent"-->

@@ -1,11 +1,8 @@
 package com.to.let.bd.model;
 
 import com.google.firebase.database.Exclude;
-import com.google.firebase.database.ServerValue;
 import com.to.let.bd.utils.DBConstants;
-import com.to.let.bd.utils.SmartToLetConstants;
 
-import java.io.Serializable;
 import java.util.ArrayList;
 import java.util.HashMap;
 

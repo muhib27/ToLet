@@ -47,13 +47,13 @@ public class UploadImageService extends BaseTaskService {
     public int onStartCommand(Intent intent, int flags, int startId) {
         Log.d(TAG, "onStartCommand:" + intent + ":" + startId);
 
-        if (SmartToLetConstants.actionUpload.equals(intent.getAction())) {
-            int type = intent.getIntExtra(SmartToLetConstants.keyType, -1);
+        if (AppConstants.actionUpload.equals(intent.getAction())) {
+            int type = intent.getIntExtra(AppConstants.keyType, -1);
             String adId = intent.getStringExtra(DBConstants.adId);
             if (adId == null || adId.isEmpty()) {
-                adId = SmartToLetConstants.storageCommonFolderName;
+                adId = AppConstants.storageCommonFolderName;
             }
-            int imageIndex = intent.getIntExtra(SmartToLetConstants.imageIndex, -1);
+            int imageIndex = intent.getIntExtra(AppConstants.imageIndex, -1);
             uploadFromUri(intent, type, adId, imageIndex);
         }
 
@@ -70,22 +70,22 @@ public class UploadImageService extends BaseTaskService {
         // Get a reference to store file at photos/<FILENAME>.jpg
         StorageReference storageReference = null;
         UploadTask uploadTask = null;
-        if (type == SmartToLetConstants.adImageType) {
-            final Uri fileUri = intent.getParcelableExtra(SmartToLetConstants.fileUri);
+        if (type == AppConstants.adImageType) {
+            final Uri fileUri = intent.getParcelableExtra(AppConstants.fileUri);
             storageReference = mStorageRef
-                    .child(SmartToLetConstants.photos)
-                    .child(SmartToLetConstants.adPhotos)
+                    .child(AppConstants.photos)
+                    .child(AppConstants.adPhotos)
                     .child(adId)
                     .child(String.valueOf(imageIndex) + ".jpg");
             uploadTask = storageReference.putFile(fileUri);
-        } else if (type == SmartToLetConstants.adMapImageType) {
+        } else if (type == AppConstants.adMapImageType) {
             storageReference = mStorageRef
-                    .child(SmartToLetConstants.photos)
-                    .child(SmartToLetConstants.adPhotos)
+                    .child(AppConstants.photos)
+                    .child(AppConstants.adPhotos)
                     .child(adId)
                     .child(getString(R.string.map) + ".jpg");
 
-            final byte[] fileUri = intent.getByteArrayExtra(SmartToLetConstants.fileUri);
+            final byte[] fileUri = intent.getByteArrayExtra(AppConstants.fileUri);
             uploadTask = storageReference.putBytes(fileUri);
         }
 
@@ -143,11 +143,11 @@ public class UploadImageService extends BaseTaskService {
      * @return true if a running receiver received the broadcast.
      */
     private boolean broadcastUploadingProgress(int type, String adId, int imageIndex, double progress) {
-        Intent broadcast = new Intent(SmartToLetConstants.uploadProgress)
-                .putExtra(SmartToLetConstants.keyType, type)
+        Intent broadcast = new Intent(AppConstants.uploadProgress)
+                .putExtra(AppConstants.keyType, type)
                 .putExtra(DBConstants.adId, adId)
-                .putExtra(SmartToLetConstants.imageIndex, imageIndex)
-                .putExtra(SmartToLetConstants.progress, (int) progress);
+                .putExtra(AppConstants.imageIndex, imageIndex)
+                .putExtra(AppConstants.progress, (int) progress);
         return LocalBroadcastManager.getInstance(getApplicationContext()).sendBroadcast(broadcast);
     }
 
@@ -158,12 +158,12 @@ public class UploadImageService extends BaseTaskService {
      */
     private boolean broadcastUploadFinished(int type, String adId, int imageIndex, String[] imageContents) {
         boolean success = imageContents != null && imageContents[0] != null;
-        String action = success ? SmartToLetConstants.uploadComplete : SmartToLetConstants.uploadError;
+        String action = success ? AppConstants.uploadComplete : AppConstants.uploadError;
         Intent broadcast = new Intent(action)
-                .putExtra(SmartToLetConstants.keyType, type)
+                .putExtra(AppConstants.keyType, type)
                 .putExtra(DBConstants.adId, adId)
-                .putExtra(SmartToLetConstants.imageIndex, imageIndex)
-                .putExtra(SmartToLetConstants.imageContents, imageContents);
+                .putExtra(AppConstants.imageIndex, imageIndex)
+                .putExtra(AppConstants.imageContents, imageContents);
         return LocalBroadcastManager.getInstance(getApplicationContext()).sendBroadcast(broadcast);
     }
 
@@ -183,9 +183,9 @@ public class UploadImageService extends BaseTaskService {
 
     public static IntentFilter getIntentFilter() {
         IntentFilter filter = new IntentFilter();
-        filter.addAction(SmartToLetConstants.uploadComplete);
-        filter.addAction(SmartToLetConstants.uploadError);
-        filter.addAction(SmartToLetConstants.uploadProgress);
+        filter.addAction(AppConstants.uploadComplete);
+        filter.addAction(AppConstants.uploadError);
+        filter.addAction(AppConstants.uploadProgress);
         return filter;
     }
 }

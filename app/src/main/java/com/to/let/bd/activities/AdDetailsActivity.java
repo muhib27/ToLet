@@ -6,7 +6,6 @@ import android.graphics.Color;
 import android.graphics.drawable.ColorDrawable;
 import android.net.Uri;
 import android.os.Bundle;
-import android.os.Handler;
 import android.support.v4.view.ViewPager;
 import android.support.v7.app.ActionBar;
 import android.support.v7.widget.LinearLayoutManager;
@@ -14,6 +13,7 @@ import android.support.v7.widget.RecyclerView;
 import android.support.v7.widget.Toolbar;
 import android.view.Gravity;
 import android.view.LayoutInflater;
+import android.view.MenuItem;
 import android.view.View;
 import android.view.ViewGroup;
 import android.view.Window;
@@ -28,7 +28,7 @@ import com.to.let.bd.common.BaseActivity;
 import com.to.let.bd.components.ImageViewZoomT;
 import com.to.let.bd.model.AdInfo;
 import com.to.let.bd.utils.DBConstants;
-import com.to.let.bd.utils.SmartToLetConstants;
+import com.to.let.bd.utils.AppConstants;
 
 import java.text.ParseException;
 import java.text.SimpleDateFormat;
@@ -42,7 +42,7 @@ public class AdDetailsActivity extends BaseActivity implements View.OnClickListe
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_ad_details);
-        Toolbar toolbar = (Toolbar) findViewById(R.id.toolbar);
+        Toolbar toolbar = findViewById(R.id.toolbar);
         setSupportActionBar(toolbar);
 
         ActionBar actionBar = getSupportActionBar();
@@ -130,8 +130,8 @@ public class AdDetailsActivity extends BaseActivity implements View.OnClickListe
 
         callBtn.setOnClickListener(this);
         emailBtn.setOnClickListener(this);
-        privacyPolicy.setOnClickListener(this);
-        reportThis.setOnClickListener(this);
+//        privacyPolicy.setOnClickListener(this);
+//        reportThis.setOnClickListener(this);
     }
 
     @Override
@@ -140,11 +140,12 @@ public class AdDetailsActivity extends BaseActivity implements View.OnClickListe
 
         } else if (view == emailBtn) {
 
-        } else if (view == privacyPolicy) {
-
-        } else if (view == reportThis) {
-
         }
+//        else if (view == privacyPolicy) {
+//
+//        } else if (view == reportThis) {
+//
+//        }
     }
 
     private RecyclerView recyclerView;
@@ -184,64 +185,64 @@ public class AdDetailsActivity extends BaseActivity implements View.OnClickListe
         });
 
         pager.setAdapter(slidingImageAdapter);
-        pager.post(new Runnable() {
-            @Override
-            public void run() {
-                startScroll();
-            }
-        });
-        pager.addOnPageChangeListener(new ViewPager.OnPageChangeListener() {
-            //            private int lastPosition = -1;
-            private int state = 0;
-
-            @Override
-            public void onPageScrolled(int position, float positionOffset, int positionOffsetPixels) {
-
-            }
-
-            @Override
-            public void onPageSelected(int position) {
-                startScroll();
-            }
-
-            @Override
-            public void onPageScrollStateChanged(int state) {
-                if (state == 1) {
-                    handler.removeCallbacks(autoRunPage);
-                } else {
-                    startScroll();
-                }
-                this.state = state;
-            }
-        });
+//        pager.post(new Runnable() {
+//            @Override
+//            public void run() {
+//                startScroll();
+//            }
+//        });
+//        pager.addOnPageChangeListener(new ViewPager.OnPageChangeListener() {
+//            //            private int lastPosition = -1;
+//            private int state = 0;
+//
+//            @Override
+//            public void onPageScrolled(int position, float positionOffset, int positionOffsetPixels) {
+//
+//            }
+//
+//            @Override
+//            public void onPageSelected(int position) {
+//                startScroll();
+//            }
+//
+//            @Override
+//            public void onPageScrollStateChanged(int state) {
+//                if (state == 1) {
+//                    handler.removeCallbacks(autoRunPage);
+//                } else {
+//                    startScroll();
+//                }
+//                this.state = state;
+//            }
+//        });
     }
 
-    private void startScroll() {
-        handler.removeCallbacks(autoRunPage);
-        handler.postDelayed(autoRunPage, SmartToLetConstants.autoScrollDuration);
-    }
+//    private void startScroll() {
+//        handler.removeCallbacks(autoRunPage);
+//        handler.postDelayed(autoRunPage, AppConstants.autoScrollDuration);
+//    }
+//
+//    @Override
+//    public void onPause() {
+//        super.onPause();
+//        handler.removeCallbacks(autoRunPage);
+//    }
 
-    @Override
-    public void onPause() {
-        super.onPause();
-        handler.removeCallbacks(autoRunPage);
-    }
-
-    private Runnable autoRunPage = new Runnable() {
-        @Override
-        public void run() {
-            int pagerCurrentItem = pager.getCurrentItem();
-            if (pagerCurrentItem == images.length - 1) {
-                pagerCurrentItem = 0;
-                pager.setCurrentItem(pagerCurrentItem, false);
-            } else {
-                pagerCurrentItem++;
-                pager.setCurrentItem(pagerCurrentItem, true);
-            }
-        }
-    };
-
-    private Handler handler = new Handler();
+//    private Runnable autoRunPage = new Runnable() {
+//        @Override
+//        public void run() {
+//            int pagerCurrentItem = pager.getCurrentItem();
+//            if (pagerCurrentItem == images.length - 1) {
+//                pagerCurrentItem = 0;
+//                pager.setCurrentItem(pagerCurrentItem, false);
+//            } else {
+//                pagerCurrentItem++;
+//                pager.setCurrentItem(pagerCurrentItem, true);
+//            }
+//        }
+//    };
+//
+//    private Handler handler = new Handler();
 
     private void setRentDate(String date) {
         SimpleDateFormat dateFormatter = new SimpleDateFormat("dd-MM-yyyy", Locale.US);
@@ -320,7 +321,7 @@ public class AdDetailsActivity extends BaseActivity implements View.OnClickListe
             return;
 
         Intent mapIntent = new Intent(this, MapActivity.class);
-        mapIntent.putExtra(SmartToLetConstants.keyType, typePosition);
+        mapIntent.putExtra(AppConstants.keyType, typePosition);
         mapIntent.putExtra(DBConstants.latitude, adInfo.getLatitude());
         mapIntent.putExtra(DBConstants.longitude, adInfo.getLongitude());
         startActivity(mapIntent);
@@ -349,4 +350,16 @@ public class AdDetailsActivity extends BaseActivity implements View.OnClickListe
                 .load(Uri.parse(images[imagePosition]))
                 .into(zoomableImageView);
     }
+
+    @Override
+    public boolean onOptionsItemSelected(MenuItem item) {
+        switch (item.getItemId()) {
+            case android.R.id.home:
+                finish();
+                return true;
+            default:
+                return super.onOptionsItemSelected(item);
+        }
+    }
+
 }

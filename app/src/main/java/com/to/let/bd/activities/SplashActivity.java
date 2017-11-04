@@ -1,11 +1,14 @@
 package com.to.let.bd.activities;
 
+import android.app.PendingIntent;
 import android.content.Intent;
 import android.os.Bundle;
 import android.os.Handler;
 import android.support.annotation.NonNull;
 import android.util.DisplayMetrics;
 
+import com.google.android.gms.auth.api.Auth;
+import com.google.android.gms.auth.api.credentials.HintRequest;
 import com.google.android.gms.tasks.OnCompleteListener;
 import com.google.android.gms.tasks.OnSuccessListener;
 import com.google.android.gms.tasks.Task;
@@ -155,5 +158,7 @@ public class SplashActivity extends BaseActivity {
         finish();
         Intent intent = new Intent(this, AdListActivity.class);
         startActivity(intent);
+
+
     }
 }

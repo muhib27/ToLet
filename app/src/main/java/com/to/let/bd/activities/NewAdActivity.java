@@ -16,7 +16,6 @@ import android.os.Bundle;
 import android.os.Handler;
 import android.support.annotation.IdRes;
 import android.support.annotation.NonNull;
-import android.support.design.widget.FloatingActionButton;
 import android.support.design.widget.TextInputLayout;
 import android.support.v4.app.ActivityCompat;
 import android.support.v4.content.ContextCompat;
@@ -34,11 +33,11 @@ import android.view.View;
 import android.view.ViewGroup;
 import android.view.Window;
 import android.widget.AdapterView;
+import android.widget.Button;
 import android.widget.CheckBox;
 import android.widget.DatePicker;
 import android.widget.EditText;
 import android.widget.FrameLayout;
-import android.widget.ImageView;
 import android.widget.LinearLayout;
 import android.widget.RadioGroup;
 import android.widget.ScrollView;
@@ -80,8 +79,7 @@ import com.to.let.bd.common.WorkaroundMapFragment;
 import com.to.let.bd.model.AdInfo;
 import com.to.let.bd.utils.AppConstants;
 import com.to.let.bd.utils.DBConstants;
-import com.to.let.bd.utils.SmartToLetConstants;
-import com.to.let.bd.utils.SmartToLetPrefs;
+import com.to.let.bd.utils.AppSharedPrefs;
 
 import java.io.ByteArrayOutputStream;
 import java.io.IOException;
@@ -162,7 +160,7 @@ public class NewAdActivity extends BaseImageUploadActivity
         }
     }
 
-    private FloatingActionButton fab;
+    private Button submitBtn;
     private TextView addressDetails;
     private ScrollView mapScrollView;
     private EditText emailAddress, mobileNumber;
@@ -183,15 +181,15 @@ public class NewAdActivity extends BaseImageUploadActivity
             actionBar.setTitle(R.string.post_your_ad);
         }
 
-        fab = (FloatingActionButton) findViewById(R.id.fab);
-        fab.setOnClickListener(this);
+        submitBtn = findViewById(R.id.submitBtn);
+        submitBtn.setOnClickListener(this);
 
         mapScrollView = (ScrollView) findViewById(R.id.mapScrollView);
         addressDetails = (TextView) findViewById(R.id.addressDetails);
 
-        emailAddress = (EditText) findViewById(R.id.emailAddress);
-        mobileNumber = (EditText) findViewById(R.id.mobileNumber);
-        mobileNumber.setText(SmartToLetPrefs.getMobileNumber());
+        emailAddress = findViewById(R.id.emailAddress);
+        mobileNumber = findViewById(R.id.mobileNumber);
+        mobileNumber.setText(AppSharedPrefs.getMobileNumber());
 
         mobileNumber.addTextChangedListener(new TextWatcher() {
             @Override
@@ -225,26 +223,26 @@ public class NewAdActivity extends BaseImageUploadActivity
             }
         }
 
-        rentType = (RadioGroup) findViewById(R.id.rentType);
-        drawingDining = (RadioGroup) findViewById(R.id.drawingDining);
-        utilityBill = (RadioGroup) findViewById(R.id.utilityBill);
+        rentType = findViewById(R.id.rentType);
+        drawingDining = findViewById(R.id.drawingDining);
+        utilityBill = findViewById(R.id.utilityBill);
 
-        roomNumberLay = (LinearLayout) findViewById(R.id.roomNumberLay);
+        roomNumberLay = findViewById(R.id.roomNumberLay);
 
-//        bedRoom = (Spinner) findViewById(R.id.bedRoom);
-//        balcony = (Spinner) findViewById(R.id.balcony);
-//        bathRoom = (Spinner) findViewById(R.id.bathRoom);
-//        whichFacing = (Spinner) findViewById(R.id.whichFacing);
+//        bedRoom =  findViewById(R.id.bedRoom);
+//        balcony =  findViewById(R.id.balcony);
+//        bathRoom =  findViewById(R.id.bathRoom);
+//        whichFacing =  findViewById(R.id.whichFacing);
 
-        flatAdditionalInfoLay = (LinearLayout) findViewById(R.id.flatAdditionalInfoLay);
-        houseInfo = (EditText) findViewById(R.id.houseInfo);
-        whichFloor = (EditText) findViewById(R.id.whichFloor);
-        totalSpace = (EditText) findViewById(R.id.totalSpace);
-        totalRent = (EditText) findViewById(R.id.totalRent);
+        flatAdditionalInfoLay = findViewById(R.id.flatAdditionalInfoLay);
+        houseInfo = findViewById(R.id.houseInfo);
+        whichFloor = findViewById(R.id.whichFloor);
+        totalSpace = findViewById(R.id.totalSpace);
+        totalRent = findViewById(R.id.totalRent);
 
-        totalUtilityTIL = (TextInputLayout) findViewById(R.id.totalUtilityTIL);
-        totalUtility = (EditText) findViewById(R.id.totalUtility);
-        utilityBdt = (TextView) findViewById(R.id.utilityBdt);
+        totalUtilityTIL = findViewById(R.id.totalUtilityTIL);
+        totalUtility = findViewById(R.id.totalUtility);
+        utilityBdt = findViewById(R.id.utilityBdt);
 
         totalUtility.setOnEditorActionListener(new TextView.OnEditorActionListener() {
             @Override
@@ -265,7 +263,7 @@ public class NewAdActivity extends BaseImageUploadActivity
         generatorCB = (CheckBox) findViewById(R.id.generatorCB);
         securityGuardCB = (CheckBox) findViewById(R.id.securityGuardCB);
 
-        rentDate = (TextView) findViewById(R.id.rentDate);
+        rentDate = findViewById(R.id.rentDate);
         rentDate.setOnClickListener(this);
     }
 
@@ -306,7 +304,7 @@ public class NewAdActivity extends BaseImageUploadActivity
     // Google login
     private void googleLogin() {
         Intent signInIntent = Auth.GoogleSignInApi.getSignInIntent(mGoogleApiClient);
-        startActivityForResult(signInIntent, SmartToLetConstants.GOOGLE_SIGN_IN);
+        startActivityForResult(signInIntent, AppConstants.GOOGLE_SIGN_IN);
     }
 
     // Google sign out
@@ -327,7 +325,7 @@ public class NewAdActivity extends BaseImageUploadActivity
         super.onActivityResult(requestCode, resultCode, data);
 
         // Result returned from launching the Intent from GoogleSignInApi.getSignInIntent(...);
-        if (requestCode == SmartToLetConstants.GOOGLE_SIGN_IN) {
+        if (requestCode == AppConstants.GOOGLE_SIGN_IN) {
             GoogleSignInResult result = Auth.GoogleSignInApi.getSignInResultFromIntent(data);
             if (result != null && result.getStatus().isSuccess()) {
                 // Google Sign In was successful, authenticate with Firebase
@@ -509,10 +507,10 @@ public class NewAdActivity extends BaseImageUploadActivity
         View infoWindow = getLayoutInflater().inflate(R.layout.custom_info_contents,
                 (FrameLayout) findViewById(R.id.map), false);
 
-        TextView title = ((TextView) infoWindow.findViewById(R.id.title));
+        TextView title = infoWindow.findViewById(R.id.title);
         title.setText(marker.getTitle());
 
-        TextView snippet = ((TextView) infoWindow.findViewById(R.id.snippet));
+        TextView snippet = infoWindow.findViewById(R.id.snippet);
         snippet.setText(marker.getSnippet());
 
         return infoWindow;
@@ -685,7 +683,7 @@ public class NewAdActivity extends BaseImageUploadActivity
     public void addRoomNumberView() {
         LayoutInflater inflater = LayoutInflater.from(this);
         for (int i = 0; i < roomTypes.length; i++) {
-            final View inflatedView = inflater.inflate(R.layout.single_room_number_lay, roomNumberLay, false);
+            final View inflatedView = inflater.inflate(R.layout.row_perticular_view, roomNumberLay, false);
             LinearLayout.LayoutParams layoutParams = new LinearLayout.LayoutParams(0, ViewGroup.LayoutParams.WRAP_CONTENT);
             layoutParams.weight = 1;
             inflatedView.setLayoutParams(layoutParams);
@@ -696,7 +694,7 @@ public class NewAdActivity extends BaseImageUploadActivity
                     showRoomNumberPopupMenu(inflatedView, roomTypes[pos]);
                 }
             });
-            int defaultSelection = 2;
+            int defaultSelection;
             if (i == 2) {
                 defaultSelection = 1;
                 updatePickerView(inflatedView, roomTypes[i], (roomArray[1] + " " + roomTypes[i]));
@@ -790,7 +788,7 @@ public class NewAdActivity extends BaseImageUploadActivity
 
     private void addRoomFaceType() {
         LayoutInflater inflater = LayoutInflater.from(this);
-        final View inflatedView = inflater.inflate(R.layout.single_room_number_lay, roomNumberLay, false);
+        final View inflatedView = inflater.inflate(R.layout.row_perticular_view, roomNumberLay, false);
         LinearLayout.LayoutParams layoutParams = new LinearLayout.LayoutParams(ViewGroup.LayoutParams.WRAP_CONTENT, ViewGroup.LayoutParams.WRAP_CONTENT);
         inflatedView.setLayoutParams(layoutParams);
 
@@ -848,7 +846,7 @@ public class NewAdActivity extends BaseImageUploadActivity
 
     @Override
     public void onClick(View view) {
-        if (fab == view) {
+        if (submitBtn == view) {
             submitAd();
         } else if (rentDate == view) {
             showDatePickerDialog();
@@ -906,7 +904,7 @@ public class NewAdActivity extends BaseImageUploadActivity
             return;
         }
 
-        SmartToLetPrefs.setMobileNumber(mobileNumber.getText().toString());
+        AppSharedPrefs.setMobileNumber(mobileNumber.getText().toString());
         viewSummaryDialog();
     }
 
@@ -923,12 +921,12 @@ public class NewAdActivity extends BaseImageUploadActivity
 
         summaryDialog.show();
 
-        TextView title = (TextView) summaryDialog.findViewById(R.id.title);
+        TextView title = summaryDialog.findViewById(R.id.title);
         title.setText(getString(R.string.is_everything_ok));
 
-        TextView roomDetails = (TextView) summaryDialog.findViewById(R.id.roomDetails);
-        TextView address = (TextView) summaryDialog.findViewById(R.id.address);
-        TextView totalRent = (TextView) summaryDialog.findViewById(R.id.totalRent);
+        TextView roomDetails = summaryDialog.findViewById(R.id.roomDetails);
+        TextView address = summaryDialog.findViewById(R.id.address);
+        TextView totalRent = summaryDialog.findViewById(R.id.totalRent);
 
         String r = familyRoom[0] + " bedroom, " + familyRoom[1] + " bathroom, " + familyRoom[2] + " balcony.";
         roomDetails.setText(r);
@@ -943,10 +941,7 @@ public class NewAdActivity extends BaseImageUploadActivity
 
         totalRent.setText(tr);
 
-        ImageView okBtn = (ImageView) summaryDialog.findViewById(R.id.okBtn);
-        ImageView noBtn = (ImageView) summaryDialog.findViewById(R.id.noBtn);
-
-        okBtn.setOnClickListener(new View.OnClickListener() {
+        summaryDialog.findViewById(R.id.okBtn).setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View view) {
                 summaryDialog.dismiss();
@@ -954,15 +949,15 @@ public class NewAdActivity extends BaseImageUploadActivity
             }
         });
 
-        noBtn.setOnClickListener(new View.OnClickListener() {
+        summaryDialog.findViewById(R.id.noBtn).setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View view) {
                 summaryDialog.dismiss();
             }
         });
 
-//        LinearLayout okBtnLay = (LinearLayout) summaryDialog.findViewById(R.id.okBtnLay);
-//        LinearLayout noBtnLay = (LinearLayout) summaryDialog.findViewById(R.id.noBtnLay);
+//        LinearLayout okBtnLay =  summaryDialog.findViewById(R.id.okBtnLay);
+//        LinearLayout noBtnLay =  summaryDialog.findViewById(R.id.noBtnLay);
 //
 //        okBtnLay.setOnClickListener(new View.OnClickListener() {
 //            @Override
@@ -1039,7 +1034,7 @@ public class NewAdActivity extends BaseImageUploadActivity
                                     ByteArrayOutputStream stream = new ByteArrayOutputStream();
                                     bitmap.compress(Bitmap.CompressFormat.PNG, 50, stream);
                                     byte[] byteArray = stream.toByteArray();
-                                    uploadImage(SmartToLetConstants.adMapImageType, adId, byteArray);
+                                    uploadImage(AppConstants.adMapImageType, adId, byteArray);
                                 }
                             });
                         }
@@ -1168,7 +1163,38 @@ public class NewAdActivity extends BaseImageUploadActivity
             }
         });
 
+        rentType.setOnCheckedChangeListener(new RadioGroup.OnCheckedChangeListener() {
+            @Override
+            public void onCheckedChanged(RadioGroup radioGroup, @IdRes int checkedId) {
+                if (checkedId == R.id.family) {
+                    changeAsFamilyType();
+                } else if (checkedId == R.id.sublet) {
+                    changeAsSubletType();
+                } else if (checkedId == R.id.bachelor) {
+                    changeAsBachelorType();
+                } else {
+                    changeAsOthersType();
+                }
+            }
+        });
+
         setCalculatedRent();
+    }
+
+    private void changeAsFamilyType() {
+
+    }
+
+    private void changeAsSubletType() {
+
+    }
+
+    private void changeAsBachelorType() {
+
+    }
+
+    private void changeAsOthersType() {
+
     }
 
     private void setCalculatedRent() {

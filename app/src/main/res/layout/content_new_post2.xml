@@ -1,0 +1,332 @@
+<ScrollView xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:app="http://schemas.android.com/apk/res-auto"
+    xmlns:tools="http://schemas.android.com/tools"
+    android:id="@+id/mapScrollView"
+    android:layout_width="match_parent"
+    android:layout_height="match_parent"
+    app:layout_behavior="@string/appbar_scrolling_view_behavior"
+    tools:context="com.to.let.bd.activities.NewAdActivity2"
+    tools:showIn="@layout/activity_new_post2">
+
+    <LinearLayout
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:gravity="center_horizontal"
+        android:orientation="vertical">
+
+        <fragment
+            android:id="@+id/map"
+            android:name="com.to.let.bd.common.WorkaroundMapFragment"
+            android:layout_width="match_parent"
+            android:layout_height="@dimen/new_post_map_height"
+            android:visibility="visible" />
+
+        <LinearLayout
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:orientation="vertical"
+            android:padding="@dimen/new_post_common_padding">
+
+            <TextView
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:text="@string/full_address"
+                android:textColor="@color/black"
+                android:textSize="@dimen/text_size_16sp"
+                android:textStyle="bold" />
+
+            <EditText
+                android:id="@+id/addressDetails"
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:background="@drawable/rectangle_black_border"
+                android:gravity="center_vertical"
+                android:hint="@string/dummy_full_address"
+                android:maxLines="1"
+                android:padding="@dimen/size_10dp"
+                android:singleLine="true"
+                android:textColor="@color/black"
+                android:textSize="@dimen/text_size_12sp" />
+
+            <TextView
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:layout_marginTop="@dimen/new_post_common_padding"
+                android:text="@string/flat_info"
+                android:textColor="@color/black"
+                android:textSize="@dimen/text_size_16sp"
+                android:textStyle="bold" />
+        </LinearLayout>
+
+        <android.support.design.widget.TabLayout
+            android:id="@+id/tabLayout"
+            android:layout_width="wrap_content"
+            android:layout_height="@dimen/size_40dp"
+            android:overScrollMode="ifContentScrolls"
+            app:tabGravity="fill"
+            app:tabIndicatorColor="@color/colorPrimary"
+            app:tabMaxWidth="0dp"
+            app:tabMode="scrollable"
+            app:tabSelectedTextColor="@color/colorPrimary"
+            app:tabTextColor="@color/black" />
+
+        <LinearLayout
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:orientation="vertical"
+            android:padding="@dimen/new_post_common_padding">
+
+            <!--<com.to.let.bd.common.WrapContentViewPager-->
+            <!--android:id="@+id/viewPager"-->
+            <!--android:layout_width="match_parent"-->
+            <!--android:layout_height="wrap_content">-->
+
+            <!--</com.to.let.bd.common.WrapContentViewPager>-->
+
+            <FrameLayout
+                android:id="@+id/fragmentContainer"
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content" />
+
+            <TextView
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:layout_marginTop="@dimen/new_post_common_padding"
+                android:text="@string/additional_info"
+                android:textColor="@color/black"
+                android:textSize="@dimen/text_size_16sp"
+                android:textStyle="bold" />
+
+            <include layout="@layout/divider_view" />
+
+            <LinearLayout
+                android:id="@+id/flatAdditionalInfoLay"
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:baselineAligned="false"
+                android:gravity="center_vertical"
+                android:orientation="horizontal">
+
+                <android.support.design.widget.TextInputLayout
+                    android:layout_width="0dp"
+                    android:layout_height="wrap_content"
+                    android:layout_marginEnd="@dimen/new_post_common_padding"
+                    android:layout_marginRight="@dimen/new_post_common_padding"
+                    android:layout_weight="2">
+
+                    <EditText
+                        android:id="@+id/houseInfo"
+                        android:layout_width="match_parent"
+                        android:layout_height="wrap_content"
+                        android:hint="@string/houseInfo"
+                        android:imeActionId="@+id/whichFloor"
+                        android:imeOptions="actionNext"
+                        android:inputType="textPersonName"
+                        android:singleLine="true"
+                        android:textColor="@color/black" />
+                </android.support.design.widget.TextInputLayout>
+
+                <android.support.design.widget.TextInputLayout
+                    android:layout_width="0dp"
+                    android:layout_height="wrap_content"
+                    android:layout_marginEnd="@dimen/new_post_common_padding"
+                    android:layout_marginRight="@dimen/new_post_common_padding"
+                    android:layout_weight=".75">
+
+                    <EditText
+                        android:id="@+id/whichFloor"
+                        android:layout_width="match_parent"
+                        android:layout_height="wrap_content"
+                        android:ems="2"
+                        android:hint="@string/floor"
+                        android:imeOptions="actionNext"
+                        android:inputType="numberDecimal"
+                        android:maxLength="2"
+                        android:maxLines="1"
+                        android:minWidth="@dimen/size_50dp"
+                        android:singleLine="true"
+                        android:textColor="@color/black" />
+                </android.support.design.widget.TextInputLayout>
+            </LinearLayout>
+
+            <LinearLayout
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:layout_marginTop="@dimen/new_post_common_padding"
+                android:baselineAligned="false"
+                android:gravity="center_vertical"
+                android:orientation="horizontal">
+
+                <android.support.design.widget.TextInputLayout
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content">
+
+                    <EditText
+                        android:id="@+id/totalRent"
+                        android:layout_width="match_parent"
+                        android:layout_height="wrap_content"
+                        android:ems="6"
+                        android:hint="@string/rent"
+                        android:imeActionId="@+id/emailAddress"
+                        android:imeOptions="actionNext"
+                        android:inputType="numberDecimal"
+                        android:maxLength="6"
+                        android:maxLines="1"
+                        android:singleLine="true" />
+
+                </android.support.design.widget.TextInputLayout>
+
+                <TextView
+                    android:layout_width="0dp"
+                    android:layout_height="wrap_content"
+                    android:layout_marginLeft="@dimen/new_post_common_padding"
+                    android:layout_marginStart="@dimen/new_post_common_padding"
+                    android:layout_weight="1"
+                    android:text="@string/bdt"
+                    android:textColor="@color/black"
+                    android:textSize="@dimen/text_size_14sp"
+                    android:textStyle="bold" />
+
+                <android.support.design.widget.TextInputLayout
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content">
+
+                    <EditText
+                        android:id="@+id/totalUtility"
+                        android:layout_width="match_parent"
+                        android:layout_height="wrap_content"
+                        android:ems="5"
+                        android:hint="@string/utility_bill"
+                        android:imeActionId="@+id/emailAddress"
+                        android:imeOptions="actionNext"
+                        android:inputType="numberDecimal"
+                        android:maxLength="5"
+                        android:maxLines="1"
+                        android:singleLine="true" />
+
+                </android.support.design.widget.TextInputLayout>
+
+                <TextView
+                    android:layout_width="0dp"
+                    android:layout_height="wrap_content"
+                    android:layout_marginLeft="@dimen/new_post_common_padding"
+                    android:layout_marginStart="@dimen/new_post_common_padding"
+                    android:layout_weight="1"
+                    android:text="@string/bdt"
+                    android:textColor="@color/black"
+                    android:textSize="@dimen/text_size_14sp"
+                    android:textStyle="bold" />
+            </LinearLayout>
+
+            <android.support.design.widget.TextInputLayout
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:layout_marginTop="@dimen/new_post_common_padding">
+
+                <EditText
+                    android:id="@+id/description"
+                    android:layout_width="match_parent"
+                    android:layout_height="wrap_content"
+                    android:gravity="left|top"
+                    android:hint="@string/description_if_need"
+                    android:inputType="textMultiLine"
+                    android:maxLines="3"
+                    android:minLines="2"
+                    android:singleLine="false" />
+            </android.support.design.widget.TextInputLayout>
+
+            <LinearLayout
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:layout_marginTop="@dimen/new_post_common_padding"
+                android:gravity="center_vertical"
+                android:orientation="horizontal">
+
+                <TextView
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    android:layout_marginEnd="@dimen/size_20dp"
+                    android:layout_marginRight="@dimen/size_20dp"
+                    android:text="@string/please_select_rent_date"
+                    android:textColor="@color/black"
+                    android:textSize="@dimen/text_size_14sp"
+                    android:textStyle="bold" />
+
+                <TextView
+                    android:id="@+id/rentDate"
+                    android:layout_width="0dp"
+                    android:layout_height="wrap_content"
+                    android:layout_weight="1"
+                    android:background="@drawable/rectangle_black_border"
+                    android:ellipsize="end"
+                    android:gravity="center"
+                    android:maxLines="2"
+                    android:padding="@dimen/new_post_common_padding"
+                    android:text="@string/select_date"
+                    android:textAllCaps="false"
+                    android:textColor="@color/black"
+                    android:textSize="@dimen/text_size_14sp"
+                    android:textStyle="bold" />
+
+            </LinearLayout>
+
+            <TextView
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:layout_marginTop="@dimen/new_post_common_padding"
+                android:text="@string/contact_info"
+                android:textColor="@color/black"
+                android:textSize="@dimen/text_size_16sp"
+                android:textStyle="bold" />
+
+            <include layout="@layout/divider_view" />
+
+            <android.support.design.widget.TextInputLayout
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:layout_marginTop="@dimen/new_post_common_padding">
+
+                <AutoCompleteTextView
+                    android:id="@+id/emailAddress"
+                    android:layout_width="match_parent"
+                    android:layout_height="wrap_content"
+                    android:hint="@string/emailAddress"
+                    android:imeActionId="@+id/mobileNumber"
+                    android:imeOptions="actionNext"
+                    android:inputType="textEmailAddress"
+                    android:maxLines="1"
+                    android:singleLine="true" />
+            </android.support.design.widget.TextInputLayout>
+
+            <android.support.design.widget.TextInputLayout
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:layout_marginBottom="@dimen/new_post_common_padding"
+                android:layout_marginTop="@dimen/new_post_common_padding">
+
+                <EditText
+                    android:id="@+id/mobileNumber"
+                    android:layout_width="match_parent"
+                    android:layout_height="wrap_content"
+                    android:ems="14"
+                    android:hint="@string/phone_number"
+                    android:imeOptions="actionDone"
+                    android:inputType="phone"
+                    android:maxLength="14"
+                    android:maxLines="1"
+                    android:singleLine="true"
+                    android:textColor="#000000" />
+            </android.support.design.widget.TextInputLayout>
+        </LinearLayout>
+
+        <Button
+            android:id="@+id/submitBtn"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:background="@drawable/custom_button_bg"
+            android:text="@string/submit_your_ad"
+            android:textAllCaps="true"
+            android:textColor="@color/white"
+            android:textStyle="bold" />
+    </LinearLayout>
+</ScrollView>

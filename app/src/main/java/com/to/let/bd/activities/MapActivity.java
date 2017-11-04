@@ -38,8 +38,8 @@ import com.to.let.bd.R;
 import com.to.let.bd.common.BaseActivity;
 import com.to.let.bd.model.google_place.GooglePlace;
 import com.to.let.bd.model.google_place.GooglePlaceResult;
+import com.to.let.bd.utils.AppConstants;
 import com.to.let.bd.utils.DBConstants;
-import com.to.let.bd.utils.SmartToLetConstants;
 import com.to.let.bd.utils.retrofit.RetrofitConstants;
 
 import java.io.IOException;
@@ -133,9 +133,9 @@ public class MapActivity extends BaseActivity
             actionBar.setTitle(R.string.map);
         }
 
-        type = getIntent().getIntExtra(SmartToLetConstants.keyType, 0);
-        latitude = getIntent().getDoubleExtra(DBConstants.latitude, SmartToLetConstants.defaultLatitude);
-        longitude = getIntent().getDoubleExtra(DBConstants.longitude, SmartToLetConstants.defaultLongitude);
+        type = getIntent().getIntExtra(AppConstants.keyType, 0);
+        latitude = getIntent().getDoubleExtra(DBConstants.latitude, AppConstants.defaultLatitude);
+        longitude = getIntent().getDoubleExtra(DBConstants.longitude, AppConstants.defaultLongitude);
 
         mDefaultLatLng = new LatLng(latitude, longitude);
 
@@ -591,5 +591,14 @@ public class MapActivity extends BaseActivity
         }
     }
 
-
+    @Override
+    public boolean onOptionsItemSelected(MenuItem item) {
+        switch (item.getItemId()) {
+            case android.R.id.home:
+                finish();
+                return true;
+            default:
+                return super.onOptionsItemSelected(item);
+        }
+    }
 }

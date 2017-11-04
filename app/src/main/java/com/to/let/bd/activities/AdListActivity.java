@@ -1,15 +1,15 @@
 package com.to.let.bd.activities;
 
+import android.app.PendingIntent;
 import android.content.Intent;
+import android.content.IntentSender;
 import android.graphics.Rect;
 import android.os.Bundle;
 import android.support.annotation.NonNull;
 import android.support.annotation.Nullable;
-import android.support.design.widget.FloatingActionButton;
 import android.support.design.widget.NavigationView;
 import android.support.v4.view.GravityCompat;
 import android.support.v4.widget.DrawerLayout;
-import android.support.v7.app.ActionBar;
 import android.support.v7.app.ActionBarDrawerToggle;
 import android.support.v7.widget.RecyclerView;
 import android.support.v7.widget.StaggeredGridLayoutManager;
@@ -23,8 +23,10 @@ import android.widget.LinearLayout;
 import android.widget.TextView;
 
 import com.bumptech.glide.Glide;
+import com.bumptech.glide.RequestManager;
 import com.bumptech.glide.request.RequestOptions;
 import com.google.android.gms.auth.api.Auth;
+import com.google.android.gms.auth.api.credentials.HintRequest;
 import com.google.android.gms.auth.api.signin.GoogleSignInAccount;
 import com.google.android.gms.auth.api.signin.GoogleSignInOptions;
 import com.google.android.gms.auth.api.signin.GoogleSignInResult;
@@ -49,36 +51,39 @@ import com.to.let.bd.R;
 import com.to.let.bd.adapters.AdAdapter;
 import com.to.let.bd.common.BaseActivity;
 import com.to.let.bd.model.AdInfo;
+import com.to.let.bd.utils.AppConstants;
 import com.to.let.bd.utils.DBConstants;
-import com.to.let.bd.utils.SmartToLetConstants;
+import com.to.let.bd.utils.pick_photo.PickConfig;
 
 import java.util.ArrayList;
 import java.util.Collections;
 import java.util.Comparator;
 import java.util.HashMap;
 
-public class AdListActivity extends BaseActivity
-        implements NavigationView.OnNavigationItemSelectedListener, View.OnClickListener, GoogleApiClient.OnConnectionFailedListener, GoogleApiClient.ConnectionCallbacks {
+public class AdListActivity extends BaseActivity implements NavigationView.OnNavigationItemSelectedListener,
+        View.OnClickListener, GoogleApiClient.OnConnectionFailedListener, GoogleApiClient.ConnectionCallbacks {
+
+    private Button postYourAdd;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_ad_list);
 
-        Toolbar toolbar = (Toolbar) findViewById(R.id.toolbar);
+        Toolbar toolbar = findViewById(R.id.toolbar);
         setSupportActionBar(toolbar);
 
         initGoogleLogin();
 
-        FloatingActionButton fab = (FloatingActionButton) findViewById(R.id.fab);
-        fab.setOnClickListener(new View.OnClickListener() {
+        postYourAdd = findViewById(R.id.postYourAdd);
+        postYourAdd.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View view) {
                 startNewAdActivity();
             }
         });
 
-        DrawerLayout drawer = (DrawerLayout) findViewById(R.id.drawer_layout);
+        DrawerLayout drawer = findViewById(R.id.drawer_layout);
         ActionBarDrawerToggle toggle = new ActionBarDrawerToggle(
                 this, drawer, toolbar, R.string.navigation_drawer_open, R.string.navigation_drawer_close);
         drawer.addDrawerListener(toggle);
@@ -91,7 +96,8 @@ public class AdListActivity extends BaseActivity
     }
 
     private void startNewAdActivity() {
-        Intent newAdIntent = new Intent(this, NewAdActivity.class);
+//        requestHint();
+        Intent newAdIntent = new Intent(this, NewAdActivity2.class);
         newAdIntent.addFlags(Intent.FLAG_ACTIVITY_CLEAR_TASK);
         startActivity(newAdIntent);
     }
@@ -100,7 +106,7 @@ public class AdListActivity extends BaseActivity
     private LinearLayout profileInfoLay;
     private ImageView userPic;
     private TextView userName, contactInfo;
-    private Button postYourAdd;
+    private Button navPostYourAdd;
 
     private void initNavigationDrawer() {
         navigationView = (NavigationView) findViewById(R.id.nav_view);
@@ -112,9 +118,9 @@ public class AdListActivity extends BaseActivity
         userPic = (ImageView) navigationViewHeaderView.findViewById(R.id.userPic);
         userName = (TextView) navigationViewHeaderView.findViewById(R.id.userName);
         contactInfo = (TextView) navigationViewHeaderView.findViewById(R.id.contactInfo);
-        postYourAdd = (Button) navigationViewHeaderView.findViewById(R.id.postYourAdd);
+        navPostYourAdd = (Button) navigationViewHeaderView.findViewById(R.id.postYourAdd);
 
-        postYourAdd.setOnClickListener(this);
+        navPostYourAdd.setOnClickListener(this);
     }
 
     // The entry point to Google Play services, used by the Places API and Fused Location Provider.
@@ -134,6 +140,7 @@ public class AdListActivity extends BaseActivity
                         this /* OnConnectionFailedListener */)
                 .addConnectionCallbacks(this)
                 .addApi(Auth.GOOGLE_SIGN_IN_API, gso)
+                .addApi(Auth.CREDENTIALS_API)
                 .build();
         mGoogleApiClient.connect();
     }
@@ -141,7 +148,7 @@ public class AdListActivity extends BaseActivity
     // Google login
     private void googleLogin() {
         Intent signInIntent = Auth.GoogleSignInApi.getSignInIntent(mGoogleApiClient);
-        startActivityForResult(signInIntent, SmartToLetConstants.GOOGLE_SIGN_IN);
+        startActivityForResult(signInIntent, AppConstants.GOOGLE_SIGN_IN);
     }
 
     // Google sign out
@@ -162,7 +169,7 @@ public class AdListActivity extends BaseActivity
         super.onActivityResult(requestCode, resultCode, data);
 
         // Result returned from launching the Intent from GoogleSignInApi.getSignInIntent(...);
-        if (requestCode == SmartToLetConstants.GOOGLE_SIGN_IN) {
+        if (requestCode == AppConstants.GOOGLE_SIGN_IN) {
             GoogleSignInResult result = Auth.GoogleSignInApi.getSignInResultFromIntent(data);
             if (result != null && result.getStatus().isSuccess()) {
                 // Google Sign In was successful, authenticate with Firebase
@@ -209,7 +216,7 @@ public class AdListActivity extends BaseActivity
 
     @Override
     public void onClick(View view) {
-        if (view == postYourAdd) {
+        if (view == navPostYourAdd) {
             googleSignOut();
         }
     }
@@ -222,12 +229,12 @@ public class AdListActivity extends BaseActivity
         if (firebaseUser != null) {
             if (firebaseUser.isAnonymous()) {
                 profileInfoLay.setVisibility(View.GONE);
-                postYourAdd.setVisibility(View.VISIBLE);
+                navPostYourAdd.setVisibility(View.VISIBLE);
 
                 logoutItem.setTitle(R.string.exit);
             } else {
                 profileInfoLay.setVisibility(View.VISIBLE);
-                postYourAdd.setVisibility(View.GONE);
+                navPostYourAdd.setVisibility(View.GONE);
 
                 String displayName = firebaseUser.getDisplayName();
                 if (displayName != null) {
@@ -306,25 +313,7 @@ public class AdListActivity extends BaseActivity
                     }
                 });
                 closeProgressDialog();
-                if (adAdapter == null) {
-                    adAdapter = new AdAdapter(AdListActivity.this, adList, new AdAdapter.ClickListener() {
-                        @Override
-                        public void onItemClick(View view, int position, AdInfo adInfo) {
-                            startAdDetailsActivity(adInfo);
-                        }
-
-                        @Override
-                        public void onFavClick(View view, int position, AdInfo adInfo) {
-                            if (view instanceof ImageView) {
-                                ((ImageView) view).setImageResource(R.drawable.ic_fav_selected);
-                            }
-                        }
-                    });
-                    adRecyclerView.setAdapter(adAdapter);
-                } else {
-                    adAdapter.setData(adList);
-                    adAdapter.notifyDataSetChanged();
-                }
+                displayAdList();
             }
 
             @Override
@@ -334,10 +323,33 @@ public class AdListActivity extends BaseActivity
         });
     }
 
-    private ArrayList<AdInfo> adList = new ArrayList<>();
+    private void displayAdList() {
+        if (adAdapter == null) {
+            adAdapter = new AdAdapter(AdListActivity.this, adList, new AdAdapter.ClickListener() {
+                @Override
+                public void onItemClick(View view, int position, AdInfo adInfo) {
+                    startAdDetailsActivity(adInfo);
+                }
+
+                @Override
+                public void onFavClick(View view, int position, AdInfo adInfo) {
+                    if (view instanceof ImageView) {
+                        ((ImageView) view).setImageResource(R.drawable.ic_fav_selected);
+                    }
+                }
+            });
+            adRecyclerView.setAdapter(adAdapter);
+        } else {
+            adAdapter.setData(adList);
+            adAdapter.notifyDataSetChanged();
+        }
+    }
+
+    private static ArrayList<AdInfo> adList;
     private RecyclerView adRecyclerView;
     private AdAdapter adAdapter;
     private StaggeredGridLayoutManager staggeredGridLayoutManager;
+    private RequestManager manager;
 
     private class ViewItemDecoration extends RecyclerView.ItemDecoration {
 
@@ -359,20 +371,47 @@ public class AdListActivity extends BaseActivity
     }
 
     private void init() {
-        adRecyclerView = (RecyclerView) findViewById(R.id.adRecyclerView);
+        manager = Glide.with(this);
+        adRecyclerView = findViewById(R.id.adRecyclerView);
         adRecyclerView.setHasFixedSize(true);
         adRecyclerView.addItemDecoration(new ViewItemDecoration());
         staggeredGridLayoutManager = new StaggeredGridLayoutManager(2, StaggeredGridLayoutManager.VERTICAL);
         staggeredGridLayoutManager.setAutoMeasureEnabled(true);
         adRecyclerView.setLayoutManager(staggeredGridLayoutManager);
-        if (adList.isEmpty()) {
+        adRecyclerView.addOnScrollListener(scrollListener);
+
+        if (adList == null)
+            adList = new ArrayList<>();
+
+        if (adList.isEmpty())
             loadData();
-        }
+        else
+            displayAdList();
+
     }
+
+    RecyclerView.OnScrollListener scrollListener = new RecyclerView.OnScrollListener() {
+        @Override
+        public void onScrolled(RecyclerView recyclerView, int dx, int dy) {
+            super.onScrolled(recyclerView, dx, dy);
+            if (Math.abs(dy) > PickConfig.SCROLL_THRESHOLD) {
+                manager.pauseRequests();
+            } else {
+                manager.resumeRequests();
+            }
+        }
+
+        @Override
+        public void onScrollStateChanged(RecyclerView recyclerView, int newState) {
+            if (newState == RecyclerView.SCROLL_STATE_IDLE) {
+                manager.resumeRequests();
+            }
+        }
+    };
 
     @Override
     public void onBackPressed() {
-        DrawerLayout drawer = (DrawerLayout) findViewById(R.id.drawer_layout);
+        DrawerLayout drawer = findViewById(R.id.drawer_layout);
         if (drawer.isDrawerOpen(GravityCompat.START)) {
             drawer.closeDrawer(GravityCompat.START);
         } else {
@@ -494,5 +533,20 @@ public class AdListActivity extends BaseActivity
             adDetailsIntent.putExtra(DBConstants.map, adInfo.getMap().getDownloadUrl());
         }
         startActivity(adDetailsIntent);
+    }
+
+    // https://developers.google.com/identity/sms-retriever/overview
+    // Construct a request for phone numbers and show the picker
+    private void requestHint() {
+        HintRequest hintRequest = new HintRequest.Builder()
+                .setPhoneNumberIdentifierSupported(true)
+                .build();
+
+        PendingIntent intent = Auth.CredentialsApi.getHintPickerIntent(mGoogleApiClient, hintRequest);
+        try {
+            startIntentSenderForResult(intent.getIntentSender(), 1, null, 0, 0, 0);
+        } catch (IntentSender.SendIntentException e) {
+            e.printStackTrace();
+        }
     }
 }

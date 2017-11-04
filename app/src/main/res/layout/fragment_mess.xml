@@ -1,0 +1,210 @@
+<?xml version="1.0" encoding="utf-8"?>
+<LinearLayout xmlns:android="http://schemas.android.com/apk/res/android"
+    android:layout_width="match_parent"
+    android:layout_height="match_parent"
+    android:orientation="vertical">
+
+    <LinearLayout
+        android:id="@+id/roomNumberLay"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:baselineAligned="false"
+        android:orientation="horizontal"
+        android:paddingBottom="@dimen/new_post_common_padding"
+        android:paddingTop="@dimen/new_post_common_padding">
+
+    </LinearLayout>
+
+    <LinearLayout
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:layout_marginTop="@dimen/new_post_common_padding"
+        android:gravity="center_vertical"
+        android:orientation="horizontal">
+
+        <TextView
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:text="@string/mess_member_type"
+            android:textColor="@color/black"
+            android:textSize="@dimen/text_size_14sp"
+            android:textStyle="bold" />
+
+        <RadioGroup
+            android:id="@+id/messMemberType"
+            android:layout_width="0dp"
+            android:layout_height="wrap_content"
+            android:layout_weight="1"
+            android:orientation="horizontal">
+
+            <RadioButton
+                android:id="@+id/messMemberMale"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:checked="true"
+                android:text="@string/male"
+                android:textColor="@color/black" />
+
+            <RadioButton
+                android:id="@+id/messMemberFemale"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:text="@string/female"
+                android:textColor="@color/black" />
+        </RadioGroup>
+    </LinearLayout>
+
+    <LinearLayout
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:layout_marginTop="@dimen/new_post_common_padding"
+        android:orientation="vertical">
+
+        <TextView
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:gravity="right|end"
+            android:text="@string/mess_management_system"
+            android:textColor="@color/black"
+            android:textSize="@dimen/text_size_14sp"
+            android:textStyle="bold" />
+
+        <RadioGroup
+            android:id="@+id/messManagementSystem"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:orientation="vertical">
+
+            <RadioButton
+                android:id="@+id/circulateEveryMonth"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:checked="true"
+                android:text="@string/circulate_every_month"
+                android:textColor="@color/black" />
+
+            <RadioButton
+                android:id="@+id/manageByIndividual"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:text="@string/manage_by_group"
+                android:textColor="@color/black" />
+
+            <RadioButton
+                android:id="@+id/manageByOffice"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:text="@string/manage_by_office"
+                android:textColor="@color/black" />
+        </RadioGroup>
+    </LinearLayout>
+
+    <LinearLayout
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:layout_marginBottom="@dimen/new_post_common_padding"
+        android:layout_marginTop="@dimen/new_post_common_padding"
+        android:orientation="horizontal">
+
+        <CheckBox
+            android:id="@+id/mealFacilityCB"
+            android:layout_width="0dp"
+            android:layout_height="wrap_content"
+            android:layout_weight="1"
+            android:checked="true"
+            android:ellipsize="end"
+            android:singleLine="true"
+            android:text="@string/meal_facility"
+            android:textColor="@color/black" />
+
+        <CheckBox
+            android:id="@+id/maidServantCB"
+            android:layout_width="0dp"
+            android:layout_height="wrap_content"
+            android:layout_weight="1"
+            android:checked="true"
+            android:ellipsize="end"
+            android:singleLine="true"
+            android:text="@string/maid_servant"
+            android:textColor="@color/black" />
+    </LinearLayout>
+
+    <LinearLayout
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:layout_marginBottom="@dimen/new_post_common_padding"
+        android:layout_marginTop="@dimen/new_post_common_padding"
+        android:orientation="horizontal">
+
+        <CheckBox
+            android:id="@+id/waterCB"
+            android:layout_width="0dp"
+            android:layout_height="wrap_content"
+            android:layout_weight="1"
+            android:checked="true"
+            android:ellipsize="end"
+            android:singleLine="true"
+            android:text="@string/water_all_time"
+            android:textColor="@color/black" />
+
+        <CheckBox
+            android:id="@+id/nonSmokerCB"
+            android:layout_width="0dp"
+            android:layout_height="wrap_content"
+            android:layout_weight="1"
+            android:checked="true"
+            android:ellipsize="end"
+            android:singleLine="true"
+            android:text="@string/non_smoker"
+            android:textColor="@color/black" />
+    </LinearLayout>
+
+    <LinearLayout
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:layout_marginBottom="@dimen/new_post_common_padding"
+        android:layout_marginTop="@dimen/new_post_common_padding"
+        android:orientation="horizontal">
+
+        <CheckBox
+            android:id="@+id/wifiCB"
+            android:layout_width="0dp"
+            android:layout_height="wrap_content"
+            android:layout_weight="1"
+            android:ellipsize="end"
+            android:singleLine="true"
+            android:text="@string/wifi_facility"
+            android:textColor="@color/black" />
+
+        <CheckBox
+            android:id="@+id/fridgeCB"
+            android:layout_width="0dp"
+            android:layout_height="wrap_content"
+            android:layout_weight="1"
+            android:ellipsize="end"
+            android:singleLine="true"
+            android:text="@string/fridge_facility"
+            android:textColor="@color/black" />
+    </LinearLayout>
+
+    <!--<RadioGroup-->
+    <!--android:id="@+id/smokeType"-->
+    <!--android:layout_width="match_parent"-->
+    <!--android:layout_height="wrap_content"-->
+    <!--android:orientation="horizontal">-->
+
+    <!--<RadioButton-->
+    <!--android:id="@+id/smoker"-->
+    <!--android:layout_width="wrap_content"-->
+    <!--android:layout_height="wrap_content"-->
+    <!--android:text="@string/male"-->
+    <!--android:textColor="@color/black" />-->
+
+    <!--<RadioButton-->
+    <!--android:id="@+id/nonSmoker"-->
+    <!--android:layout_width="wrap_content"-->
+    <!--android:layout_height="wrap_content"-->
+    <!--android:text="@string/female"-->
+    <!--android:textColor="@color/black" />-->
+    <!--</RadioGroup>-->
+</LinearLayout>

@@ -23,8 +23,8 @@ import com.to.let.bd.adapters.pick_photo.PickGridAdapter;
 import com.to.let.bd.common.BaseImageUploadActivity;
 import com.to.let.bd.model.pick_photo.GroupImage;
 import com.to.let.bd.model.pick_photo.PickData;
+import com.to.let.bd.utils.AppConstants;
 import com.to.let.bd.utils.DBConstants;
-import com.to.let.bd.utils.SmartToLetConstants;
 import com.to.let.bd.utils.pick_photo.PickConfig;
 import com.to.let.bd.utils.pick_photo.PickPhotoHelper;
 import com.to.let.bd.utils.pick_photo.PickPhotoListener;
@@ -94,7 +94,7 @@ public class MediaActivity extends BaseImageUploadActivity {
         }
 
         if (adId == null || adId.isEmpty()) {
-            adId = SmartToLetConstants.storageCommonFolderName;
+            adId = AppConstants.storageCommonFolderName;
         }
 
         FloatingActionButton fab = (FloatingActionButton) findViewById(R.id.fab);
@@ -155,7 +155,7 @@ public class MediaActivity extends BaseImageUploadActivity {
     }
 
     private void initPhotoRecyclerView() {
-        photoList = (RecyclerView) findViewById(R.id.photoList);
+        photoList = findViewById(R.id.photoList);
         photoList.setItemAnimator(new DefaultItemAnimator());
         GridLayoutManager layoutManager = new GridLayoutManager(this, pickData.getSpanCount());
         photoList.setLayoutManager(layoutManager);
@@ -218,7 +218,7 @@ public class MediaActivity extends BaseImageUploadActivity {
         if (imagePathList.isEmpty()) {
             showToast(getString(R.string.please_select_photo));
         } else {
-            uploadImages(imagePathList, adId, SmartToLetConstants.adImageType);
+            uploadImages(imagePathList, adId, AppConstants.adImageType);
         }
     }
 

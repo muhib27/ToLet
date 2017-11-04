@@ -3,10 +3,10 @@
     xmlns:tools="http://schemas.android.com/tools"
     android:layout_width="match_parent"
     android:layout_height="match_parent"
-    tools:context="com.to.let.bd.activities.AdListActivity">
+    android:fitsSystemWindows="true"
+    tools:context="com.to.let.bd.activities.NewAdActivity2">
 
     <include layout="@layout/app_bar" />
 
-    <include layout="@layout/content_ad_list" />
-
+    <include layout="@layout/content_new_post2" />
 </android.support.design.widget.CoordinatorLayout>

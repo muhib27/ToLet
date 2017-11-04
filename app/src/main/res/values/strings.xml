@@ -35,7 +35,7 @@
     <string name="rent_type">Rent type:</string>
     <string name="family">Family</string>
     <string name="sublet">Sublet</string>
-    <string name="mess">Mess member</string>
+    <string name="mess">Mess</string>
     <string name="others">Others</string>
     <string name="total_space">Total space</string>
     <string name="rent">Rent: </string>
@@ -123,4 +123,36 @@
     <string name="privacy_policy_note" formatted="false">We value your privacy.\nOur %s and %s</string>
     <string name="terms_of_use">Terms Of Use</string>
     <string name="privacy_policy">Privacy Policy</string>
+    <string name="submit_your_ad">Submit your ad</string>
+    <string name="mess_member_type">Mess member type: </string>
+    <string name="male">Male</string>
+    <string name="female">Female</string>
+    <string name="maid_servant">Maid servant</string>
+    <string name="meal_facility">Meal facility</string>
+    <string name="all_time_water">All time water</string>
+    <string name="wifi_facility">WiFi facility</string>
+    <string name="fridge_facility">Fridge facility</string>
+    <string name="non_smoker_only">Non-smoker only?</string>
+    <string name="non_smoker">Non-smoker</string>
+    <string name="description">Description</string>
+    <string name="description_if_need">Description (if need)</string>
+    <string name="water_all_time">Water 24 hr</string>
+    <string name="sublet_type">Sublet type:</string>
+    <string name="tiny_family">Tiny family(only husband &amp; wife)</string>
+    <string name="small_family">Small family(only husband &amp; wife with single kid)</string>
+    <string name="female_sublet">Female student\'s or service holder\'s (maximum 2/3)</string>
+    <string name="attached">Attached</string>
+    <string name="non_attached">Non-attached</string>
+    <string name="shared">Shared/Common</string>
+    <string name="bathroom_type">Bathroom/Toilet type:</string>
+    <string name="mess_member">Mess member</string>
+    <string name="title_activity_test">TestActivity</string>
+    <string name="parking_garage">Parking garage</string>
+    <string name="please_mention_your_desired_type">Please mention your desired type</string>
+    <string name="kitchen_share">Kitchen Share</string>
+    <string name="well_furnished">Well furnished</string>
+    <string name="mess_management_system">Mess-management system: </string>
+    <string name="manage_by_office">Manage by single man/office.</string>
+    <string name="manage_by_group">Manage by few group member.</string>
+    <string name="circulate_every_month">Circulate every month to corresponding member.</string>
 </resources>

@@ -20,8 +20,8 @@ import com.google.firebase.database.DatabaseError;
 import com.google.firebase.database.DatabaseReference;
 import com.google.firebase.database.FirebaseDatabase;
 import com.to.let.bd.R;
+import com.to.let.bd.utils.AppConstants;
 import com.to.let.bd.utils.DBConstants;
-import com.to.let.bd.utils.SmartToLetConstants;
 import com.to.let.bd.utils.UploadImageService;
 
 import java.util.ArrayList;
@@ -73,11 +73,11 @@ public abstract class BaseImageUploadActivity extends BaseActivity {
         // Start StorageUploadService to upload the file, so that the file is uploaded
         // even if this Activity is killed or put in the background
         startService(new Intent(this, UploadImageService.class)
-                .putExtra(SmartToLetConstants.keyType, type)
-                .putExtra(SmartToLetConstants.fileUri, imageByte)
+                .putExtra(AppConstants.keyType, type)
+                .putExtra(AppConstants.fileUri, imageByte)
                 .putExtra(DBConstants.adId, adId)
-                .putExtra(SmartToLetConstants.imageIndex, 0)
-                .setAction(SmartToLetConstants.actionUpload));
+                .putExtra(AppConstants.imageIndex, 0)
+                .setAction(AppConstants.actionUpload));
     }
 
     private void uploadSingleImage(int type, String adId) {
@@ -87,11 +87,11 @@ public abstract class BaseImageUploadActivity extends BaseActivity {
         // Start StorageUploadService to upload the file, so that the file is uploaded
         // even if this Activity is killed or put in the background
         startService(new Intent(this, UploadImageService.class)
-                .putExtra(SmartToLetConstants.keyType, type)
-                .putExtra(SmartToLetConstants.fileUri, Uri.parse("file://" + imagePathList.get(imageIndex)))
+                .putExtra(AppConstants.keyType, type)
+                .putExtra(AppConstants.fileUri, Uri.parse("file://" + imagePathList.get(imageIndex)))
                 .putExtra(DBConstants.adId, adId)
-                .putExtra(SmartToLetConstants.imageIndex, imageIndex)
-                .setAction(SmartToLetConstants.actionUpload));
+                .putExtra(AppConstants.imageIndex, imageIndex)
+                .setAction(AppConstants.actionUpload));
     }
 
     private void initBroadcast() {
@@ -100,24 +100,24 @@ public abstract class BaseImageUploadActivity extends BaseActivity {
             @Override
             public void onReceive(Context context, Intent intent) {
                 switch (intent.getAction()) {
-                    case SmartToLetConstants.uploadError:
+                    case AppConstants.uploadError:
 
                         break;
-                    case SmartToLetConstants.uploadComplete: {
-                        int type = intent.getIntExtra(SmartToLetConstants.keyType, 0);
+                    case AppConstants.uploadComplete: {
+                        int type = intent.getIntExtra(AppConstants.keyType, 0);
                         String adId = intent.getStringExtra(DBConstants.adId);
-                        int imageIndex = intent.getIntExtra(SmartToLetConstants.imageIndex, 0);
-                        String[] imageContents = intent.getStringArrayExtra(SmartToLetConstants.imageContents);
+                        int imageIndex = intent.getIntExtra(AppConstants.imageIndex, 0);
+                        String[] imageContents = intent.getStringArrayExtra(AppConstants.imageContents);
                         completeSingleImageUpload(type, adId, imageIndex, imageContents);
                     }
                     break;
-                    case SmartToLetConstants.uploadProgress: {
-                        int type = intent.getIntExtra(SmartToLetConstants.keyType, 0);
+                    case AppConstants.uploadProgress: {
+                        int type = intent.getIntExtra(AppConstants.keyType, 0);
                         String adId = intent.getStringExtra(DBConstants.adId);
-                        int imageIndex = intent.getIntExtra(SmartToLetConstants.imageIndex, 0);
-                        int progress = intent.getIntExtra(SmartToLetConstants.progress, -1);
+                        int imageIndex = intent.getIntExtra(AppConstants.imageIndex, 0);
+                        int progress = intent.getIntExtra(AppConstants.progress, -1);
 
-                        if (type == SmartToLetConstants.adImageType)
+                        if (type == AppConstants.adImageType)
                             updateProgress(imageIndex, progress);
                     }
                     break;
@@ -176,14 +176,14 @@ public abstract class BaseImageUploadActivity extends BaseActivity {
         firebaseInit();
 
         HashMap<String, Object> adValues = new HashMap<>();
-        adValues.put(SmartToLetConstants.downloadUrl, imageContents[0]);
-        adValues.put(SmartToLetConstants.imageName, imageContents[1]);
-        adValues.put(SmartToLetConstants.imagePath, imageContents[2]);
+        adValues.put(AppConstants.downloadUrl, imageContents[0]);
+        adValues.put(AppConstants.imageName, imageContents[1]);
+        adValues.put(AppConstants.imagePath, imageContents[2]);
 
         HashMap<String, Object> childUpdates = new HashMap<>();
-        if (type == SmartToLetConstants.adImageType) {
+        if (type == AppConstants.adImageType) {
             childUpdates.put("/" + DBConstants.adList + "/" + adId + "/" + DBConstants.images + "/" + imageIndex, adValues);
-        } else if (type == SmartToLetConstants.adMapImageType) {
+        } else if (type == AppConstants.adMapImageType) {
             childUpdates.put("/" + DBConstants.adList + "/" + adId + "/" + DBConstants.map, adValues);
         }
         mDatabase.updateChildren(childUpdates, new DatabaseReference.CompletionListener() {

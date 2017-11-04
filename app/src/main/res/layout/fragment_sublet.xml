@@ -1,0 +1,209 @@
+<?xml version="1.0" encoding="utf-8"?>
+<LinearLayout xmlns:android="http://schemas.android.com/apk/res/android"
+    android:layout_width="match_parent"
+    android:layout_height="match_parent"
+    android:orientation="vertical">
+
+    <LinearLayout
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:layout_marginBottom="@dimen/new_post_common_padding"
+        android:layout_marginTop="@dimen/new_post_common_padding"
+        android:orientation="vertical">
+
+        <TextView
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:text="@string/sublet_type"
+            android:textColor="@color/black"
+            android:textSize="@dimen/text_size_14sp"
+            android:textStyle="bold" />
+
+        <RadioGroup
+            android:id="@+id/subletType"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:orientation="vertical">
+
+            <RadioButton
+                android:id="@+id/tinyFamily"
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:checked="true"
+                android:text="@string/tiny_family"
+                android:textColor="@color/black" />
+
+            <RadioButton
+                android:id="@+id/smallFamily"
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:text="@string/small_family"
+                android:textColor="@color/black" />
+
+            <RadioButton
+                android:id="@+id/femaleSublet"
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:text="@string/female_sublet"
+                android:textColor="@color/black" />
+
+            <RadioButton
+                android:id="@+id/othersSublet"
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:text="@string/others"
+                android:textColor="@color/black" />
+        </RadioGroup>
+
+        <android.support.design.widget.TextInputLayout
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content">
+
+            <EditText
+                android:id="@+id/subletTypeOthers"
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:ems="4"
+                android:hint="@string/please_mention_your_desired_type"
+                android:imeOptions="actionNext"
+                android:inputType="numberDecimal"
+                android:maxLength="4"
+                android:maxLines="1"
+                android:singleLine="true" />
+
+        </android.support.design.widget.TextInputLayout>
+    </LinearLayout>
+
+    <LinearLayout
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:layout_marginBottom="@dimen/new_post_common_padding"
+        android:orientation="vertical">
+
+        <TextView
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:text="@string/bathroom_type"
+            android:textColor="@color/black"
+            android:textSize="@dimen/text_size_14sp"
+            android:textStyle="bold" />
+
+        <RadioGroup
+            android:id="@+id/bathroomType"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:gravity="center_vertical"
+            android:orientation="horizontal">
+
+            <RadioButton
+                android:id="@+id/attached"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:checked="true"
+                android:text="@string/attached"
+                android:textColor="@color/black" />
+
+            <RadioButton
+                android:id="@+id/nonAttached"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:text="@string/non_attached"
+                android:textColor="@color/black" />
+
+            <RadioButton
+                android:id="@+id/shared"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:text="@string/shared"
+                android:textColor="@color/black" />
+        </RadioGroup>
+    </LinearLayout>
+
+    <LinearLayout
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:layout_marginBottom="@dimen/new_post_common_padding"
+        android:layout_marginTop="@dimen/new_post_common_padding"
+        android:orientation="horizontal">
+
+        <CheckBox
+            android:id="@+id/waterCB"
+            android:layout_width="0dp"
+            android:layout_height="wrap_content"
+            android:layout_weight="1"
+            android:checked="true"
+            android:ellipsize="end"
+            android:singleLine="true"
+            android:text="@string/water_all_time"
+            android:textColor="@color/black" />
+
+        <CheckBox
+            android:id="@+id/gasCB"
+            android:layout_width="0dp"
+            android:layout_height="wrap_content"
+            android:layout_weight="1"
+            android:checked="true"
+            android:ellipsize="end"
+            android:singleLine="true"
+            android:text="@string/gas"
+            android:textColor="@color/black" />
+    </LinearLayout>
+
+    <LinearLayout
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:layout_marginBottom="@dimen/new_post_common_padding"
+        android:layout_marginTop="@dimen/new_post_common_padding"
+        android:orientation="horizontal">
+
+        <CheckBox
+            android:id="@+id/kitchenSharedCB"
+            android:layout_width="0dp"
+            android:layout_height="wrap_content"
+            android:layout_weight="1"
+            android:checked="true"
+            android:ellipsize="end"
+            android:singleLine="true"
+            android:text="@string/kitchen_share"
+            android:textColor="@color/black" />
+
+        <CheckBox
+            android:id="@+id/wellFurnishedCB"
+            android:layout_width="0dp"
+            android:layout_height="wrap_content"
+            android:layout_weight="1"
+            android:checked="false"
+            android:ellipsize="end"
+            android:singleLine="true"
+            android:text="@string/well_furnished"
+            android:textColor="@color/black" />
+    </LinearLayout>
+
+    <LinearLayout
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:layout_marginBottom="@dimen/new_post_common_padding"
+        android:layout_marginTop="@dimen/new_post_common_padding"
+        android:orientation="horizontal">
+
+        <CheckBox
+            android:id="@+id/liftCB"
+            android:layout_width="0dp"
+            android:layout_height="wrap_content"
+            android:layout_weight="1"
+            android:ellipsize="end"
+            android:singleLine="true"
+            android:text="@string/lift"
+            android:textColor="@color/black" />
+
+        <CheckBox
+            android:id="@+id/generatorCB"
+            android:layout_width="0dp"
+            android:layout_height="wrap_content"
+            android:layout_weight="1"
+            android:ellipsize="end"
+            android:singleLine="true"
+            android:text="@string/generator"
+            android:textColor="@color/black" />
+    </LinearLayout>
+</LinearLayout>

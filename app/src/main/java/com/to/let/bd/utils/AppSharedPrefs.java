@@ -4,8 +4,8 @@ import android.content.SharedPreferences;
 
 import com.to.let.bd.app.SmartToLetApp;
 
-public class SmartToLetPrefs {
-    public static final String TAG = SmartToLetPrefs.class.getName();
+public class AppSharedPrefs {
+    public static final String TAG = AppSharedPrefs.class.getName();
     private static final String prefsName = "stPrefs";
 
     private static SharedPreferences getSharedPreferences() {
