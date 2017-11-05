@@ -1,6 +1,7 @@
 package com.to.let.bd.model;
 
 import com.google.firebase.database.Exclude;
+import com.to.let.bd.utils.AppConstants;
 import com.to.let.bd.utils.DBConstants;
 
 import java.util.ArrayList;
@@ -26,35 +27,28 @@ public class AdInfo {
     private String subDistrict;
     private String knownAsArea;
 
-    private int flatType;
-    private int bedRoom;
-    private int bathroom;
-    private int balcony;
-
-    private int kitchen;
-    private String houseNameOrNumber;
-    private int floorNumber;
-    private int flatFacing;
-
     private long flatSpace;
-    private int hasDrawingDining;
-    private int electricity;
-    private int gasFacility;
-    private int water;
-    private int lift;
-    private int generator;
-    private int securityGuard;
-
     private long flatRent;
     private long othersFee;
 
     private long createdTime;
     private long modifiedTime;
 
-    private String userId;
-
     private ArrayList<ImageInfo> images;
     private ImageInfo map;
+
+    private String houseNameOrNumber;
+    private int floorNumber;
+    private int flatFacing;
+
+    private String flatType;
+
+    private FamilyInfo familyInfo;
+    private MessInfo messInfo;
+    private SubletInfo subletInfo;
+    private OthersInfo othersInfo;
+
+    private String userId;
 
     public AdInfo() {
 
@@ -62,48 +56,21 @@ public class AdInfo {
 
     public AdInfo(String adId, String userId) {
         this.adId = adId;
-        this.startingMonth = 12;
-        this.startingDate = 1;
-        this.startingYear = 2017;
-        this.latitude = 23.43;
-        this.longitude = 90.34;
-        this.fullAddress = "";
-        this.country = "";
-        this.division = "";
-        this.district = "";
-        this.subDistrict = "";
-        this.knownAsArea = "";
-        this.flatType = 1;
-        this.houseNameOrNumber = "";
-        this.floorNumber = 2;
-        this.flatFacing = 1;
-        this.flatSpace = 1200;
-        this.bedRoom = 2;
-        this.bathroom = 3;
-        this.balcony = 2;
-        this.kitchen = 1;
-        this.hasDrawingDining = 1;
-        this.electricity = -1;
-        this.gasFacility = 1;
-        this.water = 1000;
-        this.lift = 0;
-        this.generator = 1;
-        this.flatRent = 20000;
-        this.othersFee = 3000;
-
         this.userId = userId;
     }
 
-    public AdInfo(String adId, int startingDate, int startingMonth, int startingYear, double latitude, double longitude,
+    public AdInfo(String adId, int startingMonth, int startingDate, int startingYear, String startingFinalDate,
+                  double latitude, double longitude,
                   String fullAddress, String country, String division, String district, String subDistrict, String knownAsArea,
-                  int flatType, int bedRoom, int bathroom, int balcony, int flatFacing, int kitchen,
-                  String houseNameOrNumber, int floorNumber, int hasDrawingDining,
-                  int electricity, int gasFacility, int water, int lift, int generator, int securityGuard,
-                  long flatSpace, long flatRent, long othersFee, String userId) {
+                  long flatSpace, long flatRent, long othersFee,
+                  String houseNameOrNumber, int floorNumber, int flatFacing,
+                  String flatType,
+                  FamilyInfo familyInfo, MessInfo messInfo, SubletInfo subletInfo, OthersInfo othersInfo, String userId) {
         this.adId = adId;
         this.startingMonth = startingMonth;
         this.startingDate = startingDate;
         this.startingYear = startingYear;
+        this.startingFinalDate = startingFinalDate;
         this.latitude = latitude;
         this.longitude = longitude;
         this.fullAddress = fullAddress;
@@ -112,26 +79,61 @@ public class AdInfo {
         this.district = district;
         this.subDistrict = subDistrict;
         this.knownAsArea = knownAsArea;
-        this.flatType = flatType;
+        this.flatSpace = flatSpace;
+        this.flatRent = flatRent;
+        this.othersFee = othersFee;
         this.houseNameOrNumber = houseNameOrNumber;
         this.floorNumber = floorNumber;
         this.flatFacing = flatFacing;
-        this.flatSpace = flatSpace;
-        this.bedRoom = bedRoom;
-        this.bathroom = bathroom;
-        this.balcony = balcony;
-        this.kitchen = kitchen;
-        this.hasDrawingDining = hasDrawingDining;
-        this.electricity = electricity;
-        this.gasFacility = gasFacility;
-        this.water = water;
-        this.lift = lift;
-        this.generator = generator;
-        this.securityGuard = securityGuard;
-        this.flatRent = flatRent;
-        this.othersFee = othersFee;
+        this.flatType = flatType;
+        this.familyInfo = familyInfo;
+        this.messInfo = messInfo;
+        this.subletInfo = subletInfo;
+        this.othersInfo = othersInfo;
         this.userId = userId;
     }
+
+    //    public AdInfo(String adId, int startingDate, int startingMonth, int startingYear,
+//                  double latitude, double longitude,
+//                  String fullAddress, String country, String division, String district, String subDistrict, String knownAsArea,
+//                  String flatType,
+//                  String houseNameOrNumber, int floorNumber,
+//                  long flatSpace, long flatRent, long othersFee, String userId) {
+//        this.adId = adId;
+//        this.startingMonth = startingMonth;
+//        this.startingDate = startingDate;
+//        this.startingYear = startingYear;
+//        this.latitude = latitude;
+//        this.longitude = longitude;
+//        this.fullAddress = fullAddress;
+//        this.country = country;
+//        this.division = division;
+//        this.district = district;
+//        this.subDistrict = subDistrict;
+//        this.knownAsArea = knownAsArea;
+//        this.flatType = flatType;
+//        this.houseNameOrNumber = houseNameOrNumber;
+//        this.floorNumber = floorNumber;
+//        this.flatFacing = flatFacing;
+//        this.flatSpace = flatSpace;
+//
+//        this.bedRoom = bedRoom;
+//        this.bathroom = bathroom;
+//        this.balcony = balcony;
+//        this.kitchen = kitchen;
+//        this.hasDrawingDining = hasDrawingDining;
+//
+//        this.electricity = electricity;
+//        this.gasFacility = gasFacility;
+//        this.water = water;
+//        this.lift = lift;
+//        this.generator = generator;
+//        this.securityGuard = securityGuard;
+//
+//        this.flatRent = flatRent;
+//        this.othersFee = othersFee;
+//        this.userId = userId;
+//    }
 
     public String getAdId() {
         return adId;
@@ -163,6 +165,14 @@ public class AdInfo {
 
     public void setStartingYear(int startingYear) {
         this.startingYear = startingYear;
+    }
+
+    public String getStartingFinalDate() {
+        return startingFinalDate;
+    }
+
+    public void setStartingFinalDate(String startingFinalDate) {
+        this.startingFinalDate = startingFinalDate;
     }
 
     public double getLatitude() {
@@ -229,11 +239,63 @@ public class AdInfo {
         this.knownAsArea = knownAsArea;
     }
 
-    public int getFlatType() {
-        return flatType;
+    public long getFlatRent() {
+        return flatRent;
     }
 
-    public void setFlatType(int flatType) {
+    public void setFlatRent(long flatRent) {
+        this.flatRent = flatRent;
+    }
+
+    public long getOthersFee() {
+        return othersFee;
+    }
+
+    public void setOthersFee(long othersFee) {
+        this.othersFee = othersFee;
+    }
+
+    public long getCreatedTime() {
+        return createdTime;
+    }
+
+    public void setCreatedTime(long createdTime) {
+        this.createdTime = createdTime;
+    }
+
+    public long getModifiedTime() {
+        return modifiedTime;
+    }
+
+    public void setModifiedTime(long modifiedTime) {
+        this.modifiedTime = modifiedTime;
+    }
+
+    public String getUserId() {
+        return userId;
+    }
+
+    public void setUserId(String userId) {
+        this.userId = userId;
+    }
+
+    public ArrayList<ImageInfo> getImages() {
+        return images;
+    }
+
+    public void setImages(ArrayList<ImageInfo> images) {
+        this.images = images;
+    }
+
+    public ImageInfo getMap() {
+        return map;
+    }
+
+    public void setMap(ImageInfo map) {
+        this.map = map;
+    }
+
+    public void setFlatType(String flatType) {
         this.flatType = flatType;
     }
 
@@ -269,156 +331,40 @@ public class AdInfo {
         this.flatSpace = flatSpace;
     }
 
-    public int getBedRoom() {
-        return bedRoom;
+    public String getFlatType() {
+        return flatType;
     }
 
-    public void setBedRoom(int bedRoom) {
-        this.bedRoom = bedRoom;
+    public FamilyInfo getFamilyInfo() {
+        return familyInfo;
     }
 
-    public int getBathroom() {
-        return bathroom;
+    public void setFamilyInfo(FamilyInfo familyInfo) {
+        this.familyInfo = familyInfo;
     }
 
-    public void setBathroom(int bathroom) {
-        this.bathroom = bathroom;
+    public MessInfo getMessInfo() {
+        return messInfo;
     }
 
-    public int getBalcony() {
-        return balcony;
+    public void setMessInfo(MessInfo messInfo) {
+        this.messInfo = messInfo;
     }
 
-    public void setBalcony(int balcony) {
-        this.balcony = balcony;
+    public SubletInfo getSubletInfo() {
+        return subletInfo;
     }
 
-    public int getKitchen() {
-        return kitchen;
+    public void setSubletInfo(SubletInfo subletInfo) {
+        this.subletInfo = subletInfo;
     }
 
-    public void setKitchen(int kitchen) {
-        this.kitchen = kitchen;
+    public OthersInfo getOthersInfo() {
+        return othersInfo;
     }
 
-    public int getHasDrawingDining() {
-        return hasDrawingDining;
-    }
-
-    public void setHasDrawingDining(int hasDrawingDining) {
-        this.hasDrawingDining = hasDrawingDining;
-    }
-
-    public int getElectricity() {
-        return electricity;
-    }
-
-    public void setElectricity(int electricity) {
-        this.electricity = electricity;
-    }
-
-    public int getGasFacility() {
-        return gasFacility;
-    }
-
-    public void setGasFacility(int gasFacility) {
-        this.gasFacility = gasFacility;
-    }
-
-    public int getWater() {
-        return water;
-    }
-
-    public void setWater(int water) {
-        this.water = water;
-    }
-
-    public int getLift() {
-        return lift;
-    }
-
-    public void setLift(int lift) {
-        this.lift = lift;
-    }
-
-    public int getGenerator() {
-        return generator;
-    }
-
-    public void setGenerator(int generator) {
-        this.generator = generator;
-    }
-
-    public int getSecurityGuard() {
-        return securityGuard;
-    }
-
-    public void setSecurityGuard(int securityGuard) {
-        this.securityGuard = securityGuard;
-    }
-
-    public long getFlatRent() {
-        return flatRent;
-    }
-
-    public void setFlatRent(long flatRent) {
-        this.flatRent = flatRent;
-    }
-
-    public long getOthersFee() {
-        return othersFee;
-    }
-
-    public void setOthersFee(long othersFee) {
-        this.othersFee = othersFee;
-    }
-
-    public String getUserId() {
-        return userId;
-    }
-
-    public void setUserId(String userId) {
-        this.userId = userId;
-    }
-
-    public ArrayList<ImageInfo> getImages() {
-        return images;
-    }
-
-    public void setImages(ArrayList<ImageInfo> images) {
-        this.images = images;
-    }
-
-    public ImageInfo getMap() {
-        return map;
-    }
-
-    public void setMap(ImageInfo map) {
-        this.map = map;
-    }
-
-    public String getStartingFinalDate() {
-        return startingFinalDate;
-    }
-
-    public void setStartingFinalDate(String startingFinalDate) {
-        this.startingFinalDate = startingFinalDate;
-    }
-
-    public long getCreatedTime() {
-        return createdTime;
-    }
-
-    public void setCreatedTime(long createdTime) {
-        this.createdTime = createdTime;
-    }
-
-    public long getModifiedTime() {
-        return modifiedTime;
-    }
-
-    public void setModifiedTime(long modifiedTime) {
-        this.modifiedTime = modifiedTime;
+    public void setOthersInfo(OthersInfo othersInfo) {
+        this.othersInfo = othersInfo;
     }
 
     // [START post_to_map]
@@ -444,27 +390,21 @@ public class AdInfo {
         result.put(DBConstants.subDistrict, subDistrict);
         result.put(DBConstants.knownAsArea, knownAsArea);
 
-        result.put(DBConstants.flatType, flatType);
-        result.put(DBConstants.bedRoom, bedRoom);
-        result.put(DBConstants.bathroom, bathroom);
-        result.put(DBConstants.balcony, balcony);
-        result.put(DBConstants.flatFacing, flatFacing);
-        result.put(DBConstants.kitchen, kitchen);
-
-        result.put(DBConstants.houseNameOrNumber, houseNameOrNumber);
-        result.put(DBConstants.floorNumber, floorNumber);
-        result.put(DBConstants.hasDrawingDining, hasDrawingDining);
-
-        result.put(DBConstants.electricity, electricity);
-        result.put(DBConstants.gasFacility, gasFacility);
-        result.put(DBConstants.water, water);
-        result.put(DBConstants.lift, lift);
-        result.put(DBConstants.generator, generator);
-        result.put(DBConstants.securityGuard, securityGuard);
-
         result.put(DBConstants.flatSpace, flatSpace);
         result.put(DBConstants.flatRent, flatRent);
         result.put(DBConstants.othersFee, othersFee);
+
+        result.put(DBConstants.houseNameOrNumber, houseNameOrNumber);
+        result.put(DBConstants.floorNumber, floorNumber);
+        result.put(DBConstants.flatFacing, flatFacing);
+
+        result.put(DBConstants.flatType, flatType);
+
+        result.put(DBConstants.flatTypeFamily, familyInfo);
+        result.put(DBConstants.flatTypeMess, messInfo);
+        result.put(DBConstants.flatTypeSublet, subletInfo);
+        result.put(DBConstants.flatTypeOthers, othersInfo);
+
         result.put(DBConstants.userId, userId);
         return result;
     }

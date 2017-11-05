@@ -49,4 +49,9 @@ public class DBConstants {
 
     public static final String lat = "lat";
     public static final String lng = "lng";
+
+    public static final String flatTypeFamily = "flatTypeFamily";
+    public static final String flatTypeMess= "flatTypeMess";
+    public static final String flatTypeSublet= "flatTypeSublet";
+    public static final String flatTypeOthers= "flatTypeOthers";
 }

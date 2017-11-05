@@ -73,9 +73,9 @@ public class AdDetailsActivity extends BaseActivity implements View.OnClickListe
         adInfo.setFlatRent(getIntent().getLongExtra(DBConstants.flatRent, 0));
         adInfo.setOthersFee(getIntent().getLongExtra(DBConstants.othersFee, 0));
 
-        adInfo.setBedRoom(getIntent().getIntExtra(DBConstants.bedRoom, 0));
-        adInfo.setBathroom(getIntent().getIntExtra(DBConstants.bathroom, 0));
-        adInfo.setBalcony(getIntent().getIntExtra(DBConstants.balcony, 0));
+//        adInfo.setBedRoom(getIntent().getIntExtra(DBConstants.bedRoom, 0));
+//        adInfo.setBathroom(getIntent().getIntExtra(DBConstants.bathroom, 0));
+//        adInfo.setBalcony(getIntent().getIntExtra(DBConstants.balcony, 0));
 
         adInfo.setStartingDate(getIntent().getIntExtra(DBConstants.startingDate, 0));
         adInfo.setStartingMonth(getIntent().getIntExtra(DBConstants.startingMonth, 0));
@@ -115,8 +115,8 @@ public class AdDetailsActivity extends BaseActivity implements View.OnClickListe
             String totalRent = "৳" + adInfo.getFlatRent();
             this.totalRent.setText(totalRent);
 
-            String roomDetails = adInfo.getBedRoom() + " bed, " + adInfo.getBathroom() + " bath, " + adInfo.getBalcony() + " balcony/veranda.";
-            this.roomDetails.setText(roomDetails);
+//            String roomDetails = adInfo.getBedRoom() + " bed, " + adInfo.getBathroom() + " bath, " + adInfo.getBalcony() + " balcony/veranda.";
+//            this.roomDetails.setText(roomDetails);
 
             addressDetails.setText(adInfo.getFullAddress());
 

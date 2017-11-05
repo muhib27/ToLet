@@ -48,6 +48,8 @@ public class AppConstants {
     public static final String imagePath = "imagePath";
     public static final String progress = "progress";
 
+    // predefined rent type
+    public static final String [] rentType = {"Family", "Mess", "Sublet", "Others"};
     public static final long textWatcherDelay = 2000;
 
     //-------------methods-----------

@@ -21,24 +21,29 @@
         android:gravity="center_vertical"
         android:orientation="horizontal">
 
-        <android.support.design.widget.TextInputLayout
+        <TextView
             android:layout_width="wrap_content"
-            android:layout_height="wrap_content">
+            android:layout_height="wrap_content"
+            android:text="@string/approximate_total_space"
+            android:textColor="@color/black"
+            android:textSize="@dimen/text_size_14sp"
+            android:textStyle="bold" />
 
-            <EditText
-                android:id="@+id/totalSpace"
-                android:layout_width="match_parent"
-                android:layout_height="wrap_content"
-                android:ems="4"
-                android:hint="@string/total_space"
-                android:imeActionId="@+id/totalRent"
-                android:imeOptions="actionNext"
-                android:inputType="numberDecimal"
-                android:maxLength="4"
-                android:maxLines="1"
-                android:singleLine="true" />
-
-        </android.support.design.widget.TextInputLayout>
+        <EditText
+            android:id="@+id/totalSpace"
+            android:layout_width="0dp"
+            android:layout_height="wrap_content"
+            android:layout_marginLeft="@dimen/new_post_common_padding"
+            android:layout_marginStart="@dimen/new_post_common_padding"
+            android:layout_weight="1"
+            android:ems="4"
+            android:hint="@string/total_space"
+            android:imeActionId="@+id/totalRent"
+            android:imeOptions="actionNext"
+            android:inputType="numberDecimal"
+            android:maxLength="4"
+            android:maxLines="1"
+            android:singleLine="true" />
 
         <TextView
             android:layout_width="wrap_content"
@@ -52,7 +57,6 @@
             android:textSize="@dimen/text_size_14sp"
             android:textStyle="bold" />
     </LinearLayout>
-
 
     <LinearLayout
         android:layout_width="match_parent"
@@ -101,7 +105,7 @@
         android:orientation="horizontal">
 
         <CheckBox
-            android:id="@+id/waterCB"
+            android:id="@+id/twentyFourWaterCB"
             android:layout_width="0dp"
             android:layout_height="wrap_content"
             android:layout_weight="1"
@@ -112,7 +116,7 @@
             android:textColor="@color/black" />
 
         <CheckBox
-            android:id="@+id/gasCB"
+            android:id="@+id/gasSupplyCB"
             android:layout_width="0dp"
             android:layout_height="wrap_content"
             android:layout_weight="1"

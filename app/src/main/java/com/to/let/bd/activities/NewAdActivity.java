@@ -987,21 +987,21 @@ public class NewAdActivity extends BaseImageUploadActivity
     private void writeNewPost() {
         showProgressDialog();
         adId = mDatabase.child(DBConstants.adList).push().getKey();
-        final AdInfo adInfo = new AdInfo(adId, date[0], (date[1] + 1), date[2], rentLatitude, rentLongitude,
-                addressDetails.getText().toString(), "", "", "", "", "",
-                1, familyRoom[0], familyRoom[1], familyRoom[2], familyRoom[3], 1,
-                houseInfo.getText().toString(),
-                whichFloor.getText().length() == 0 ? -1 : Integer.parseInt(whichFloor.getText().toString()),
-                drawingDining.getCheckedRadioButtonId() == R.id.drawingDiningYes ? 1 : 0,
-                electricityCB.isChecked() ? 1 : 0, gasCB.isChecked() ? 1 : 0, waterCB.isChecked() ? 1 : 0,
-                liftCB.isChecked() ? 1 : 0, generatorCB.isChecked() ? 1 : 0, securityGuardCB.isChecked() ? 1 : 0,
-                totalSpace.getText().length() == 0 ? -1 : Long.parseLong(totalSpace.getText().toString()),
-                Long.parseLong(totalRent.getText().toString()),
-                utilityBill.getCheckedRadioButtonId() == R.id.utilityBillIncluded || totalUtility.getText().length() > 0 ?
-                        Long.parseLong(totalUtility.getText().toString()) : 0,
-                getUid());
+//        final AdInfo adInfo = new AdInfo(adId, date[0], (date[1] + 1), date[2], rentLatitude, rentLongitude,
+//                addressDetails.getText().toString(), "", "", "", "", "",
+//                1, familyRoom[0], familyRoom[1], familyRoom[2], familyRoom[3], 1,
+//                houseInfo.getText().toString(),
+//                whichFloor.getText().length() == 0 ? -1 : Integer.parseInt(whichFloor.getText().toString()),
+//                drawingDining.getCheckedRadioButtonId() == R.id.drawingDiningYes ? 1 : 0,
+//                electricityCB.isChecked() ? 1 : 0, gasCB.isChecked() ? 1 : 0, waterCB.isChecked() ? 1 : 0,
+//                liftCB.isChecked() ? 1 : 0, generatorCB.isChecked() ? 1 : 0, securityGuardCB.isChecked() ? 1 : 0,
+//                totalSpace.getText().length() == 0 ? -1 : Long.parseLong(totalSpace.getText().toString()),
+//                Long.parseLong(totalRent.getText().toString()),
+//                utilityBill.getCheckedRadioButtonId() == R.id.utilityBillIncluded || totalUtility.getText().length() > 0 ?
+//                        Long.parseLong(totalUtility.getText().toString()) : 0,
+//                getUid());
 
-        //AdInfo adInfo = new AdInfo(adId, getUid());
+        AdInfo adInfo = new AdInfo(adId, getUid());
         HashMap<String, Object> adValues = adInfo.toMap();
         adValues.put(DBConstants.createdTime, ServerValue.TIMESTAMP);
         adValues.put(DBConstants.modifiedTime, ServerValue.TIMESTAMP);

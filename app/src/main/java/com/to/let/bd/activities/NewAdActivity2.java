@@ -1,13 +1,21 @@
 package com.to.let.bd.activities;
 
+import android.Manifest;
 import android.app.DatePickerDialog;
 import android.app.Dialog;
+import android.content.BroadcastReceiver;
+import android.content.Context;
+import android.content.Intent;
+import android.content.pm.PackageManager;
+import android.graphics.Bitmap;
 import android.graphics.Color;
 import android.graphics.drawable.ColorDrawable;
 import android.os.Bundle;
 import android.os.Handler;
 import android.support.design.widget.TabLayout;
+import android.support.v4.app.ActivityCompat;
 import android.support.v4.app.Fragment;
+import android.support.v4.content.LocalBroadcastManager;
 import android.support.v7.app.ActionBar;
 import android.support.v7.widget.PopupMenu;
 import android.support.v7.widget.Toolbar;
@@ -26,21 +34,27 @@ import android.widget.EditText;
 import android.widget.LinearLayout;
 import android.widget.TextView;
 
+import com.google.android.gms.maps.CameraUpdateFactory;
 import com.google.android.gms.maps.GoogleMap;
 import com.google.firebase.auth.FirebaseAuth;
+import com.google.firebase.database.DatabaseError;
 import com.google.firebase.database.DatabaseReference;
 import com.google.firebase.database.FirebaseDatabase;
+import com.google.firebase.database.ServerValue;
 import com.to.let.bd.R;
 import com.to.let.bd.common.BaseMapActivity;
 import com.to.let.bd.fragments.FamilyFragment;
 import com.to.let.bd.fragments.MessFragment;
 import com.to.let.bd.fragments.OthersFragment;
 import com.to.let.bd.fragments.SubletFragment;
+import com.to.let.bd.model.AdInfo;
 import com.to.let.bd.utils.ActivityUtils;
 import com.to.let.bd.utils.AppConstants;
 import com.to.let.bd.utils.DBConstants;
 import com.to.let.bd.utils.AppSharedPrefs;
+import com.to.let.bd.utils.UploadImageService;
 
+import java.io.ByteArrayOutputStream;
 import java.text.ParseException;
 import java.text.SimpleDateFormat;
 import java.util.Calendar;
@@ -48,12 +62,12 @@ import java.util.Date;
 import java.util.HashMap;
 import java.util.Locale;
 
-public class NewAdActivity2 extends BaseMapActivity implements View.OnClickListener {
+public class NewAdActivity2 extends BaseMapActivity implements View.OnClickListener, View.OnFocusChangeListener {
 
     private static final String TAG = NewAdActivity2.class.getSimpleName();
 
     @Override
-    public int getLayoutResourceId() {
+    protected int getLayoutResourceId() {
         return R.layout.activity_new_post2;
     }
 
@@ -63,7 +77,7 @@ public class NewAdActivity2 extends BaseMapActivity implements View.OnClickListe
     }
 
     @Override
-    public String getActivityTitle() {
+    protected String getActivityTitle() {
         return getString(R.string.post_your_ad);
     }
 
@@ -73,10 +87,62 @@ public class NewAdActivity2 extends BaseMapActivity implements View.OnClickListe
     }
 
     @Override
-    public void onCreate() {
+    protected void onCreate() {
         init();
         initTabLayout();
         addRoomFaceType(null);
+        setRentDate(getDefaultRentMonth());
+
+        initBroadcast();
+    }
+
+    private void initBroadcast() {
+        // Local broadcast receiver
+        mBroadcastReceiver = new BroadcastReceiver() {
+            @Override
+            public void onReceive(Context context, Intent intent) {
+                switch (intent.getAction()) {
+                    case AppConstants.uploadError:
+
+                        break;
+                    case AppConstants.uploadComplete: {
+                        int type = intent.getIntExtra(AppConstants.keyType, 0);
+                        String adId = intent.getStringExtra(DBConstants.adId);
+                        int imageIndex = intent.getIntExtra(AppConstants.imageIndex, 0);
+                        String[] imageContents = intent.getStringArrayExtra(AppConstants.imageContents);
+//                        completeSingleImageUpload(type, adId, imageIndex, imageContents);
+                    }
+                    break;
+                    case AppConstants.uploadProgress: {
+                        int type = intent.getIntExtra(AppConstants.keyType, 0);
+                        String adId = intent.getStringExtra(DBConstants.adId);
+                        int imageIndex = intent.getIntExtra(AppConstants.imageIndex, 0);
+                        int progress = intent.getIntExtra(AppConstants.progress, -1);
+
+//                        if (type == AppConstants.adImageType)
+//                            updateProgress(imageIndex, progress);
+                    }
+                    break;
+                }
+            }
+        };
+    }
+
+    protected BroadcastReceiver mBroadcastReceiver;
+
+    @Override
+    public void onStart() {
+        super.onStart();
+        // Register receiver for uploads and downloads
+        LocalBroadcastManager manager = LocalBroadcastManager.getInstance(this);
+        manager.registerReceiver(mBroadcastReceiver, UploadImageService.getIntentFilter());
+    }
+
+    @Override
+    public void onStop() {
+        super.onStop();
+        // Unregister download receiver
+        LocalBroadcastManager.getInstance(this).unregisterReceiver(mBroadcastReceiver);
     }
 
     private Button submitBtn;
@@ -108,23 +174,6 @@ public class NewAdActivity2 extends BaseMapActivity implements View.OnClickListe
         submitBtn.setOnClickListener(this);
 
         addressDetails = findViewById(R.id.addressDetails);
-//        addressDetails.setOnTouchListener(new View.OnTouchListener() {
-//            @Override
-//            public boolean onTouch(View v, MotionEvent event) {
-//                final int DRAWABLE_LEFT = 0;
-//                final int DRAWABLE_TOP = 1;
-//                final int DRAWABLE_RIGHT = 2;
-//                final int DRAWABLE_BOTTOM = 3;
-//
-//                if (event.getAction() == MotionEvent.ACTION_UP) {
-//                    if (event.getRawX() >= (addressDetails.getRight() - addressDetails.getCompoundDrawables()[DRAWABLE_RIGHT].getBounds().width())) {
-//                        addressDetails.setText("test");
-//                        return true;
-//                    }
-//                }
-//                return false;
-//            }
-//        });
 
         emailAddress = findViewById(R.id.emailAddress);
         mobileNumber = findViewById(R.id.mobileNumber);
@@ -148,19 +197,19 @@ public class NewAdActivity2 extends BaseMapActivity implements View.OnClickListe
             }
         });
 
-//        if (firebaseUser != null) {
-//            if (firebaseUser.isAnonymous()) {
-//                emailAddress.setOnFocusChangeListener(this);
-//            } else {
-//                String email = firebaseUser.getEmail();
-//                if (email == null || email.isEmpty()) {
-//                    emailAddress.setOnFocusChangeListener(this);
-//                } else {
-//                    emailAddress.setText(email);
-//                    emailAddress.setEnabled(false);
-//                }
-//            }
-//        }
+        if (firebaseUser != null) {
+            if (firebaseUser.isAnonymous()) {
+                emailAddress.setOnFocusChangeListener(this);
+            } else {
+                String email = firebaseUser.getEmail();
+                if (email == null || email.isEmpty()) {
+                    emailAddress.setOnFocusChangeListener(this);
+                } else {
+                    emailAddress.setText(email);
+                    emailAddress.setEnabled(false);
+                }
+            }
+        }
 
         flatAdditionalInfoLay = findViewById(R.id.flatAdditionalInfoLay);
         houseInfo = findViewById(R.id.houseInfo);
@@ -185,6 +234,11 @@ public class NewAdActivity2 extends BaseMapActivity implements View.OnClickListe
         rentDate.setOnClickListener(this);
     }
 
+    @Override
+    public void onFocusChange(View view, boolean b) {
+
+    }
+
     private void addRoomFaceType(ViewGroup viewGroup) {
         LayoutInflater inflater = LayoutInflater.from(this);
         final View inflatedView = inflater.inflate(R.layout.row_perticular_view, viewGroup, false);
@@ -201,8 +255,6 @@ public class NewAdActivity2 extends BaseMapActivity implements View.OnClickListe
         int defaultSelection = 1;
         AppConstants.updatePickerView(inflatedView, getString(R.string.flat_face), roomFaceArray[defaultSelection] + " " + getString(R.string.facing) + " " + getString(R.string.flat));
         flatAdditionalInfoLay.addView(inflatedView);
-//        familyRoom[3] = defaultSelection;
-//        addParticularView();
     }
 
     private final String[] roomFaceArray = {"North", "South", "East", "West"};
@@ -289,8 +341,10 @@ public class NewAdActivity2 extends BaseMapActivity implements View.OnClickListe
         tabLayout.getTabAt(0).select();
     }
 
+    private GoogleMap googleMap;
     @Override
-    public void onMapReady2(GoogleMap googleMap) {
+    protected void onMapReady2(GoogleMap googleMap) {
+        this.googleMap = googleMap;
 //        googleMap.setOnMapClickListener(new GoogleMap.OnMapClickListener() {
 //            @Override
 //            public void onMapClick(LatLng latLng) {
@@ -307,7 +361,7 @@ public class NewAdActivity2 extends BaseMapActivity implements View.OnClickListe
     }
 
     @Override
-    public void onLoadLocationDetails(String fullAddress) {
+    protected void onLoadLocationDetails(String fullAddress) {
         addressDetails.setText(fullAddress);
     }
 
@@ -423,24 +477,6 @@ public class NewAdActivity2 extends BaseMapActivity implements View.OnClickListe
                 summaryDialog.dismiss();
             }
         });
-
-//        LinearLayout okBtnLay =  summaryDialog.findViewById(R.id.okBtnLay);
-//        LinearLayout noBtnLay =  summaryDialog.findViewById(R.id.noBtnLay);
-//
-//        okBtnLay.setOnClickListener(new View.OnClickListener() {
-//            @Override
-//            public void onClick(View view) {
-//                summaryDialog.dismiss();
-//                writeNewPost();
-//            }
-//        });
-//
-//        noBtnLay.setOnClickListener(new View.OnClickListener() {
-//            @Override
-//            public void onClick(View view) {
-//                summaryDialog.dismiss();
-//            }
-//        });
     }
 
     @Override
@@ -453,8 +489,8 @@ public class NewAdActivity2 extends BaseMapActivity implements View.OnClickListe
     private String adId = null;
 
     private void writeNewPost() {
-//        showProgressDialog();
-//        adId = mDatabase.child(DBConstants.adList).push().getKey();
+        showProgressDialog();
+        adId = mDatabase.child(DBConstants.adList).push().getKey();
 //        final AdInfo adInfo = new AdInfo(adId, date[0], (date[1] + 1), date[2], rentLatitude, rentLongitude,
 //                addressDetails.getText().toString(), "", "", "", "", "",
 //                1, familyRoom[0], familyRoom[1], familyRoom[2], familyRoom[3], 1,
@@ -469,51 +505,60 @@ public class NewAdActivity2 extends BaseMapActivity implements View.OnClickListe
 //                        Long.parseLong(totalUtility.getText().toString()) : 0,
 //                getUid());
 //
-//        //AdInfo adInfo = new AdInfo(adId, getUid());
-//        HashMap<String, Object> adValues = adInfo.toMap();
-//        adValues.put(DBConstants.createdTime, ServerValue.TIMESTAMP);
-//        adValues.put(DBConstants.modifiedTime, ServerValue.TIMESTAMP);
-//
-////        showLog("server time: " + ServerValue.TIMESTAMP + " device time: " + System.currentTimeMillis());
-//
-//        HashMap<String, Object> childUpdates = new HashMap<>();
-//        childUpdates.put("/" + DBConstants.adList + "/" + adId, adValues);
-//        mDatabase.updateChildren(childUpdates, new DatabaseReference.CompletionListener() {
-//            @Override
-//            public void onComplete(DatabaseError databaseError, DatabaseReference databaseReference) {
-//                if (databaseError == null) {
-//                    if (selectedLocation != null) {
-//                        googleMap.moveCamera(CameraUpdateFactory.newLatLngZoom(selectedLocation.getPosition(), DEFAULT_ZOOM));
-//                        if (selectedLocation.isInfoWindowShown()) {
-//                            selectedLocation.hideInfoWindow();
-//                        }
-//                    }
-//                    if (googleMap.isMyLocationEnabled()) {
-//                        if (!(ActivityCompat.checkSelfPermission(NewAdActivity.this, Manifest.permission.ACCESS_FINE_LOCATION) != PackageManager.PERMISSION_GRANTED && ActivityCompat.checkSelfPermission(NewAdActivity.this, Manifest.permission.ACCESS_COARSE_LOCATION) != PackageManager.PERMISSION_GRANTED)) {
-//                            googleMap.setMyLocationEnabled(false);
-//                        }
-//                    }
-//                    googleMap.setOnMapLoadedCallback(new GoogleMap.OnMapLoadedCallback() {
-//                        @Override
-//                        public void onMapLoaded() {
-//                            googleMap.snapshot(new GoogleMap.SnapshotReadyCallback() {
-//                                @Override
-//                                public void onSnapshotReady(Bitmap bitmap) {
-//                                    ByteArrayOutputStream stream = new ByteArrayOutputStream();
-//                                    bitmap.compress(Bitmap.CompressFormat.PNG, 50, stream);
-//                                    byte[] byteArray = stream.toByteArray();
-//                                    uploadImage(AppConstants.adMapImageType, adId, byteArray);
-//                                }
-//                            });
-//                        }
-//                    });
-//                } else {
-//                    showToast(databaseError.getMessage());
-//                    closeProgressDialog();
-//                }
-//                showLog();
-//            }
-//        });
+        AdInfo adInfo = new AdInfo(adId, getUid());
+        HashMap<String, Object> adValues = adInfo.toMap();
+        adValues.put(DBConstants.createdTime, ServerValue.TIMESTAMP);
+        adValues.put(DBConstants.modifiedTime, ServerValue.TIMESTAMP);
+
+        HashMap<String, Object> childUpdates = new HashMap<>();
+        childUpdates.put("/" + DBConstants.adList + "/" + adId, adValues);
+        mDatabase.updateChildren(childUpdates, new DatabaseReference.CompletionListener() {
+            @Override
+            public void onComplete(DatabaseError databaseError, DatabaseReference databaseReference) {
+                if (databaseError == null) {
+                    if (selectedLocation != null) {
+                        googleMap.moveCamera(CameraUpdateFactory.newLatLngZoom(selectedLocation.getPosition(), DEFAULT_ZOOM));
+                        if (selectedLocation.isInfoWindowShown()) {
+                            selectedLocation.hideInfoWindow();
+                        }
+                    }
+                    if (googleMap.isMyLocationEnabled()) {
+                        if (!(ActivityCompat.checkSelfPermission(NewAdActivity2.this, Manifest.permission.ACCESS_FINE_LOCATION) != PackageManager.PERMISSION_GRANTED && ActivityCompat.checkSelfPermission(NewAdActivity2.this, Manifest.permission.ACCESS_COARSE_LOCATION) != PackageManager.PERMISSION_GRANTED)) {
+                            googleMap.setMyLocationEnabled(false);
+                        }
+                    }
+                    googleMap.setOnMapLoadedCallback(new GoogleMap.OnMapLoadedCallback() {
+                        @Override
+                        public void onMapLoaded() {
+                            googleMap.snapshot(new GoogleMap.SnapshotReadyCallback() {
+                                @Override
+                                public void onSnapshotReady(Bitmap bitmap) {
+                                    ByteArrayOutputStream stream = new ByteArrayOutputStream();
+                                    bitmap.compress(Bitmap.CompressFormat.PNG, 50, stream);
+                                    byte[] byteArray = stream.toByteArray();
+                                    uploadImage(AppConstants.adMapImageType, adId, byteArray);
+                                }
+                            });
+                        }
+                    });
+                } else {
+                    showToast(databaseError.getMessage());
+                    closeProgressDialog();
+                }
+                showLog();
+            }
+        });
+    }
+
+    protected void uploadImage(int type, String adId, byte[] imageByte) {
+        // Start StorageUploadService to upload the file, so that the file is uploaded
+        // even if this Activity is killed or put in the background
+        startService(new Intent(this, UploadImageService.class)
+                .putExtra(AppConstants.keyType, type)
+                .putExtra(AppConstants.fileUri, imageByte)
+                .putExtra(DBConstants.adId, adId)
+                .putExtra(AppConstants.imageIndex, 0)
+                .setAction(AppConstants.actionUpload));
     }
 
     private void updateUserInfo() {

@@ -507,9 +507,9 @@ public class AdListActivity extends BaseActivity implements NavigationView.OnNav
         adDetailsIntent.putExtra(DBConstants.flatRent, adInfo.getFlatRent());
         adDetailsIntent.putExtra(DBConstants.othersFee, adInfo.getOthersFee());
 
-        adDetailsIntent.putExtra(DBConstants.bedRoom, adInfo.getBedRoom());
-        adDetailsIntent.putExtra(DBConstants.bathroom, adInfo.getBathroom());
-        adDetailsIntent.putExtra(DBConstants.balcony, adInfo.getBalcony());
+//        adDetailsIntent.putExtra(DBConstants.bedRoom, adInfo.getBedRoom());
+//        adDetailsIntent.putExtra(DBConstants.bathroom, adInfo.getBathroom());
+//        adDetailsIntent.putExtra(DBConstants.balcony, adInfo.getBalcony());
 
         adDetailsIntent.putExtra(DBConstants.startingDate, adInfo.getStartingDate());
         adDetailsIntent.putExtra(DBConstants.startingMonth, adInfo.getStartingMonth());

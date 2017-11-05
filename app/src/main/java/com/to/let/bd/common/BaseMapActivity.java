@@ -66,7 +66,7 @@ public abstract class BaseMapActivity extends BaseActivity implements OnMapReady
     // A default location (Sydney, Australia) and default zoom to use when location permission is
     // not granted.
     private LatLng defaultLatLng = new LatLng(23.8103, 90.4125);
-    private static final int DEFAULT_ZOOM = 15;
+    protected static final int DEFAULT_ZOOM = 15;
     private static final int PERMISSIONS_REQUEST_CODE = 1;
 
     // The geographical location where the device is currently located. That is, the last-known
@@ -77,7 +77,7 @@ public abstract class BaseMapActivity extends BaseActivity implements OnMapReady
     private static final String KEY_CAMERA_POSITION = "camera_position";
     private static final String KEY_LOCATION = "location";
 
-    public abstract int getLayoutResourceId();
+    protected abstract int getLayoutResourceId();
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -108,7 +108,7 @@ public abstract class BaseMapActivity extends BaseActivity implements OnMapReady
         onCreate();
     }
 
-    public abstract void onCreate();
+    protected abstract void onCreate();
 
     private void retrieveSavedInstanceState(Bundle savedInstanceState) {
         // Retrieve location and camera position from saved instance state.
@@ -134,7 +134,7 @@ public abstract class BaseMapActivity extends BaseActivity implements OnMapReady
         mapScrollView = findViewById(R.id.mapScrollView);
     }
 
-    public abstract String getActivityTitle();
+    protected abstract String getActivityTitle();
 
     // Google login
     private void googleLogin() {
@@ -325,7 +325,7 @@ public abstract class BaseMapActivity extends BaseActivity implements OnMapReady
 //        googleMap.setInfoWindowAdapter(new CustomInfoWindowAdapter());
     }
 
-    public abstract void onLoadLocationDetails(String fullAddress);
+    protected abstract void onLoadLocationDetails(String fullAddress);
 
     @Override
     public void onMapClick(LatLng latLng) {
@@ -333,7 +333,7 @@ public abstract class BaseMapActivity extends BaseActivity implements OnMapReady
         selectedLocation = null;
     }
 
-    public abstract void onMapReady2(GoogleMap googleMap);
+    protected abstract void onMapReady2(GoogleMap googleMap);
 
     private void requestLocationPermission() {
         if (ContextCompat.checkSelfPermission(this.getApplicationContext(),

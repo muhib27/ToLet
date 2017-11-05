@@ -151,8 +151,12 @@
     <string name="please_mention_your_desired_type">Please mention your desired type</string>
     <string name="kitchen_share">Kitchen Share</string>
     <string name="well_furnished">Well furnished</string>
-    <string name="mess_management_system">Mess-management system: </string>
+    <string name="mess_management_system">Mess management system: </string>
     <string name="manage_by_office">Manage by single man/office.</string>
     <string name="manage_by_group">Manage by few group member.</string>
     <string name="circulate_every_month">Circulate every month to corresponding member.</string>
+    <string name="approximate_total_space">Approximate total space: </string>
+    <string name="approximate_meal_rate">Approximate meal rate: </string>
+    <string name="approximate_meal_rate_value">50</string>
+    <string name="kitchen_cabinet">Kitchen cabinet</string>
 </resources>

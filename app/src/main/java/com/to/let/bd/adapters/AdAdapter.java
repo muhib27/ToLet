@@ -44,8 +44,8 @@ public class AdAdapter extends RecyclerView.Adapter<RecyclerView.ViewHolder> {
 
             AdInfo adInfo = sampleList.get(position);
 
-            String title = "৳" + adInfo.getFlatRent() + ", " + adInfo.getBedRoom() + " bed, " + adInfo.getBathroom() + " bath";
-            myViewHolder.adTitle.setText(title.trim());
+//            String title = "৳" + adInfo.getFlatRent() + ", " + adInfo.getBedRoom() + " bed, " + adInfo.getBathroom() + " bath";
+//            myViewHolder.adTitle.setText(title.trim());
             String subTitle = adInfo.getFullAddress();
             myViewHolder.adSubTitle.setText(subTitle.trim());
 

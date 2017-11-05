@@ -127,7 +127,7 @@
         android:orientation="horizontal">
 
         <CheckBox
-            android:id="@+id/waterCB"
+            android:id="@+id/twentyFourWaterCB"
             android:layout_width="0dp"
             android:layout_height="wrap_content"
             android:layout_weight="1"
@@ -138,7 +138,7 @@
             android:textColor="@color/black" />
 
         <CheckBox
-            android:id="@+id/gasCB"
+            android:id="@+id/gasSupplyCB"
             android:layout_width="0dp"
             android:layout_height="wrap_content"
             android:layout_weight="1"
@@ -157,7 +157,7 @@
         android:orientation="horizontal">
 
         <CheckBox
-            android:id="@+id/kitchenSharedCB"
+            android:id="@+id/kitchenShareCB"
             android:layout_width="0dp"
             android:layout_height="wrap_content"
             android:layout_weight="1"
