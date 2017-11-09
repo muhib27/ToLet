@@ -49,7 +49,6 @@ public class AppConstants {
     public static final String progress = "progress";
 
     // predefined rent type
-    public static final String [] rentType = {"Family", "Mess", "Sublet", "Others"};
     public static final long textWatcherDelay = 2000;
 
     //-------------methods-----------
@@ -127,7 +126,7 @@ public class AppConstants {
                                          final PopupMenuClickListener popupMenuClickListener) {
         LayoutInflater inflater = LayoutInflater.from(context);
         for (int i = 0; i < viewTypes.length; i++) {
-            final View inflatedView = inflater.inflate(R.layout.row_perticular_view, parentLay, false);
+            final View inflatedView = inflater.inflate(R.layout.row_particular_view, parentLay, false);
             LinearLayout.LayoutParams layoutParams = new LinearLayout.LayoutParams(0, ViewGroup.LayoutParams.WRAP_CONTENT);
             layoutParams.weight = 1;
             inflatedView.setLayoutParams(layoutParams);

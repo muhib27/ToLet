@@ -5,94 +5,67 @@ package com.to.let.bd.model;
  */
 
 public class OthersInfo {
-    private int rentType;
-    private int bedRoom;
-    private int bathroom;
-    private int balcony;
-    private int lift;
-    private int parkingGarage;
-    private int generator;
-    private int securityGuard;
-    private int wellFurnished;
-    private int kitchenCabinet;
+    private String rentType;
+    private boolean lift;
+    private boolean generator;
+    private boolean securityGuard;
+    private boolean parkingGarage;
+    private boolean fullyDecorated;
+    private boolean wellFurnished;
 
-    public int getRentType() {
+    public String getRentType() {
         return rentType;
     }
 
-    public void setRentType(int rentType) {
+    public void setRentType(String rentType) {
         this.rentType = rentType;
     }
 
-    public int getBedRoom() {
-        return bedRoom;
-    }
-
-    public void setBedRoom(int bedRoom) {
-        this.bedRoom = bedRoom;
-    }
-
-    public int getBathroom() {
-        return bathroom;
-    }
-
-    public void setBathroom(int bathroom) {
-        this.bathroom = bathroom;
-    }
-
-    public int getBalcony() {
-        return balcony;
-    }
-
-    public void setBalcony(int balcony) {
-        this.balcony = balcony;
-    }
-
-    public int getLift() {
+    public boolean isLift() {
         return lift;
     }
 
-    public void setLift(int lift) {
+    public void setLift(boolean lift) {
         this.lift = lift;
     }
 
-    public int getParkingGarage() {
-        return parkingGarage;
-    }
-
-    public void setParkingGarage(int parkingGarage) {
-        this.parkingGarage = parkingGarage;
-    }
-
-    public int getGenerator() {
+    public boolean isGenerator() {
         return generator;
     }
 
-    public void setGenerator(int generator) {
+    public void setGenerator(boolean generator) {
         this.generator = generator;
     }
 
-    public int getSecurityGuard() {
+    public boolean isSecurityGuard() {
         return securityGuard;
     }
 
-    public void setSecurityGuard(int securityGuard) {
+    public void setSecurityGuard(boolean securityGuard) {
         this.securityGuard = securityGuard;
     }
 
-    public int getWellFurnished() {
+    public boolean isParkingGarage() {
+        return parkingGarage;
+    }
+
+    public void setParkingGarage(boolean parkingGarage) {
+        this.parkingGarage = parkingGarage;
+    }
+
+    public boolean isFullyDecorated() {
+        return fullyDecorated;
+    }
+
+    public void setFullyDecorated(boolean fullyDecorated) {
+        this.fullyDecorated = fullyDecorated;
+    }
+
+    public boolean isWellFurnished() {
         return wellFurnished;
     }
 
-    public void setWellFurnished(int wellFurnished) {
+    public void setWellFurnished(boolean wellFurnished) {
         this.wellFurnished = wellFurnished;
-    }
-
-    public int getKitchenCabinet() {
-        return kitchenCabinet;
-    }
-
-    public void setKitchenCabinet(int kitchenCabinet) {
-        this.kitchenCabinet = kitchenCabinet;
     }
 }

@@ -39,7 +39,8 @@ public class AdInfo {
 
     private String houseNameOrNumber;
     private int floorNumber;
-    private int flatFacing;
+    private String flatFacing;
+    private String flatDescription;
 
     private String flatType;
 
@@ -59,18 +60,17 @@ public class AdInfo {
         this.userId = userId;
     }
 
-    public AdInfo(String adId, int startingMonth, int startingDate, int startingYear, String startingFinalDate,
+    public AdInfo(String adId, int startingMonth, int startingDate, int startingYear,
                   double latitude, double longitude,
                   String fullAddress, String country, String division, String district, String subDistrict, String knownAsArea,
                   long flatSpace, long flatRent, long othersFee,
-                  String houseNameOrNumber, int floorNumber, int flatFacing,
+                  String houseNameOrNumber, int floorNumber, String flatFacing, String flatDescription,
                   String flatType,
                   FamilyInfo familyInfo, MessInfo messInfo, SubletInfo subletInfo, OthersInfo othersInfo, String userId) {
         this.adId = adId;
         this.startingMonth = startingMonth;
         this.startingDate = startingDate;
         this.startingYear = startingYear;
-        this.startingFinalDate = startingFinalDate;
         this.latitude = latitude;
         this.longitude = longitude;
         this.fullAddress = fullAddress;
@@ -85,6 +85,7 @@ public class AdInfo {
         this.houseNameOrNumber = houseNameOrNumber;
         this.floorNumber = floorNumber;
         this.flatFacing = flatFacing;
+        this.flatDescription= flatDescription;
         this.flatType = flatType;
         this.familyInfo = familyInfo;
         this.messInfo = messInfo;
@@ -315,11 +316,11 @@ public class AdInfo {
         this.floorNumber = floorNumber;
     }
 
-    public int getFlatFacing() {
+    public String getFlatFacing() {
         return flatFacing;
     }
 
-    public void setFlatFacing(int flatFacing) {
+    public void setFlatFacing(String flatFacing) {
         this.flatFacing = flatFacing;
     }
 
@@ -329,6 +330,14 @@ public class AdInfo {
 
     public void setFlatSpace(long flatSpace) {
         this.flatSpace = flatSpace;
+    }
+
+    public String getFlatDescription() {
+        return flatDescription;
+    }
+
+    public void setFlatDescription(String flatDescription) {
+        this.flatDescription = flatDescription;
     }
 
     public String getFlatType() {
@@ -397,6 +406,7 @@ public class AdInfo {
         result.put(DBConstants.houseNameOrNumber, houseNameOrNumber);
         result.put(DBConstants.floorNumber, floorNumber);
         result.put(DBConstants.flatFacing, flatFacing);
+        result.put(DBConstants.flatDescription, flatDescription);
 
         result.put(DBConstants.flatType, flatType);
 

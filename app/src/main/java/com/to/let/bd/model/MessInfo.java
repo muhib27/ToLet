@@ -6,12 +6,18 @@ package com.to.let.bd.model;
 
 public class MessInfo {
     private int memberType;
+    private int numberOfSeat;
+    private int numberOfRoom;
+    private int totalMember;
     private int messManagementSystem;
-    private int mealFacility;
-    private int maidServant;
-    private int twentyFourWater;
-    private int wifi;
-    private int fridge;
+
+    private boolean mealFacility;
+    private boolean maidServant;
+    private boolean twentyFourWater;
+    private boolean nonSmoker;
+    private boolean wifi;
+    private boolean fridge;
+
     private int mealRate;
 
     public int getMemberType() {
@@ -22,6 +28,30 @@ public class MessInfo {
         this.memberType = memberType;
     }
 
+    public int getNumberOfSeat() {
+        return numberOfSeat;
+    }
+
+    public void setNumberOfSeat(int numberOfSeat) {
+        this.numberOfSeat = numberOfSeat;
+    }
+
+    public int getNumberOfRoom() {
+        return numberOfRoom;
+    }
+
+    public void setNumberOfRoom(int numberOfRoom) {
+        this.numberOfRoom = numberOfRoom;
+    }
+
+    public int getTotalMember() {
+        return totalMember;
+    }
+
+    public void setTotalMember(int totalMember) {
+        this.totalMember = totalMember;
+    }
+
     public int getMessManagementSystem() {
         return messManagementSystem;
     }
@@ -30,43 +60,51 @@ public class MessInfo {
         this.messManagementSystem = messManagementSystem;
     }
 
-    public int getMealFacility() {
+    public boolean isMealFacility() {
         return mealFacility;
     }
 
-    public void setMealFacility(int mealFacility) {
+    public void setMealFacility(boolean mealFacility) {
         this.mealFacility = mealFacility;
     }
 
-    public int getMaidServant() {
+    public boolean isMaidServant() {
         return maidServant;
     }
 
-    public void setMaidServant(int maidServant) {
+    public void setMaidServant(boolean maidServant) {
         this.maidServant = maidServant;
     }
 
-    public int getTwentyFourWater() {
+    public boolean isTwentyFourWater() {
         return twentyFourWater;
     }
 
-    public void setTwentyFourWater(int twentyFourWater) {
+    public void setTwentyFourWater(boolean twentyFourWater) {
         this.twentyFourWater = twentyFourWater;
     }
 
-    public int getWifi() {
+    public boolean isNonSmoker() {
+        return nonSmoker;
+    }
+
+    public void setNonSmoker(boolean nonSmoker) {
+        this.nonSmoker = nonSmoker;
+    }
+
+    public boolean isWifi() {
         return wifi;
     }
 
-    public void setWifi(int wifi) {
+    public void setWifi(boolean wifi) {
         this.wifi = wifi;
     }
 
-    public int getFridge() {
+    public boolean isFridge() {
         return fridge;
     }
 
-    public void setFridge(int fridge) {
+    public void setFridge(boolean fridge) {
         this.fridge = fridge;
     }
 

@@ -40,6 +40,8 @@
                 android:layout_width="match_parent"
                 android:layout_height="wrap_content"
                 android:background="@drawable/rectangle_black_border"
+                android:drawableRight="@drawable/cross"
+                android:drawableEnd="@drawable/cross"
                 android:gravity="center_vertical"
                 android:hint="@string/dummy_full_address"
                 android:maxLines="1"
@@ -252,22 +254,37 @@
                     android:textSize="@dimen/text_size_14sp"
                     android:textStyle="bold" />
 
-                <TextView
-                    android:id="@+id/rentDate"
+                <LinearLayout
                     android:layout_width="0dp"
                     android:layout_height="wrap_content"
                     android:layout_weight="1"
-                    android:background="@drawable/rectangle_black_border"
-                    android:ellipsize="end"
-                    android:gravity="center"
-                    android:maxLines="2"
-                    android:padding="@dimen/new_post_common_padding"
-                    android:text="@string/select_date"
-                    android:textAllCaps="false"
-                    android:textColor="@color/black"
-                    android:textSize="@dimen/text_size_14sp"
-                    android:textStyle="bold" />
+                    android:orientation="vertical">
 
+                    <TextView
+                        android:id="@+id/rentDate"
+                        android:layout_width="match_parent"
+                        android:layout_height="wrap_content"
+                        android:background="@drawable/custom_button_bg"
+                        android:ellipsize="end"
+                        android:gravity="center"
+                        android:maxLines="2"
+                        android:padding="@dimen/new_post_common_padding"
+                        android:text="@string/select_date"
+                        android:textAllCaps="false"
+                        android:textColor="@color/white"
+                        android:textSize="@dimen/text_size_14sp"
+                        android:textStyle="bold" />
+
+                    <TextView
+                        android:id="@+id/remainingTime"
+                        android:layout_width="match_parent"
+                        android:layout_height="wrap_content"
+                        android:gravity="center_horizontal"
+                        android:text="@string/please_select_rent_date"
+                        android:textColor="@color/colorPrimaryDark"
+                        android:textSize="@dimen/text_size_14sp"
+                        android:textStyle="bold" />
+                </LinearLayout>
             </LinearLayout>
 
             <TextView

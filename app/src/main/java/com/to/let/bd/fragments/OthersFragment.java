@@ -2,16 +2,24 @@ package com.to.let.bd.fragments;
 
 import android.os.Bundle;
 import android.support.annotation.Nullable;
+import android.support.v7.widget.PopupMenu;
 import android.view.LayoutInflater;
+import android.view.Menu;
+import android.view.MenuItem;
 import android.view.View;
 import android.view.ViewGroup;
+import android.widget.CheckBox;
 import android.widget.EditText;
 import android.widget.LinearLayout;
 
 import com.to.let.bd.R;
 import com.to.let.bd.activities.NewAdActivity2;
 import com.to.let.bd.common.BaseFragment;
+import com.to.let.bd.model.OthersInfo;
 import com.to.let.bd.utils.AppConstants;
+
+import java.util.ArrayList;
+import java.util.Arrays;
 
 public class OthersFragment extends BaseFragment {
     public static final String TAG = OthersFragment.class.getSimpleName();
@@ -23,6 +31,9 @@ public class OthersFragment extends BaseFragment {
     @Override
     public void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
+
+        rentType.clear();
+        rentType.addAll(Arrays.asList(getResources().getStringArray(R.array.rent_type_array)));
     }
 
     private View rootView;
@@ -40,65 +51,93 @@ public class OthersFragment extends BaseFragment {
     public void onActivityCreated(@Nullable Bundle savedInstanceState) {
         super.onActivityCreated(savedInstanceState);
         init();
-        AppConstants.addParticularView(activity, roomNumberLay, roomTypes, startPositions, endPositions, defaultPositions, new AppConstants.PopupMenuClickListener() {
-            @Override
-            public void onItemClick(String roomType, int selectedPosition) {
-                int index = 0;
-                for (int i = 0; i < roomType.length(); i++) {
-                    if (roomType.equalsIgnoreCase(roomTypes[i])) {
-                        index = i;
-                        break;
-                    }
-                }
-                familyRoom[index] = startPositions[index] + selectedPosition;
-                calculateRentSpace();
-            }
-        });
-        defaultCheck();
     }
 
     private NewAdActivity2 activity;
 
-    private LinearLayout roomNumberLay;
+    private LinearLayout singleRoomNumberLay, liftGeneratorLay, securityParkingLay, decoratedFurnishedLay;
     private EditText totalSpace;
+    private CheckBox liftCB, generatorCB, securityGuardCB,
+            parkingGarageCB, fullyDecoratedCB, wellFurnishedCB;
 
     private void init() {
-        roomNumberLay = rootView.findViewById(R.id.roomNumberLay);
+        singleRoomNumberLay = rootView.findViewById(R.id.singleRoomNumberLay);
+        singleRoomNumberLay.setOnClickListener(new View.OnClickListener() {
+            @Override
+            public void onClick(View view) {
+                showPopupMenu();
+            }
+        });
+
+        updatePickerView(rentType.get(0));
         totalSpace = rootView.findViewById(R.id.totalSpace);
+
+        liftGeneratorLay = rootView.findViewById(R.id.liftGeneratorLay);
+        liftCB = rootView.findViewById(R.id.liftCB);
+        generatorCB = rootView.findViewById(R.id.generatorCB);
+        securityParkingLay = rootView.findViewById(R.id.securityParkingLay);
+        securityGuardCB = rootView.findViewById(R.id.securityGuardCB);
+        parkingGarageCB = rootView.findViewById(R.id.parkingGarageCB);
+        decoratedFurnishedLay = rootView.findViewById(R.id.decoratedFurnishedLay);
+        fullyDecoratedCB = rootView.findViewById(R.id.fullyDecoratedCB);
+        wellFurnishedCB = rootView.findViewById(R.id.wellFurnishedCB);
     }
 
-    private final String[] roomTypes = {"Bedroom", "Bathroom", "Balcony"};
-    private final int[] startPositions = {1, 1, 0};
-    private final int[] endPositions = {10, 8, 6};
-    private final int[] defaultPositions = {3, 3, 3};
-
-    private final int[] familyRoom = new int[3];//0=bedroom, 1=bathroom, 2=balcony
-
-    public void defaultCheck() {
-        for (int i = 0; i < 3; i++)
-            familyRoom[i] = startPositions[i] + defaultPositions[i];
-        calculateRentSpace();
+    public String getTotalSpace() {
+        return totalSpace.getText().toString();
     }
 
-    private void calculateRentSpace() {
-        long calculatedRent = (familyRoom[0] * singleBedRoomRent) + (familyRoom[1] * bathroomRent) + (familyRoom[2] * balconyRent);
-        long calculatedSpace = (familyRoom[0] * singleBedRoomSpace) + (familyRoom[1] * bathroomSpace) + (familyRoom[2] * balconySpace);
+    private ArrayList<String> rentType = new ArrayList<>();
 
-        totalSpace.setText(String.valueOf(calculatedSpace));
-        activity.updateCalculatedRent(calculatedRent);
+    private void showPopupMenu() {
+        PopupMenu popup = new PopupMenu(activity, singleRoomNumberLay);
+
+        for (int i = 0; i < rentType.size(); i++) {
+            popup.getMenu().add(0, i, Menu.NONE, rentType.get(i));
+        }
+
+        //popup.getMenuInflater().inflate(R.menu.poupup_menu, popup.getMenu());
+        //registering popup with OnMenuItemClickListener
+        popup.setOnMenuItemClickListener(new PopupMenu.OnMenuItemClickListener() {
+            public boolean onMenuItemClick(MenuItem item) {
+                updatePickerView((String) item.getTitle());
+                selectedPosition = item.getItemId();
+                return true;
+            }
+        });
+        popup.show(); //showing popup menu
+    }
+
+    private int selectedPosition = 0;
+
+    private void updatePickerView(String subtitle) {
+        String title = getString(R.string.select_type);
+        AppConstants.updatePickerView(singleRoomNumberLay, title, subtitle);
+
+        if (subtitle.equalsIgnoreCase(rentType.get(rentType.size() - 1))) {
+            activity.focusDescription();
+        }
     }
 
     public String getRoomDetails() {
-        return familyRoom[0] + " bedroom, " + familyRoom[1] + " bathroom, " + familyRoom[2] + " balcony.";
+        if (getTotalSpace() == null || getTotalSpace().trim().isEmpty()) {
+            totalSpace.setError(getString(R.string.error_field_required));
+            totalSpace.requestFocus();
+            return null;
+        }
+        return rentType.get(selectedPosition)+" with "+getTotalSpace()+" sqrft";
     }
 
-    private final long singleBedRoomRent = 6000;//rent BDT
-    private final long bathroomRent = 1500;//rent BDT
-    private final long balconyRent = 1000;//rent BDT
+    public OthersInfo getOthersInfo() {
+        OthersInfo subletInfo = new OthersInfo();
+        subletInfo.setRentType(rentType.get(selectedPosition));
 
-    private final long singleBedRoomSpace = 210;//space sqrft
-    private final long bathroomSpace = 60;//space sqrft
-    private final long balconySpace = 50;//space sqrft
-
-    private String[] rentType = {"Duplex", "Office", "Godown", "Mini-Shop", "Commercial-Space", "Market-Place"};
+        subletInfo.setLift(liftCB.isChecked());
+        subletInfo.setGenerator(generatorCB.isChecked());
+        subletInfo.setSecurityGuard(securityGuardCB.isChecked());
+        subletInfo.setParkingGarage(parkingGarageCB.isChecked());
+        subletInfo.setFullyDecorated(fullyDecoratedCB.isChecked());
+        subletInfo.setWellFurnished(wellFurnishedCB.isChecked());
+        return subletInfo;
+    }
 }

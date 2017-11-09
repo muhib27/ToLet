@@ -683,7 +683,7 @@ public class NewAdActivity extends BaseImageUploadActivity
     public void addRoomNumberView() {
         LayoutInflater inflater = LayoutInflater.from(this);
         for (int i = 0; i < roomTypes.length; i++) {
-            final View inflatedView = inflater.inflate(R.layout.row_perticular_view, roomNumberLay, false);
+            final View inflatedView = inflater.inflate(R.layout.row_particular_view, roomNumberLay, false);
             LinearLayout.LayoutParams layoutParams = new LinearLayout.LayoutParams(0, ViewGroup.LayoutParams.WRAP_CONTENT);
             layoutParams.weight = 1;
             inflatedView.setLayoutParams(layoutParams);
@@ -788,7 +788,7 @@ public class NewAdActivity extends BaseImageUploadActivity
 
     private void addRoomFaceType() {
         LayoutInflater inflater = LayoutInflater.from(this);
-        final View inflatedView = inflater.inflate(R.layout.row_perticular_view, roomNumberLay, false);
+        final View inflatedView = inflater.inflate(R.layout.row_particular_view, roomNumberLay, false);
         LinearLayout.LayoutParams layoutParams = new LinearLayout.LayoutParams(ViewGroup.LayoutParams.WRAP_CONTENT, ViewGroup.LayoutParams.WRAP_CONTENT);
         inflatedView.setLayoutParams(layoutParams);
 

@@ -50,7 +50,7 @@
     <string name="others_facility">Others Facility: </string>
     <string name="water">Water</string>
     <string name="gas">Gas(Supply)</string>
-    <string name="electricity">Electricity</string>
+    <string name="wellFurnished">Electricity</string>
     <string name="lift">Lift</string>
     <string name="generator">Generator</string>
     <string name="emailAddress">Email Address</string>
@@ -74,7 +74,7 @@
     <string name="pick_photo_size_limit">Max size %1$s </string>
     <string name="please_select_photo">Please select any photo to publish.</string>
     <string name="bdt">BDT</string>
-    <string name="sqft">sqft</string>
+    <string name="sq_ft">sq ft</string>
     <string name="rent_from">Rent From</string>
     <string name="select_date">Select Date</string>
     <string name="floor">Floor</string>
@@ -107,6 +107,7 @@
     <string name="your_selected_location">Your selected location</string>
     <string name="map">map</string>
     <string name="is_everything_ok">Is Everything OK?</string>
+    <string name="summary">Summary</string>
     <string name="please_pick_a_location_into_the_map">Please pick a location into the map.</string>
     <string name="ad_posted_successfully">Ad published successfully</string>
     <string name="your_ad_posted_successfully_would_u_like">Your ad posted successfully, would you like to add some picture/image, that represent your flat type?</string>
@@ -136,7 +137,7 @@
     <string name="non_smoker">Non-smoker</string>
     <string name="description">Description</string>
     <string name="description_if_need">Description (if need)</string>
-    <string name="water_all_time">Water 24 hr</string>
+    <string name="twenty_four_water">Water 24 hr</string>
     <string name="sublet_type">Sublet type:</string>
     <string name="tiny_family">Tiny family(only husband &amp; wife)</string>
     <string name="small_family">Small family(only husband &amp; wife with single kid)</string>
@@ -159,4 +160,16 @@
     <string name="approximate_meal_rate">Approximate meal rate: </string>
     <string name="approximate_meal_rate_value">50</string>
     <string name="kitchen_cabinet">Kitchen cabinet</string>
+    <string name="is_it_a_duplex">Is it a duplex house?</string>
+
+    <string name="select_type">Select Type</string>
+    <string name="fully_decorated">Fully Decorated</string>
+    <string-array name="rent_type_array">
+        <item>Office-Space</item>
+        <item>Commercial-Space</item>
+        <item>Mini-Shop</item>
+        <item>Market-Place</item>
+        <item>Godown</item>
+        <item>Others</item>
+    </string-array>
 </resources>

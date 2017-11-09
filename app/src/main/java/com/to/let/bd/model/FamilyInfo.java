@@ -8,13 +8,17 @@ public class FamilyInfo {
     private int bedRoom;
     private int bathroom;
     private int balcony;
-    private int hasDrawingDining;
-    private int electricity;
-    private int gasSupply;
-    private int water;
-    private int lift;
-    private int generator;
-    private int securityGuard;
+    private boolean isItDuplexLay;
+    private boolean hasDrawingDining;
+
+    private boolean twentyFourWater;
+    private boolean gasSupply;
+    private boolean securityGuard;
+    private boolean parkingGarage;
+    private boolean lift;
+    private boolean generator;
+    private boolean wellFurnished;
+    private boolean kitchenCabinet;
 
     public int getBedRoom() {
         return bedRoom;
@@ -40,59 +44,83 @@ public class FamilyInfo {
         this.balcony = balcony;
     }
 
-    public int getHasDrawingDining() {
+    public boolean isItDuplexLay() {
+        return isItDuplexLay;
+    }
+
+    public void setItDuplexLay(boolean itDuplexLay) {
+        isItDuplexLay = itDuplexLay;
+    }
+
+    public boolean isHasDrawingDining() {
         return hasDrawingDining;
     }
 
-    public void setHasDrawingDining(int hasDrawingDining) {
+    public void setHasDrawingDining(boolean hasDrawingDining) {
         this.hasDrawingDining = hasDrawingDining;
     }
 
-    public int getElectricity() {
-        return electricity;
+    public boolean isWellFurnished() {
+        return wellFurnished;
     }
 
-    public void setElectricity(int electricity) {
-        this.electricity = electricity;
+    public void setWellFurnished(boolean wellFurnished) {
+        this.wellFurnished = wellFurnished;
     }
 
-    public int getGasSupply() {
+    public boolean isGasSupply() {
         return gasSupply;
     }
 
-    public void setGasSupply(int gasSupply) {
+    public void setGasSupply(boolean gasSupply) {
         this.gasSupply = gasSupply;
     }
 
-    public int getWater() {
-        return water;
+    public boolean isTwentyFourWater() {
+        return twentyFourWater;
     }
 
-    public void setWater(int water) {
-        this.water = water;
+    public void setTwentyFourWater(boolean twentyFourWater) {
+        this.twentyFourWater = twentyFourWater;
     }
 
-    public int getLift() {
-        return lift;
-    }
-
-    public void setLift(int lift) {
-        this.lift = lift;
-    }
-
-    public int getGenerator() {
-        return generator;
-    }
-
-    public void setGenerator(int generator) {
-        this.generator = generator;
-    }
-
-    public int getSecurityGuard() {
+    public boolean isSecurityGuard() {
         return securityGuard;
     }
 
-    public void setSecurityGuard(int securityGuard) {
+    public void setSecurityGuard(boolean securityGuard) {
         this.securityGuard = securityGuard;
+    }
+
+    public boolean isLift() {
+        return lift;
+    }
+
+    public void setLift(boolean lift) {
+        this.lift = lift;
+    }
+
+    public boolean isGenerator() {
+        return generator;
+    }
+
+    public void setGenerator(boolean generator) {
+        this.generator = generator;
+    }
+
+    public boolean isParkingGarage() {
+        return parkingGarage;
+    }
+
+    public void setParkingGarage(boolean parkingGarage) {
+        this.parkingGarage = parkingGarage;
+    }
+
+    public boolean isKitchenCabinet() {
+        return kitchenCabinet;
+    }
+
+    public void setKitchenCabinet(boolean kitchenCabinet) {
+        this.kitchenCabinet = kitchenCabinet;
     }
 }

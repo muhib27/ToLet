@@ -25,6 +25,7 @@ import android.view.Gravity;
 import android.view.KeyEvent;
 import android.view.LayoutInflater;
 import android.view.MenuItem;
+import android.view.MotionEvent;
 import android.view.View;
 import android.view.ViewGroup;
 import android.view.Window;
@@ -48,6 +49,10 @@ import com.to.let.bd.fragments.MessFragment;
 import com.to.let.bd.fragments.OthersFragment;
 import com.to.let.bd.fragments.SubletFragment;
 import com.to.let.bd.model.AdInfo;
+import com.to.let.bd.model.FamilyInfo;
+import com.to.let.bd.model.MessInfo;
+import com.to.let.bd.model.OthersInfo;
+import com.to.let.bd.model.SubletInfo;
 import com.to.let.bd.utils.ActivityUtils;
 import com.to.let.bd.utils.AppConstants;
 import com.to.let.bd.utils.DBConstants;
@@ -57,6 +62,7 @@ import com.to.let.bd.utils.UploadImageService;
 import java.io.ByteArrayOutputStream;
 import java.text.ParseException;
 import java.text.SimpleDateFormat;
+import java.util.ArrayList;
 import java.util.Calendar;
 import java.util.Date;
 import java.util.HashMap;
@@ -103,14 +109,14 @@ public class NewAdActivity2 extends BaseMapActivity implements View.OnClickListe
             public void onReceive(Context context, Intent intent) {
                 switch (intent.getAction()) {
                     case AppConstants.uploadError:
-
+                        closeProgressDialog();
                         break;
                     case AppConstants.uploadComplete: {
                         int type = intent.getIntExtra(AppConstants.keyType, 0);
                         String adId = intent.getStringExtra(DBConstants.adId);
                         int imageIndex = intent.getIntExtra(AppConstants.imageIndex, 0);
                         String[] imageContents = intent.getStringArrayExtra(AppConstants.imageContents);
-//                        completeSingleImageUpload(type, adId, imageIndex, imageContents);
+                        completeSingleImageUpload(type, adId, imageContents);
                     }
                     break;
                     case AppConstants.uploadProgress: {
@@ -127,6 +133,30 @@ public class NewAdActivity2 extends BaseMapActivity implements View.OnClickListe
             }
         };
     }
+
+    private void completeSingleImageUpload(int type, String adId, String[] imageContents) {
+        updateDatabase(type, adId, imageContents);
+    }
+
+    private void updateDatabase(int type, String adId, String[] imageContents) {
+        HashMap<String, Object> adValues = new HashMap<>();
+        adValues.put(AppConstants.downloadUrl, imageContents[0]);
+        adValues.put(AppConstants.imageName, imageContents[1]);
+        adValues.put(AppConstants.imagePath, imageContents[2]);
+
+        HashMap<String, Object> childUpdates = new HashMap<>();
+        if (type == AppConstants.adMapImageType) {
+            childUpdates.put("/" + DBConstants.adList + "/" + adId + "/" + DBConstants.map, adValues);
+            childUpdates.put("/" + DBConstants.adList + "/" + adId + "/" + DBConstants.modifiedTime, ServerValue.TIMESTAMP);
+        }
+        mDatabase.updateChildren(childUpdates, new DatabaseReference.CompletionListener() {
+            @Override
+            public void onComplete(DatabaseError databaseError, DatabaseReference databaseReference) {
+                closeProgressDialog();
+            }
+        });
+    }
+
 
     protected BroadcastReceiver mBroadcastReceiver;
 
@@ -149,8 +179,7 @@ public class NewAdActivity2 extends BaseMapActivity implements View.OnClickListe
     private EditText addressDetails;
     private EditText emailAddress, mobileNumber;
     private LinearLayout flatAdditionalInfoLay;
-    private EditText whichFloor, houseInfo, totalRent, totalUtility;
-    private TextView utilityBdt;
+    private EditText houseInfo, whichFloor, description, totalRent, totalUtility;
 
     private void updateTitle(String title) {
         ActionBar actionBar = getSupportActionBar();
@@ -174,6 +203,29 @@ public class NewAdActivity2 extends BaseMapActivity implements View.OnClickListe
         submitBtn.setOnClickListener(this);
 
         addressDetails = findViewById(R.id.addressDetails);
+        addressDetails.setOnTouchListener(new View.OnTouchListener() {
+            @Override
+            public boolean onTouch(View v, MotionEvent event) {
+                final int DRAWABLE_LEFT = 0;
+                final int DRAWABLE_TOP = 1;
+                final int DRAWABLE_RIGHT = 2;
+                final int DRAWABLE_BOTTOM = 3;
+
+                if (event.getAction() == MotionEvent.ACTION_UP) {
+                    if (event.getRawX() >= (addressDetails.getRight() - addressDetails.getCompoundDrawables()[DRAWABLE_RIGHT].getBounds().width())) {
+                        if (addressDetails.getText().toString().isEmpty()) {
+                            addressDetails.setText(fullAddress);
+                            addressDetails.setCompoundDrawablesWithIntrinsicBounds(0, 0, R.drawable.cross, 0);
+                        } else {
+                            addressDetails.setText("");
+                            addressDetails.setCompoundDrawablesWithIntrinsicBounds(0, 0, R.drawable.undo, 0);
+                        }
+                        return true;
+                    }
+                }
+                return false;
+            }
+        });
 
         emailAddress = findViewById(R.id.emailAddress);
         mobileNumber = findViewById(R.id.mobileNumber);
@@ -214,9 +266,9 @@ public class NewAdActivity2 extends BaseMapActivity implements View.OnClickListe
         flatAdditionalInfoLay = findViewById(R.id.flatAdditionalInfoLay);
         houseInfo = findViewById(R.id.houseInfo);
         whichFloor = findViewById(R.id.whichFloor);
+        description = findViewById(R.id.description);
         totalRent = findViewById(R.id.totalRent);
         totalUtility = findViewById(R.id.totalUtility);
-        utilityBdt = findViewById(R.id.utilityBdt);
 
         totalUtility.setOnEditorActionListener(new TextView.OnEditorActionListener() {
             @Override
@@ -232,6 +284,8 @@ public class NewAdActivity2 extends BaseMapActivity implements View.OnClickListe
 
         rentDate = findViewById(R.id.rentDate);
         rentDate.setOnClickListener(this);
+
+        remainingTime = findViewById(R.id.remainingTime);
     }
 
     @Override
@@ -241,7 +295,7 @@ public class NewAdActivity2 extends BaseMapActivity implements View.OnClickListe
 
     private void addRoomFaceType(ViewGroup viewGroup) {
         LayoutInflater inflater = LayoutInflater.from(this);
-        final View inflatedView = inflater.inflate(R.layout.row_perticular_view, viewGroup, false);
+        final View inflatedView = inflater.inflate(R.layout.row_particular_view, viewGroup, false);
         LinearLayout.LayoutParams layoutParams = new LinearLayout.LayoutParams(ViewGroup.LayoutParams.WRAP_CONTENT, ViewGroup.LayoutParams.WRAP_CONTENT);
         inflatedView.setLayoutParams(layoutParams);
 
@@ -258,6 +312,7 @@ public class NewAdActivity2 extends BaseMapActivity implements View.OnClickListe
     }
 
     private final String[] roomFaceArray = {"North", "South", "East", "West"};
+    private int flatFaceSelection = 1;
 
     private void showFlatFacePopupMenu(final View view) {
         PopupMenu popup = new PopupMenu(this, view);
@@ -274,7 +329,7 @@ public class NewAdActivity2 extends BaseMapActivity implements View.OnClickListe
                 String face = subTitle.split(" ")[0];
                 for (int i = 0; i < roomFaceArray.length; i++) {
                     if (face.equalsIgnoreCase(roomFaceArray[i])) {
-//                        familyRoom[3] = i;
+                        flatFaceSelection = i;
                         break;
                     }
                 }
@@ -294,15 +349,23 @@ public class NewAdActivity2 extends BaseMapActivity implements View.OnClickListe
         }
     };
 
-    private TextView rentDate;
+    private TextView rentDate, remainingTime;
     private TabLayout tabLayout;
+    private ArrayList<String> flatTypes = new ArrayList<>();
 
     private void initTabLayout() {
         tabLayout = findViewById(R.id.tabLayout);
-        tabLayout.addTab(tabLayout.newTab().setText(getString(R.string.family)), false);
-        tabLayout.addTab(tabLayout.newTab().setText(getString(R.string.mess_member)), false);
-        tabLayout.addTab(tabLayout.newTab().setText(getString(R.string.sublet)), false);
-        tabLayout.addTab(tabLayout.newTab().setText(getString(R.string.others)), false);
+
+        flatTypes.clear();
+        flatTypes.add(getString(R.string.family));
+        flatTypes.add(getString(R.string.mess_member));
+        flatTypes.add(getString(R.string.sublet));
+        flatTypes.add(getString(R.string.others));
+
+        tabLayout.addTab(tabLayout.newTab().setText(flatTypes.get(0)), false);
+        tabLayout.addTab(tabLayout.newTab().setText(flatTypes.get(1)), false);
+        tabLayout.addTab(tabLayout.newTab().setText(flatTypes.get(2)), false);
+        tabLayout.addTab(tabLayout.newTab().setText(flatTypes.get(3)), false);
 
         tabLayout.addOnTabSelectedListener(new TabLayout.OnTabSelectedListener() {
             @Override
@@ -342,6 +405,7 @@ public class NewAdActivity2 extends BaseMapActivity implements View.OnClickListe
     }
 
     private GoogleMap googleMap;
+
     @Override
     protected void onMapReady2(GoogleMap googleMap) {
         this.googleMap = googleMap;
@@ -360,8 +424,11 @@ public class NewAdActivity2 extends BaseMapActivity implements View.OnClickListe
 //        });
     }
 
+    private String fullAddress = "";
+
     @Override
     protected void onLoadLocationDetails(String fullAddress) {
+        this.fullAddress = fullAddress;
         addressDetails.setText(fullAddress);
     }
 
@@ -411,9 +478,13 @@ public class NewAdActivity2 extends BaseMapActivity implements View.OnClickListe
         if (!AppConstants.isMobileNumberValid(this, mobileNumber)) {
             return;
         }
+        String summary = getRoomDetails();
+        if (summary == null) {
+            return;
+        }
 
         AppSharedPrefs.setMobileNumber(mobileNumber.getText().toString());
-        viewSummaryDialog();
+        viewSummaryDialog(summary);
     }
 
     private String getRoomDetails() {
@@ -432,7 +503,7 @@ public class NewAdActivity2 extends BaseMapActivity implements View.OnClickListe
         return null;
     }
 
-    private void viewSummaryDialog() {
+    private void viewSummaryDialog(String summary) {
         final Dialog summaryDialog = new Dialog(this);
         summaryDialog.requestWindowFeature(Window.FEATURE_NO_TITLE);
         summaryDialog.setContentView(R.layout.dialog_ad_post_summary);
@@ -446,13 +517,13 @@ public class NewAdActivity2 extends BaseMapActivity implements View.OnClickListe
         summaryDialog.show();
 
         TextView title = summaryDialog.findViewById(R.id.title);
-        title.setText(getString(R.string.is_everything_ok));
+        title.setText(getString(R.string.summary));
 
         TextView roomDetails = summaryDialog.findViewById(R.id.roomDetails);
         TextView address = summaryDialog.findViewById(R.id.address);
         TextView totalRent = summaryDialog.findViewById(R.id.totalRent);
 
-        roomDetails.setText(getRoomDetails());
+        roomDetails.setText(summary);
 
         address.setText(addressDetails.getText());
 
@@ -486,26 +557,74 @@ public class NewAdActivity2 extends BaseMapActivity implements View.OnClickListe
         adId = null;
     }
 
+    private long getTotalSpace() {
+        Fragment fragment = getSupportFragmentManager().findFragmentById(R.id.fragmentContainer);
+        String totalSpace = null;
+        if (fragment != null && fragment instanceof FamilyFragment && fragment.isVisible()) {
+            totalSpace = ((FamilyFragment) fragment).getTotalSpace();
+        } else if (fragment != null && fragment instanceof OthersFragment && fragment.isVisible()) {
+            totalSpace = ((OthersFragment) fragment).getTotalSpace();
+        }
+
+        if (totalSpace == null || totalSpace.trim().isEmpty()) {
+            return 0;
+        }
+
+        return Long.parseLong(totalSpace);
+    }
+
     private String adId = null;
 
     private void writeNewPost() {
         showProgressDialog();
         adId = mDatabase.child(DBConstants.adList).push().getKey();
-//        final AdInfo adInfo = new AdInfo(adId, date[0], (date[1] + 1), date[2], rentLatitude, rentLongitude,
-//                addressDetails.getText().toString(), "", "", "", "", "",
-//                1, familyRoom[0], familyRoom[1], familyRoom[2], familyRoom[3], 1,
-//                houseInfo.getText().toString(),
-//                whichFloor.getText().length() == 0 ? -1 : Integer.parseInt(whichFloor.getText().toString()),
-//                drawingDining.getCheckedRadioButtonId() == R.id.drawingDiningYes ? 1 : 0,
-//                electricityCB.isChecked() ? 1 : 0, gasCB.isChecked() ? 1 : 0, waterCB.isChecked() ? 1 : 0,
-//                liftCB.isChecked() ? 1 : 0, generatorCB.isChecked() ? 1 : 0, securityGuardCB.isChecked() ? 1 : 0,
-//                totalSpace.getText().length() == 0 ? -1 : Long.parseLong(totalSpace.getText().toString()),
-//                Long.parseLong(totalRent.getText().toString()),
-//                utilityBill.getCheckedRadioButtonId() == R.id.utilityBillIncluded || totalUtility.getText().length() > 0 ?
-//                        Long.parseLong(totalUtility.getText().toString()) : 0,
-//                getUid());
-//
-        AdInfo adInfo = new AdInfo(adId, getUid());
+
+        int startingMonth = date[0];
+        int startingDate = date[1] + 1;
+        int startingYear = date[2];
+
+        double latitude = rentLatitude;
+        double longitude = rentLongitude;
+
+        String fullAddress = addressDetails.getText().toString();
+        String country = "";
+        String division = "";
+        String district = "";
+        String subDistrict = "";
+        String knownAsArea = "";
+
+        long flatSpace = getTotalSpace();
+        long flatRent = Long.parseLong(totalRent.getText().toString());
+        long othersFee = totalUtility.getText().toString().trim().isEmpty() ? 0 : Long.parseLong(totalUtility.getText().toString());
+
+
+        FamilyInfo familyInfo = null;
+        MessInfo messInfo = null;
+        SubletInfo subletInfo = null;
+        OthersInfo othersInfo = null;
+
+        Fragment fragment = getSupportFragmentManager().findFragmentById(R.id.fragmentContainer);
+        if (fragment != null && fragment instanceof FamilyFragment && fragment.isVisible()) {
+            familyInfo = ((FamilyFragment) fragment).getFamilyInfo();
+        } else if (fragment != null && fragment instanceof MessFragment && fragment.isVisible()) {
+            messInfo = ((MessFragment) fragment).getMessInfo();
+        } else if (fragment != null && fragment instanceof SubletFragment && fragment.isVisible()) {
+            subletInfo = ((SubletFragment) fragment).getSubletInfo();
+        } else if (fragment != null && fragment instanceof OthersFragment && fragment.isVisible()) {
+            othersInfo = ((OthersFragment) fragment).getOthersInfo();
+        }
+
+        final AdInfo adInfo = new AdInfo(adId, startingMonth, startingDate, startingYear,
+                latitude, longitude,
+                fullAddress, country, division, district, subDistrict, knownAsArea,
+                flatSpace, flatRent, othersFee,
+                houseInfo.getText().toString(),
+                whichFloor.getText().toString().trim().isEmpty() ? -1 : Integer.parseInt(whichFloor.getText().toString()),
+                roomFaceArray[flatFaceSelection], description.getText().toString(),
+                flatTypes.get(tabLayout.getSelectedTabPosition()),
+                familyInfo, messInfo, subletInfo, othersInfo, getUid());
+
+//        AdInfo adInfo = new AdInfo(adId, getUid());
         HashMap<String, Object> adValues = adInfo.toMap();
         adValues.put(DBConstants.createdTime, ServerValue.TIMESTAMP);
         adValues.put(DBConstants.modifiedTime, ServerValue.TIMESTAMP);
@@ -545,7 +664,6 @@ public class NewAdActivity2 extends BaseMapActivity implements View.OnClickListe
                     showToast(databaseError.getMessage());
                     closeProgressDialog();
                 }
-                showLog();
             }
         });
     }
@@ -596,6 +714,7 @@ public class NewAdActivity2 extends BaseMapActivity implements View.OnClickListe
 
     private void setRentDate(String date) {
         SimpleDateFormat dateFormatter = new SimpleDateFormat("dd-MM-yyyy", Locale.US);
+        String remainingTime = "";
         try {
             Date newDate = dateFormatter.parse(date);
             dateFormatter = new SimpleDateFormat("MMM dd, yyyy", Locale.US);
@@ -608,9 +727,9 @@ public class NewAdActivity2 extends BaseMapActivity implements View.OnClickListe
             }
 
             if (elapsedDays <= 1) {
-                date = "From " + date + "\n" + elapsedDays + " day remaining.";
+                remainingTime = elapsedDays + " day remaining.";
             } else {
-                date = "From " + date + "\n" + elapsedDays + " days remaining.";
+                remainingTime = elapsedDays + " days remaining.";
             }
         } catch (ParseException e) {
             e.printStackTrace();
@@ -618,6 +737,7 @@ public class NewAdActivity2 extends BaseMapActivity implements View.OnClickListe
         }
 
         rentDate.setText(date);
+        this.remainingTime.setText(remainingTime);
     }
 
     private String getDefaultRentMonth() {
@@ -639,6 +759,11 @@ public class NewAdActivity2 extends BaseMapActivity implements View.OnClickListe
     private int[] date = new int[3];//0=dayOfMonth, 1=monthOfYear, 2=year
 
     public void updateCalculatedRent(long calculatedRent) {
-        totalRent.setText(String.valueOf(calculatedRent));
+//        totalRent.setText(String.valueOf(calculatedRent));
+//        totalRent.setText("");
+    }
+
+    public void focusDescription() {
+        description.requestFocus();
     }
 }

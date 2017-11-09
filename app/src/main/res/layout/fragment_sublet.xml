@@ -56,18 +56,18 @@
         </RadioGroup>
 
         <android.support.design.widget.TextInputLayout
+            android:id="@+id/subletTypeOthersTI"
             android:layout_width="match_parent"
-            android:layout_height="wrap_content">
+            android:layout_height="wrap_content"
+            android:visibility="gone">
 
             <EditText
                 android:id="@+id/subletTypeOthers"
                 android:layout_width="match_parent"
                 android:layout_height="wrap_content"
-                android:ems="4"
                 android:hint="@string/please_mention_your_desired_type"
                 android:imeOptions="actionNext"
-                android:inputType="numberDecimal"
-                android:maxLength="4"
+                android:inputType="textPhonetic"
                 android:maxLines="1"
                 android:singleLine="true" />
 
@@ -134,7 +134,7 @@
             android:checked="true"
             android:ellipsize="end"
             android:singleLine="true"
-            android:text="@string/water_all_time"
+            android:text="@string/twenty_four_water"
             android:textColor="@color/black" />
 
         <CheckBox

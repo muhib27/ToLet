@@ -144,7 +144,7 @@
             android:checked="true"
             android:ellipsize="end"
             android:singleLine="true"
-            android:text="@string/water_all_time"
+            android:text="@string/twenty_four_water"
             android:textColor="@color/black" />
 
         <CheckBox
@@ -203,16 +203,16 @@
 
         <EditText
             android:id="@+id/mealRate"
-            android:layout_width="0dp"
+            android:layout_width="wrap_content"
             android:layout_height="wrap_content"
             android:layout_marginLeft="@dimen/size_20dp"
             android:layout_marginStart="@dimen/size_20dp"
-            android:layout_weight="1"
             android:ems="3"
             android:hint="@string/approximate_meal_rate_value"
             android:imeActionId="@+id/whichFloor"
             android:imeOptions="actionNext"
-            android:inputType="textPersonName"
+            android:inputType="numberDecimal"
+            android:maxLength="3"
             android:maxLines="3"
             android:singleLine="true"
             android:textColor="@color/black" />

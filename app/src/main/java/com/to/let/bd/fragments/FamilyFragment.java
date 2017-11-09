@@ -6,6 +6,7 @@ import android.support.annotation.Nullable;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
+import android.widget.CheckBox;
 import android.widget.EditText;
 import android.widget.LinearLayout;
 import android.widget.RadioGroup;
@@ -13,6 +14,7 @@ import android.widget.RadioGroup;
 import com.to.let.bd.R;
 import com.to.let.bd.activities.NewAdActivity2;
 import com.to.let.bd.common.BaseFragment;
+import com.to.let.bd.model.FamilyInfo;
 import com.to.let.bd.utils.AppConstants;
 
 public class FamilyFragment extends BaseFragment {
@@ -59,6 +61,13 @@ public class FamilyFragment extends BaseFragment {
                         break;
                     }
                 }
+
+                if (index == 0) {
+                    if (startPositions[index] + selectedPosition > 4)
+                        isItDuplexLay.setVisibility(View.VISIBLE);
+                    else
+                        isItDuplexLay.setVisibility(View.GONE);
+                }
                 familyRoom[index] = startPositions[index] + selectedPosition;
                 calculateRentSpace();
             }
@@ -82,14 +91,27 @@ public class FamilyFragment extends BaseFragment {
 
     private NewAdActivity2 activity;
 
-    private LinearLayout roomNumberLay;
+    private LinearLayout roomNumberLay, isItDuplexLay;
     private EditText totalSpace;
-    private RadioGroup drawingDining;
+    private RadioGroup drawingDining, isItDuplex;
+    private CheckBox twentyFourWaterCB, gasSupplyCB, wellFurnishedCB,
+            securityGuardCB, liftCB, generatorCB, parkingGarageCB, kitchenCabinetCB;
 
     private void init() {
         roomNumberLay = rootView.findViewById(R.id.roomNumberLay);
+        isItDuplexLay = rootView.findViewById(R.id.isItDuplexLay);
         totalSpace = rootView.findViewById(R.id.totalSpace);
         drawingDining = rootView.findViewById(R.id.drawingDining);
+        isItDuplex = rootView.findViewById(R.id.isItDuplex);
+
+        twentyFourWaterCB = rootView.findViewById(R.id.twentyFourWaterCB);
+        gasSupplyCB = rootView.findViewById(R.id.gasSupplyCB);
+        wellFurnishedCB = rootView.findViewById(R.id.wellFurnishedCB);
+        securityGuardCB = rootView.findViewById(R.id.securityGuardCB);
+        liftCB = rootView.findViewById(R.id.liftCB);
+        generatorCB = rootView.findViewById(R.id.generatorCB);
+        parkingGarageCB = rootView.findViewById(R.id.parkingGarageCB);
+        kitchenCabinetCB = rootView.findViewById(R.id.kitchenCabinetCB);
     }
 
     //    private final int[] roomArray = {0, 1, 2, 3, 4, 5};
@@ -175,7 +197,7 @@ public class FamilyFragment extends BaseFragment {
 ////    private int[] date = new int[3];//0=dayOfMonth, 1=monthOfYear, 2=year
 
     private void calculateRentSpace() {
-        long calculatedRent  = (familyRoom[0] * singleBedRoomRent) + (familyRoom[1] * bathroomRent) + (familyRoom[2] * balconyRent);
+        long calculatedRent = (familyRoom[0] * singleBedRoomRent) + (familyRoom[1] * bathroomRent) + (familyRoom[2] * balconyRent);
         long calculatedSpace = (familyRoom[0] * singleBedRoomSpace) + (familyRoom[1] * bathroomSpace) + (familyRoom[2] * balconySpace);
 
         if (drawingDining.getCheckedRadioButtonId() == R.id.drawingDiningYes) {
@@ -187,8 +209,32 @@ public class FamilyFragment extends BaseFragment {
         activity.updateCalculatedRent(calculatedRent);
     }
 
+    public String getTotalSpace() {
+        return totalSpace.getText().toString();
+    }
+
     public String getRoomDetails() {
         return familyRoom[0] + " bedroom, " + familyRoom[1] + " bathroom, " + familyRoom[2] + " balcony.";
+    }
+
+    public FamilyInfo getFamilyInfo() {
+        FamilyInfo familyInfo = new FamilyInfo();
+        familyInfo.setBedRoom(familyRoom[0]);
+        familyInfo.setBathroom(familyRoom[1]);
+        familyInfo.setBalcony(familyRoom[2]);
+        familyInfo.setHasDrawingDining(drawingDining.getCheckedRadioButtonId() == R.id.drawingDiningYes);
+        familyInfo.setItDuplexLay(isItDuplex.getCheckedRadioButtonId() == R.id.isItDuplexYes);
+
+        familyInfo.setWellFurnished(wellFurnishedCB.isChecked());
+        familyInfo.setGasSupply(gasSupplyCB.isChecked());
+        familyInfo.setTwentyFourWater(twentyFourWaterCB.isChecked());
+        familyInfo.setSecurityGuard(securityGuardCB.isChecked());
+        familyInfo.setLift(liftCB.isChecked());
+        familyInfo.setGenerator(generatorCB.isChecked());
+        familyInfo.setParkingGarage(parkingGarageCB.isChecked());
+        familyInfo.setKitchenCabinet(kitchenCabinetCB.isChecked());
+
+        return familyInfo;
     }
 
     private final long singleBedRoomRent = 6000;//rent BDT

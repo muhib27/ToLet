@@ -8,12 +8,12 @@ public class SubletInfo {
     private int subletType;
     private String subletTypeOthers;
     private int bathroomType;
-    private int twentyFourWaterFacility;
-    private int gasSupply;
-    private int kitchenShare;
-    private int wellFurnished;
-    private int lift;
-    private int generator;
+    private boolean twentyFourWater;
+    private boolean gasSupply;
+    private boolean kitchenShare;
+    private boolean wellFurnished;
+    private boolean lift;
+    private boolean generator;
 
     public int getSubletType() {
         return subletType;
@@ -39,51 +39,51 @@ public class SubletInfo {
         this.bathroomType = bathroomType;
     }
 
-    public int getTwentyFourWaterFacility() {
-        return twentyFourWaterFacility;
+    public boolean isTwentyFourWater() {
+        return twentyFourWater;
     }
 
-    public void setTwentyFourWaterFacility(int twentyFourWaterFacility) {
-        this.twentyFourWaterFacility = twentyFourWaterFacility;
+    public void setTwentyFourWater(boolean twentyFourWater) {
+        this.twentyFourWater = twentyFourWater;
     }
 
-    public int getGasSupply() {
+    public boolean isGasSupply() {
         return gasSupply;
     }
 
-    public void setGasSupply(int gasSupply) {
+    public void setGasSupply(boolean gasSupply) {
         this.gasSupply = gasSupply;
     }
 
-    public int getKitchenShare() {
+    public boolean isKitchenShare() {
         return kitchenShare;
     }
 
-    public void setKitchenShare(int kitchenShare) {
+    public void setKitchenShare(boolean kitchenShare) {
         this.kitchenShare = kitchenShare;
     }
 
-    public int getWellFurnished() {
+    public boolean isWellFurnished() {
         return wellFurnished;
     }
 
-    public void setWellFurnished(int wellFurnished) {
+    public void setWellFurnished(boolean wellFurnished) {
         this.wellFurnished = wellFurnished;
     }
 
-    public int getLift() {
+    public boolean isLift() {
         return lift;
     }
 
-    public void setLift(int lift) {
+    public void setLift(boolean lift) {
         this.lift = lift;
     }
 
-    public int getGenerator() {
+    public boolean isGenerator() {
         return generator;
     }
 
-    public void setGenerator(int generator) {
+    public void setGenerator(boolean generator) {
         this.generator = generator;
     }
 }

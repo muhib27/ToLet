@@ -185,7 +185,7 @@
                         android:checked="true"
                         android:ellipsize="end"
                         android:singleLine="true"
-                        android:text="@string/electricity"
+                        android:text="@string/wellFurnished"
                         android:textColor="@color/black" />
                 </LinearLayout>
 
@@ -322,7 +322,7 @@
                     android:layout_marginRight="@dimen/size_10dp"
                     android:layout_marginStart="@dimen/new_post_common_padding"
                     android:layout_weight="1"
-                    android:text="@string/sqft"
+                    android:text="@string/sq_ft"
                     android:textColor="@color/black"
                     android:textSize="@dimen/text_size_14sp"
                     android:textStyle="bold" />

@@ -17,11 +17,14 @@ public class DBConstants {
     public static final String district = "district";
     public static final String subDistrict = "subDistrict";
     public static final String knownAsArea = "knownAsArea";
-    public static final String flatType = "flatType";
     public static final String houseNameOrNumber = "houseNameOrNumber";
     public static final String floorNumber = "floorNumber";
     public static final String flatFacing = "flatFacing";
+    public static final String flatDescription = "flatDescription";
+
     public static final String flatSpace = "flatSpace";
+    public static final String flatType = "flatType";
+
     public static final String bedRoom = "bedRoom";
     public static final String bathroom = "bathroom";
     public static final String balcony = "balcony";
@@ -46,9 +49,6 @@ public class DBConstants {
     public static final String images = "images";
     public static final String map = "map";
     public static final String location = "location";
-
-    public static final String lat = "lat";
-    public static final String lng = "lng";
 
     public static final String flatTypeFamily = "flatTypeFamily";
     public static final String flatTypeMess= "flatTypeMess";

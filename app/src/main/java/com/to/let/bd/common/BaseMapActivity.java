@@ -439,7 +439,7 @@ public abstract class BaseMapActivity extends BaseActivity implements OnMapReady
     }
 
     private final int maxAddressResult = 3;
-    private double rentLatitude, rentLongitude;
+    protected double rentLatitude, rentLongitude;
     private String countryName;
     private String division;
 

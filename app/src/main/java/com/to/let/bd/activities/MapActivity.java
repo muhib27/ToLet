@@ -40,6 +40,7 @@ import com.to.let.bd.model.google_place.GooglePlace;
 import com.to.let.bd.model.google_place.GooglePlaceResult;
 import com.to.let.bd.utils.AppConstants;
 import com.to.let.bd.utils.DBConstants;
+import com.to.let.bd.utils.JsonUtils;
 import com.to.let.bd.utils.retrofit.RetrofitConstants;
 
 import java.io.IOException;
@@ -579,9 +580,9 @@ public class MapActivity extends BaseActivity
             for (GooglePlaceResult googlePlaceResult : googlePlace.getResults()) {
                 if (googlePlaceResult.getGeometry().has(DBConstants.location)) {
                     JsonObject jsonObject = googlePlaceResult.getGeometry().getAsJsonObject(DBConstants.location);
-                    if (jsonObject.has(DBConstants.lat) && jsonObject.has(DBConstants.lng)) {
+                    if (jsonObject.has(JsonUtils.lat) && jsonObject.has(JsonUtils.lng)) {
                         googleMap.addMarker(new MarkerOptions()
-                                .position(new LatLng(jsonObject.get(DBConstants.lat).getAsDouble(), jsonObject.get(DBConstants.lng).getAsDouble()))
+                                .position(new LatLng(jsonObject.get(JsonUtils.lat).getAsDouble(), jsonObject.get(JsonUtils.lng).getAsDouble()))
                                 .snippet(googlePlaceResult.getVicinity())
                                 .title(googlePlaceResult.getName())
                                 .icon(BitmapDescriptorFactory.fromResource(R.drawable.marker_blue)));
