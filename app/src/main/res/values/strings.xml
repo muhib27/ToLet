@@ -73,7 +73,7 @@
     <string name="pick_photo_size">(%1$s)</string>
     <string name="pick_photo_size_limit">Max size %1$s </string>
     <string name="please_select_photo">Please select any photo to publish.</string>
-    <string name="bdt">BDT</string>
+    <string name="tk">Tk</string>
     <string name="sq_ft">sq ft</string>
     <string name="rent_from">Rent From</string>
     <string name="select_date">Select Date</string>
@@ -164,12 +164,28 @@
 
     <string name="select_type">Select Type</string>
     <string name="fully_decorated">Fully Decorated</string>
+
+    <string name="office_space">Office-Space</string>
+    <string name="commercial_space">Commercial-Space</string>
+    <string name="mini_shop">Mini-Shop</string>
+    <string name="market_place">Market-Place</string>
+    <string name="godown">Godown</string>
+    <string name="from">From</string>
+    <string name="to">To</string>
+    <string name="rent_range">Rent range</string>
+    <!--<string name="tk">Tk</string>-->
+    <string name="min">Min</string>
+    <string name="max">Max</string>
+    <string name="please_select_rent_type">Please select rent type</string>
+    <string name="search">Search</string>
+    <string name="lorem">lorem</string>
+
     <string-array name="rent_type_array">
-        <item>Office-Space</item>
-        <item>Commercial-Space</item>
-        <item>Mini-Shop</item>
-        <item>Market-Place</item>
-        <item>Godown</item>
-        <item>Others</item>
+        <item>@string/office_space</item>
+        <item>@string/commercial_space</item>
+        <item>@string/mini_shop</item>
+        <item>@string/market_place</item>
+        <item>@string/godown</item>
+        <item>@string/others</item>
     </string-array>
 </resources>

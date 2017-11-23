@@ -8,7 +8,7 @@ public class FamilyInfo {
     private int bedRoom;
     private int bathroom;
     private int balcony;
-    private boolean isItDuplexLay;
+    private boolean isItDuplex;
     private boolean hasDrawingDining;
 
     private boolean twentyFourWater;
@@ -44,12 +44,12 @@ public class FamilyInfo {
         this.balcony = balcony;
     }
 
-    public boolean isItDuplexLay() {
-        return isItDuplexLay;
+    public boolean isItDuplex() {
+        return isItDuplex;
     }
 
-    public void setItDuplexLay(boolean itDuplexLay) {
-        isItDuplexLay = itDuplexLay;
+    public void setItDuplex(boolean itDuplex) {
+        isItDuplex = itDuplex;
     }
 
     public boolean isHasDrawingDining() {

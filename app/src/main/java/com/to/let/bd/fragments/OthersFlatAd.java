@@ -21,11 +21,11 @@ import com.to.let.bd.utils.AppConstants;
 import java.util.ArrayList;
 import java.util.Arrays;
 
-public class OthersFragment extends BaseFragment {
-    public static final String TAG = OthersFragment.class.getSimpleName();
+public class OthersFlatAd extends BaseFragment {
+    public static final String TAG = OthersFlatAd.class.getSimpleName();
 
-    public static OthersFragment newInstance() {
-        return new OthersFragment();
+    public static OthersFlatAd newInstance() {
+        return new OthersFlatAd();
     }
 
     @Override

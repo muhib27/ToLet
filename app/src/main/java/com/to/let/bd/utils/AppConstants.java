@@ -179,8 +179,7 @@ public class AppConstants {
         popup.setOnMenuItemClickListener(new PopupMenu.OnMenuItemClickListener() {
             public boolean onMenuItemClick(MenuItem item) {
                 String subtitle = String.valueOf(item.getTitle());
-                String title = (subtitle.split(" "))[1].replace("'s", "");
-                updatePickerView(view, title, subtitle);
+                updatePickerView(view, viewType, subtitle);
 
                 if (popupMenuClickListener != null)
                     popupMenuClickListener.onItemClick(viewType, item.getItemId());

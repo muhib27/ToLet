@@ -911,7 +911,7 @@ public class NewAdActivity extends BaseImageUploadActivity
     private void viewSummaryDialog() {
         final Dialog summaryDialog = new Dialog(this);
         summaryDialog.requestWindowFeature(Window.FEATURE_NO_TITLE);
-        summaryDialog.setContentView(R.layout.dialog_ad_post_summary);
+        summaryDialog.setContentView(R.layout.dialog_summary);
         Window window = summaryDialog.getWindow();
         if (window != null) {
             window.setBackgroundDrawable(new ColorDrawable(Color.TRANSPARENT));

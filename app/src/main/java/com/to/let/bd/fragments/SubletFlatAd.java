@@ -14,11 +14,11 @@ import com.to.let.bd.R;
 import com.to.let.bd.common.BaseFragment;
 import com.to.let.bd.model.SubletInfo;
 
-public class SubletFragment extends BaseFragment {
-    public static final String TAG = SubletFragment.class.getSimpleName();
+public class SubletFlatAd extends BaseFragment {
+    public static final String TAG = SubletFlatAd.class.getSimpleName();
 
-    public static SubletFragment newInstance() {
-        return new SubletFragment();
+    public static SubletFlatAd newInstance() {
+        return new SubletFlatAd();
     }
 
     @Override

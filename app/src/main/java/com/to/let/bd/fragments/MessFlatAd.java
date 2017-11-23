@@ -16,11 +16,11 @@ import com.to.let.bd.common.BaseFragment;
 import com.to.let.bd.model.MessInfo;
 import com.to.let.bd.utils.AppConstants;
 
-public class MessFragment extends BaseFragment {
-    public static final String TAG = MessFragment.class.getSimpleName();
+public class MessFlatAd extends BaseFragment {
+    public static final String TAG = MessFlatAd.class.getSimpleName();
 
-    public static MessFragment newInstance() {
-        return new MessFragment();
+    public static MessFlatAd newInstance() {
+        return new MessFlatAd();
     }
 
     @Override

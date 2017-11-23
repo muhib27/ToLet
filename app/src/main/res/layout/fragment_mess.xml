@@ -222,7 +222,7 @@
             android:layout_height="wrap_content"
             android:layout_marginLeft="@dimen/size_20dp"
             android:layout_marginStart="@dimen/size_20dp"
-            android:text="@string/bdt"
+            android:text="@string/tk"
             android:textColor="@color/black"
             android:textSize="@dimen/text_size_14sp"
             android:textStyle="bold" />

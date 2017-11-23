@@ -1,0 +1,41 @@
+<?xml version="1.0" encoding="utf-8"?>
+<LinearLayout xmlns:android="http://schemas.android.com/apk/res/android"
+    android:layout_width="match_parent"
+    android:layout_height="wrap_content"
+    android:layout_margin="@dimen/size_10dp"
+    android:background="@color/white"
+    android:orientation="vertical">
+
+    <include layout="@layout/alert_title_bar" />
+
+    <TextView
+        android:id="@+id/roomDetails"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:maxLines="2"
+        android:singleLine="false"
+        android:textSize="@dimen/text_size_14sp" />
+
+    <TextView
+        android:id="@+id/address"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:maxLines="2"
+        android:singleLine="false"
+        android:textSize="@dimen/text_size_14sp" />
+
+    <TextView
+        android:id="@+id/totalRent"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:maxLines="1"
+        android:singleLine="true"
+        android:textSize="@dimen/text_size_14sp" />
+
+    <include
+        layout="@layout/alert_buttons"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:layout_gravity="end|right"
+        android:layout_marginTop="@dimen/size_10dp" />
+</LinearLayout>

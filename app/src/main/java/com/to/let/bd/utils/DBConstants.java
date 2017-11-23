@@ -50,8 +50,8 @@ public class DBConstants {
     public static final String map = "map";
     public static final String location = "location";
 
-    public static final String flatTypeFamily = "flatTypeFamily";
-    public static final String flatTypeMess= "flatTypeMess";
-    public static final String flatTypeSublet= "flatTypeSublet";
-    public static final String flatTypeOthers= "flatTypeOthers";
+    public static final String familyInfo = "familyInfo";
+    public static final String messInfo = "messInfo";
+    public static final String subletInfo = "subletInfo";
+    public static final String othersInfo = "othersInfo";
 }

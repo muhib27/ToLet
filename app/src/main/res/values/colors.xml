@@ -35,4 +35,8 @@
 
     <color name="common_border_bg">#66000000</color>
     <color name="red">#f74a27</color>
+
+    <color name="swipeRefresh1">#0e6d4a</color>
+    <color name="swipeRefresh2">#1414ee</color>
+    <color name="swipeRefresh3">#f74a27</color>
 </resources>

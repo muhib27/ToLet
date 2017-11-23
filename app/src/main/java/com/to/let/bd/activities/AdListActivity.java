@@ -1,10 +1,14 @@
 package com.to.let.bd.activities;
 
+import android.app.Dialog;
 import android.app.PendingIntent;
 import android.content.Intent;
 import android.content.IntentSender;
+import android.graphics.Color;
 import android.graphics.Rect;
+import android.graphics.drawable.ColorDrawable;
 import android.os.Bundle;
+import android.support.annotation.IdRes;
 import android.support.annotation.NonNull;
 import android.support.annotation.Nullable;
 import android.support.design.widget.NavigationView;
@@ -14,12 +18,17 @@ import android.support.v7.app.ActionBarDrawerToggle;
 import android.support.v7.widget.RecyclerView;
 import android.support.v7.widget.StaggeredGridLayoutManager;
 import android.support.v7.widget.Toolbar;
+import android.view.Gravity;
 import android.view.Menu;
 import android.view.MenuItem;
 import android.view.View;
+import android.view.ViewGroup;
+import android.view.Window;
 import android.widget.Button;
+import android.widget.EditText;
 import android.widget.ImageView;
 import android.widget.LinearLayout;
+import android.widget.RadioGroup;
 import android.widget.TextView;
 
 import com.bumptech.glide.Glide;
@@ -295,9 +304,54 @@ public class AdListActivity extends BaseActivity implements NavigationView.OnNav
 
     }
 
-    private void loadData() {
-        Query recentAd = databaseReference.child(DBConstants.adList).limitToLast(100);
-//        showProgressDialog();
+    private void loadAllData() {
+        Query recentAd = databaseReference.child(DBConstants.adList).orderByChild(DBConstants.createdTime).limitToLast(100);
+        showProgressDialog();
+        recentAd.addListenerForSingleValueEvent(new ValueEventListener() {
+            @Override
+            public void onDataChange(DataSnapshot dataSnapshot) {
+                for (DataSnapshot postSnapshot : dataSnapshot.getChildren()) {
+                    AdInfo adInfo = postSnapshot.getValue(AdInfo.class);
+                    adList.add(adInfo);
+                }
+
+                Collections.sort(adList, new Comparator<AdInfo>() {
+                    @Override
+                    public int compare(AdInfo o1, AdInfo o2) {
+                        return o2.getAdId().compareTo(o1.getAdId());
+                    }
+                });
+                closeProgressDialog();
+                displayAdList();
+            }
+
+            @Override
+            public void onCancelled(DatabaseError databaseError) {
+                closeProgressDialog();
+            }
+        });
+    }
+
+    private void loadData(String flatType, long startRange, long endRange) {
+        Query recentAd = databaseReference.child(DBConstants.adList);
+
+        if (flatType != null) {
+            recentAd.orderByChild(DBConstants.flatType).equalTo(flatType);
+        }
+
+        if (!(startRange == 0 && endRange == 0)) {
+            if (startRange == 0) {
+                recentAd.orderByChild(DBConstants.flatRent).endAt(endRange);
+            } else if (endRange == 0) {
+                recentAd.orderByChild(DBConstants.flatRent).startAt(startRange);
+            } else {
+                recentAd.orderByChild(DBConstants.flatRent).startAt(startRange).endAt(endRange);
+            }
+        }
+
+        recentAd = recentAd.limitToLast(100);
+        adList.clear();
+        showProgressDialog();
         recentAd.addListenerForSingleValueEvent(new ValueEventListener() {
             @Override
             public void onDataChange(DataSnapshot dataSnapshot) {
@@ -384,7 +438,7 @@ public class AdListActivity extends BaseActivity implements NavigationView.OnNav
             adList = new ArrayList<>();
 
         if (adList.isEmpty())
-            loadData();
+            loadAllData();
         else
             displayAdList();
 
@@ -419,27 +473,114 @@ public class AdListActivity extends BaseActivity implements NavigationView.OnNav
         }
     }
 
-//    @Override
-//    public boolean onCreateOptionsMenu(Menu menu) {
-//        // Inflate the menu; this adds items to the action bar if it is present.
-//        getMenuInflater().inflate(R.menu.navigation, menu);
-//        return true;
-//    }
-//
-//    @Override
-//    public boolean onOptionsItemSelected(MenuItem item) {
-//        // Handle action bar item clicks here. The action bar will
-//        // automatically handle clicks on the Home/Up button, so long
-//        // as you specify a parent activity in AndroidManifest.xml.
-//        int id = item.getItemId();
-//
-//        //noinspection SimplifiableIfStatement
-//        if (id == R.id.action_settings) {
-//            return true;
-//        }
-//
-//        return super.onOptionsItemSelected(item);
-//    }
+    @Override
+    public boolean onCreateOptionsMenu(Menu menu) {
+        // Inflate the menu; this adds items to the action bar if it is present.
+        getMenuInflater().inflate(R.menu.ad_list_search, menu);
+        return true;
+    }
+
+    @Override
+    public boolean onOptionsItemSelected(MenuItem item) {
+        // Handle action bar item clicks here. The action bar will
+        // automatically handle clicks on the Home/Up button, so long
+        // as you specify a parent activity in AndroidManifest.xml.
+        int id = item.getItemId();
+
+        //noinspection SimplifiableIfStatement
+        if (id == R.id.searchAction) {
+            showSearchWindow();
+            return true;
+        }
+
+        return super.onOptionsItemSelected(item);
+    }
+
+    private Dialog searchDialog;
+
+    private void showSearchWindow() {
+        searchDialog = new Dialog(this);
+        searchDialog.requestWindowFeature(Window.FEATURE_NO_TITLE);
+        searchDialog.setContentView(R.layout.dialog_search);
+        Window window = searchDialog.getWindow();
+        if (window != null) {
+            window.setBackgroundDrawable(new ColorDrawable(Color.TRANSPARENT));
+            window.setLayout(ViewGroup.LayoutParams.MATCH_PARENT, ViewGroup.LayoutParams.WRAP_CONTENT);
+            window.setGravity(Gravity.CENTER_HORIZONTAL | Gravity.TOP);
+        }
+
+        searchDialog.show();
+
+        TextView title = searchDialog.findViewById(R.id.title);
+        title.setText(getString(R.string.search));
+
+        final RadioGroup rentType, rentTypeOthers;
+        rentType = searchDialog.findViewById(R.id.rentType);
+        rentTypeOthers = searchDialog.findViewById(R.id.rentTypeOthers);
+
+        rentType.setOnCheckedChangeListener(new RadioGroup.OnCheckedChangeListener() {
+            @Override
+            public void onCheckedChanged(RadioGroup radioGroup, @IdRes int checkedId) {
+                if (rentType.getCheckedRadioButtonId() == R.id.others) {
+                    rentTypeOthers.setVisibility(View.VISIBLE);
+                } else {
+                    rentTypeOthers.setVisibility(View.GONE);
+                }
+            }
+        });
+
+        final EditText rentMin, rentMax;
+        rentMin = searchDialog.findViewById(R.id.rentMin);
+        rentMax = searchDialog.findViewById(R.id.rentMax);
+
+        searchDialog.findViewById(R.id.okBtn).setOnClickListener(new View.OnClickListener() {
+            @Override
+            public void onClick(View view) {
+                String rentTypeString = null;
+                if (rentType.getCheckedRadioButtonId() == R.id.family) {
+                    rentTypeString = getString(R.string.family);
+                } else if (rentType.getCheckedRadioButtonId() == R.id.mess) {
+                    rentTypeString = getString(R.string.mess_member);
+                } else if (rentType.getCheckedRadioButtonId() == R.id.sublet) {
+                    rentTypeString = getString(R.string.sublet);
+                } else {
+                    if (rentTypeOthers.getCheckedRadioButtonId() == R.id.officeSpace) {
+                        rentTypeString = getString(R.string.office_space);
+                    } else if (rentTypeOthers.getCheckedRadioButtonId() == R.id.commercialSpace) {
+                        rentTypeString = getString(R.string.commercial_space);
+                    } else if (rentTypeOthers.getCheckedRadioButtonId() == R.id.miniShop) {
+                        rentTypeString = getString(R.string.mini_shop);
+                    } else if (rentTypeOthers.getCheckedRadioButtonId() == R.id.marketPlace) {
+                        rentTypeString = getString(R.string.market_place);
+                    } else if (rentTypeOthers.getCheckedRadioButtonId() == R.id.godown) {
+                        rentTypeString = getString(R.string.godown);
+                    } else {
+                        rentTypeString = getString(R.string.others);
+                    }
+                }
+
+                long rentMinLong = 0;
+                if (!rentMin.getText().toString().trim().isEmpty()) {
+                    rentMinLong = Long.parseLong(rentMin.getText().toString());
+                }
+
+                long rentMaxLong = 0;
+                if (!rentMax.getText().toString().trim().isEmpty()) {
+                    rentMaxLong = Long.parseLong(rentMax.getText().toString());
+                }
+
+                loadData(rentTypeString, rentMinLong, rentMaxLong);
+                searchDialog.dismiss();
+            }
+        });
+
+        searchDialog.findViewById(R.id.noBtn).setOnClickListener(new View.OnClickListener() {
+            @Override
+            public void onClick(View view) {
+                searchDialog.dismiss();
+            }
+        });
+    }
 
     @SuppressWarnings("StatementWithEmptyBody")
     @Override

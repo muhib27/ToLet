@@ -17,11 +17,11 @@ import com.to.let.bd.common.BaseFragment;
 import com.to.let.bd.model.FamilyInfo;
 import com.to.let.bd.utils.AppConstants;
 
-public class FamilyFragment extends BaseFragment {
-    public static final String TAG = FamilyFragment.class.getSimpleName();
+public class FamilyFlatAd extends BaseFragment {
+    public static final String TAG = FamilyFlatAd.class.getSimpleName();
 
-    public static FamilyFragment newInstance() {
-        return new FamilyFragment();
+    public static FamilyFlatAd newInstance() {
+        return new FamilyFlatAd();
     }
 
     @Override
@@ -223,7 +223,7 @@ public class FamilyFragment extends BaseFragment {
         familyInfo.setBathroom(familyRoom[1]);
         familyInfo.setBalcony(familyRoom[2]);
         familyInfo.setHasDrawingDining(drawingDining.getCheckedRadioButtonId() == R.id.drawingDiningYes);
-        familyInfo.setItDuplexLay(isItDuplex.getCheckedRadioButtonId() == R.id.isItDuplexYes);
+        familyInfo.setItDuplex(isItDuplex.getCheckedRadioButtonId() == R.id.isItDuplexYes);
 
         familyInfo.setWellFurnished(wellFurnishedCB.isChecked());
         familyInfo.setGasSupply(gasSupplyCB.isChecked());

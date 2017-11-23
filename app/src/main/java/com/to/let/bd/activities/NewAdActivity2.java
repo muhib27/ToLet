@@ -44,10 +44,10 @@ import com.google.firebase.database.FirebaseDatabase;
 import com.google.firebase.database.ServerValue;
 import com.to.let.bd.R;
 import com.to.let.bd.common.BaseMapActivity;
-import com.to.let.bd.fragments.FamilyFragment;
-import com.to.let.bd.fragments.MessFragment;
-import com.to.let.bd.fragments.OthersFragment;
-import com.to.let.bd.fragments.SubletFragment;
+import com.to.let.bd.fragments.FamilyFlatAd;
+import com.to.let.bd.fragments.MessFlatAd;
+import com.to.let.bd.fragments.OthersFlatAd;
+import com.to.let.bd.fragments.SubletFlatAd;
 import com.to.let.bd.model.AdInfo;
 import com.to.let.bd.model.FamilyInfo;
 import com.to.let.bd.model.MessInfo;
@@ -373,17 +373,17 @@ public class NewAdActivity2 extends BaseMapActivity implements View.OnClickListe
                 Fragment fragment;
                 String tag;
                 if (tab.getPosition() == 0) {
-                    fragment = FamilyFragment.newInstance();
-                    tag = FamilyFragment.TAG;
+                    fragment = FamilyFlatAd.newInstance();
+                    tag = FamilyFlatAd.TAG;
                 } else if (tab.getPosition() == 1) {
-                    fragment = MessFragment.newInstance();
-                    tag = MessFragment.TAG;
+                    fragment = MessFlatAd.newInstance();
+                    tag = MessFlatAd.TAG;
                 } else if (tab.getPosition() == 2) {
-                    fragment = SubletFragment.newInstance();
-                    tag = SubletFragment.TAG;
+                    fragment = SubletFlatAd.newInstance();
+                    tag = SubletFlatAd.TAG;
                 } else {
-                    fragment = OthersFragment.newInstance();
-                    tag = OthersFragment.TAG;
+                    fragment = OthersFlatAd.newInstance();
+                    tag = OthersFlatAd.TAG;
                 }
                 updateTitle(getString(R.string.post_your_ad) + " (" + tab.getText() + ") ");
                 ActivityUtils.addFragmentToActivity(getSupportFragmentManager(),
@@ -490,14 +490,14 @@ public class NewAdActivity2 extends BaseMapActivity implements View.OnClickListe
     private String getRoomDetails() {
         Fragment fragment = getSupportFragmentManager().findFragmentById(R.id.fragmentContainer);
         if (fragment != null) {
-            if (fragment instanceof FamilyFragment && fragment.isVisible()) {
-                return ((FamilyFragment) fragment).getRoomDetails();
-            } else if (fragment instanceof MessFragment && fragment.isVisible()) {
-                return ((MessFragment) fragment).getRoomDetails();
-            } else if (fragment instanceof SubletFragment && fragment.isVisible()) {
-                return ((SubletFragment) fragment).getRoomDetails();
-            } else if (fragment instanceof OthersFragment && fragment.isVisible()) {
-                return ((OthersFragment) fragment).getRoomDetails();
+            if (fragment instanceof FamilyFlatAd && fragment.isVisible()) {
+                return ((FamilyFlatAd) fragment).getRoomDetails();
+            } else if (fragment instanceof MessFlatAd && fragment.isVisible()) {
+                return ((MessFlatAd) fragment).getRoomDetails();
+            } else if (fragment instanceof SubletFlatAd && fragment.isVisible()) {
+                return ((SubletFlatAd) fragment).getRoomDetails();
+            } else if (fragment instanceof OthersFlatAd && fragment.isVisible()) {
+                return ((OthersFlatAd) fragment).getRoomDetails();
             }
         }
         return null;
@@ -506,7 +506,7 @@ public class NewAdActivity2 extends BaseMapActivity implements View.OnClickListe
     private void viewSummaryDialog(String summary) {
         final Dialog summaryDialog = new Dialog(this);
         summaryDialog.requestWindowFeature(Window.FEATURE_NO_TITLE);
-        summaryDialog.setContentView(R.layout.dialog_ad_post_summary);
+        summaryDialog.setContentView(R.layout.dialog_summary);
         Window window = summaryDialog.getWindow();
         if (window != null) {
             window.setBackgroundDrawable(new ColorDrawable(Color.TRANSPARENT));
@@ -560,10 +560,10 @@ public class NewAdActivity2 extends BaseMapActivity implements View.OnClickListe
     private long getTotalSpace() {
         Fragment fragment = getSupportFragmentManager().findFragmentById(R.id.fragmentContainer);
         String totalSpace = null;
-        if (fragment != null && fragment instanceof FamilyFragment && fragment.isVisible()) {
-            totalSpace = ((FamilyFragment) fragment).getTotalSpace();
-        } else if (fragment != null && fragment instanceof OthersFragment && fragment.isVisible()) {
-            totalSpace = ((OthersFragment) fragment).getTotalSpace();
+        if (fragment != null && fragment instanceof FamilyFlatAd && fragment.isVisible()) {
+            totalSpace = ((FamilyFlatAd) fragment).getTotalSpace();
+        } else if (fragment != null && fragment instanceof OthersFlatAd && fragment.isVisible()) {
+            totalSpace = ((OthersFlatAd) fragment).getTotalSpace();
         }
 
         if (totalSpace == null || totalSpace.trim().isEmpty()) {
@@ -597,21 +597,20 @@ public class NewAdActivity2 extends BaseMapActivity implements View.OnClickListe
         long flatRent = Long.parseLong(totalRent.getText().toString());
         long othersFee = totalUtility.getText().toString().trim().isEmpty() ? 0 : Long.parseLong(totalUtility.getText().toString());
 
-
         FamilyInfo familyInfo = null;
         MessInfo messInfo = null;
         SubletInfo subletInfo = null;
         OthersInfo othersInfo = null;
 
         Fragment fragment = getSupportFragmentManager().findFragmentById(R.id.fragmentContainer);
-        if (fragment != null && fragment instanceof FamilyFragment && fragment.isVisible()) {
-            familyInfo = ((FamilyFragment) fragment).getFamilyInfo();
-        } else if (fragment != null && fragment instanceof MessFragment && fragment.isVisible()) {
-            messInfo = ((MessFragment) fragment).getMessInfo();
-        } else if (fragment != null && fragment instanceof SubletFragment && fragment.isVisible()) {
-            subletInfo = ((SubletFragment) fragment).getSubletInfo();
-        } else if (fragment != null && fragment instanceof OthersFragment && fragment.isVisible()) {
-            othersInfo = ((OthersFragment) fragment).getOthersInfo();
+        if (fragment != null && fragment instanceof FamilyFlatAd && fragment.isVisible()) {
+            familyInfo = ((FamilyFlatAd) fragment).getFamilyInfo();
+        } else if (fragment != null && fragment instanceof MessFlatAd && fragment.isVisible()) {
+            messInfo = ((MessFlatAd) fragment).getMessInfo();
+        } else if (fragment != null && fragment instanceof SubletFlatAd && fragment.isVisible()) {
+            subletInfo = ((SubletFlatAd) fragment).getSubletInfo();
+        } else if (fragment != null && fragment instanceof OthersFlatAd && fragment.isVisible()) {
+            othersInfo = ((OthersFlatAd) fragment).getOthersInfo();
         }
 
         final AdInfo adInfo = new AdInfo(adId, startingMonth, startingDate, startingYear,

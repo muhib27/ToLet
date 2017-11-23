@@ -40,8 +40,8 @@
                 android:layout_width="match_parent"
                 android:layout_height="wrap_content"
                 android:background="@drawable/rectangle_black_border"
-                android:drawableRight="@drawable/cross"
                 android:drawableEnd="@drawable/cross"
+                android:drawableRight="@drawable/cross"
                 android:gravity="center_vertical"
                 android:hint="@string/dummy_full_address"
                 android:maxLines="1"
@@ -120,6 +120,7 @@
                         android:id="@+id/houseInfo"
                         android:layout_width="match_parent"
                         android:layout_height="wrap_content"
+                        android:gravity="center"
                         android:hint="@string/houseInfo"
                         android:imeActionId="@+id/whichFloor"
                         android:imeOptions="actionNext"
@@ -140,6 +141,7 @@
                         android:layout_width="match_parent"
                         android:layout_height="wrap_content"
                         android:ems="2"
+                        android:gravity="center"
                         android:hint="@string/floor"
                         android:imeOptions="actionNext"
                         android:inputType="numberDecimal"
@@ -159,15 +161,25 @@
                 android:gravity="center_vertical"
                 android:orientation="horizontal">
 
-                <android.support.design.widget.TextInputLayout
+                <TextView
                     android:layout_width="wrap_content"
-                    android:layout_height="wrap_content">
+                    android:layout_height="wrap_content"
+                    android:text="@string/tk"
+                    android:textColor="@color/black"
+                    android:textSize="@dimen/text_size_14sp"
+                    android:textStyle="bold" />
+
+                <android.support.design.widget.TextInputLayout
+                    android:layout_width="0dp"
+                    android:layout_height="wrap_content"
+                    android:layout_weight="1">
 
                     <EditText
                         android:id="@+id/totalRent"
                         android:layout_width="match_parent"
                         android:layout_height="wrap_content"
                         android:ems="6"
+                        android:gravity="center"
                         android:hint="@string/rent"
                         android:imeActionId="@+id/emailAddress"
                         android:imeOptions="actionNext"
@@ -179,25 +191,24 @@
                 </android.support.design.widget.TextInputLayout>
 
                 <TextView
-                    android:layout_width="0dp"
+                    android:layout_width="wrap_content"
                     android:layout_height="wrap_content"
-                    android:layout_marginLeft="@dimen/new_post_common_padding"
-                    android:layout_marginStart="@dimen/new_post_common_padding"
-                    android:layout_weight="1"
-                    android:text="@string/bdt"
+                    android:text="@string/tk"
                     android:textColor="@color/black"
                     android:textSize="@dimen/text_size_14sp"
                     android:textStyle="bold" />
 
                 <android.support.design.widget.TextInputLayout
-                    android:layout_width="wrap_content"
-                    android:layout_height="wrap_content">
+                    android:layout_width="0dp"
+                    android:layout_height="wrap_content"
+                    android:layout_weight="1">
 
                     <EditText
                         android:id="@+id/totalUtility"
                         android:layout_width="match_parent"
                         android:layout_height="wrap_content"
                         android:ems="5"
+                        android:gravity="center"
                         android:hint="@string/utility_bill"
                         android:imeActionId="@+id/emailAddress"
                         android:imeOptions="actionNext"
@@ -207,17 +218,6 @@
                         android:singleLine="true" />
 
                 </android.support.design.widget.TextInputLayout>
-
-                <TextView
-                    android:layout_width="0dp"
-                    android:layout_height="wrap_content"
-                    android:layout_marginLeft="@dimen/new_post_common_padding"
-                    android:layout_marginStart="@dimen/new_post_common_padding"
-                    android:layout_weight="1"
-                    android:text="@string/bdt"
-                    android:textColor="@color/black"
-                    android:textSize="@dimen/text_size_14sp"
-                    android:textStyle="bold" />
             </LinearLayout>
 
             <android.support.design.widget.TextInputLayout

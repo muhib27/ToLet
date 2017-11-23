@@ -352,7 +352,7 @@
                     android:layout_marginLeft="@dimen/new_post_common_padding"
                     android:layout_marginStart="@dimen/new_post_common_padding"
                     android:layout_weight="1"
-                    android:text="@string/bdt"
+                    android:text="@string/tk"
                     android:textColor="@color/black"
                     android:textSize="@dimen/text_size_14sp"
                     android:textStyle="bold" />
@@ -424,7 +424,7 @@
                     android:layout_marginLeft="@dimen/new_post_common_padding"
                     android:layout_marginStart="@dimen/new_post_common_padding"
                     android:layout_weight="1"
-                    android:text="@string/bdt"
+                    android:text="@string/tk"
                     android:textColor="@color/black"
                     android:textSize="@dimen/text_size_14sp"
                     android:textStyle="bold" />

@@ -4,6 +4,7 @@ import com.google.firebase.database.Exclude;
 import com.to.let.bd.utils.AppConstants;
 import com.to.let.bd.utils.DBConstants;
 
+import java.text.DecimalFormat;
 import java.util.ArrayList;
 import java.util.HashMap;
 
@@ -85,12 +86,14 @@ public class AdInfo {
         this.houseNameOrNumber = houseNameOrNumber;
         this.floorNumber = floorNumber;
         this.flatFacing = flatFacing;
-        this.flatDescription= flatDescription;
+        this.flatDescription = flatDescription;
+
         this.flatType = flatType;
         this.familyInfo = familyInfo;
         this.messInfo = messInfo;
         this.subletInfo = subletInfo;
         this.othersInfo = othersInfo;
+
         this.userId = userId;
     }
 
@@ -385,7 +388,8 @@ public class AdInfo {
         result.put(DBConstants.startingMonth, startingMonth);
         result.put(DBConstants.startingYear, startingYear);
 
-        startingFinalDate = startingYear + "-" + startingMonth + "-" + startingDate;
+        DecimalFormat formatter = new DecimalFormat("00");
+        startingFinalDate = startingYear + "-" + formatter.format(startingMonth) + "-" + formatter.format(startingDate);
 
         result.put(DBConstants.startingFinalDate, startingFinalDate);
 
@@ -410,10 +414,10 @@ public class AdInfo {
 
         result.put(DBConstants.flatType, flatType);
 
-        result.put(DBConstants.flatTypeFamily, familyInfo);
-        result.put(DBConstants.flatTypeMess, messInfo);
-        result.put(DBConstants.flatTypeSublet, subletInfo);
-        result.put(DBConstants.flatTypeOthers, othersInfo);
+        result.put(DBConstants.familyInfo, familyInfo);
+        result.put(DBConstants.messInfo, messInfo);
+        result.put(DBConstants.subletInfo, subletInfo);
+        result.put(DBConstants.othersInfo, othersInfo);
 
         result.put(DBConstants.userId, userId);
         return result;
