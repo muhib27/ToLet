@@ -88,8 +88,15 @@ public class NewAdActivity2 extends BaseMapActivity implements View.OnClickListe
     }
 
     @Override
-    protected void setEmailAddress() {
-        firebaseUser.getUid();
+    protected void setEmailAddress(boolean afterSuccessfulLogin) {
+        initEmail();
+        emailAddress.setText(firebaseUser.getEmail());
+        emailAddress.setEnabled(false);
+
+        if (afterSuccessfulLogin) {
+            validateInputtedData();
+            updateUserInfo();
+        }
     }
 
     @Override
@@ -206,10 +213,7 @@ public class NewAdActivity2 extends BaseMapActivity implements View.OnClickListe
         addressDetails.setOnTouchListener(new View.OnTouchListener() {
             @Override
             public boolean onTouch(View v, MotionEvent event) {
-                final int DRAWABLE_LEFT = 0;
-                final int DRAWABLE_TOP = 1;
                 final int DRAWABLE_RIGHT = 2;
-                final int DRAWABLE_BOTTOM = 3;
 
                 if (event.getAction() == MotionEvent.ACTION_UP) {
                     if (event.getRawX() >= (addressDetails.getRight() - addressDetails.getCompoundDrawables()[DRAWABLE_RIGHT].getBounds().width())) {
@@ -227,7 +231,7 @@ public class NewAdActivity2 extends BaseMapActivity implements View.OnClickListe
             }
         });
 
-        emailAddress = findViewById(R.id.emailAddress);
+        initEmail();
         mobileNumber = findViewById(R.id.mobileNumber);
         mobileNumber.setText(AppSharedPrefs.getMobileNumber());
 
@@ -288,9 +292,15 @@ public class NewAdActivity2 extends BaseMapActivity implements View.OnClickListe
         remainingTime = findViewById(R.id.remainingTime);
     }
 
+    private void initEmail() {
+        if (emailAddress == null)
+            emailAddress = findViewById(R.id.emailAddress);
+    }
+
     @Override
     public void onFocusChange(View view, boolean b) {
-
+        if (b)
+            googleSignOut();
     }
 
     private void addRoomFaceType(ViewGroup viewGroup) {

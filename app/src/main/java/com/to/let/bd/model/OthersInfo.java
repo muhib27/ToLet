@@ -1,10 +1,12 @@
 package com.to.let.bd.model;
 
+import java.io.Serializable;
+
 /**
  * Created by MAKINUL on 11/5/17.
  */
 
-public class OthersInfo {
+public class OthersInfo implements Serializable {
     private String rentType;
     private boolean lift;
     private boolean generator;

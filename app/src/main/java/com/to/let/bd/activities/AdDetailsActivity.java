@@ -67,28 +67,28 @@ public class AdDetailsActivity extends BaseActivity implements View.OnClickListe
     private String map;
 
     private void getData() {
-        adInfo = new AdInfo();
-        adInfo.setAdId(getIntent().getStringExtra(DBConstants.adId));
-        adInfo.setAdId(getIntent().getStringExtra(DBConstants.adId));
-        adInfo.setFlatRent(getIntent().getLongExtra(DBConstants.flatRent, 0));
-        adInfo.setOthersFee(getIntent().getLongExtra(DBConstants.othersFee, 0));
+        adInfo = (AdInfo) getIntent().getExtras().getSerializable(AppConstants.keyAdInfo);
+//        adInfo.setAdId(getIntent().getStringExtra(DBConstants.adId));
+//        adInfo.setAdId(getIntent().getStringExtra(DBConstants.adId));
+//        adInfo.setFlatRent(getIntent().getLongExtra(DBConstants.flatRent, 0));
+//        adInfo.setOthersFee(getIntent().getLongExtra(DBConstants.othersFee, 0));
 
 //        adInfo.setBedRoom(getIntent().getIntExtra(DBConstants.bedRoom, 0));
 //        adInfo.setBathroom(getIntent().getIntExtra(DBConstants.bathroom, 0));
 //        adInfo.setBalcony(getIntent().getIntExtra(DBConstants.balcony, 0));
 
-        adInfo.setStartingDate(getIntent().getIntExtra(DBConstants.startingDate, 0));
-        adInfo.setStartingMonth(getIntent().getIntExtra(DBConstants.startingMonth, 0));
-        adInfo.setStartingYear(getIntent().getIntExtra(DBConstants.startingYear, 0));
-
-        adInfo.setLatitude(getIntent().getDoubleExtra(DBConstants.latitude, 0));
-        adInfo.setLongitude(getIntent().getDoubleExtra(DBConstants.longitude, 0));
-        adInfo.setFlatSpace(getIntent().getLongExtra(DBConstants.flatSpace, 0));
-
-        adInfo.setFullAddress(getIntent().getStringExtra(DBConstants.fullAddress));
-
-        images = getIntent().getStringArrayExtra(DBConstants.images);
-        map = getIntent().getStringExtra(DBConstants.map);
+//        adInfo.setStartingDate(getIntent().getIntExtra(DBConstants.startingDate, 0));
+//        adInfo.setStartingMonth(getIntent().getIntExtra(DBConstants.startingMonth, 0));
+//        adInfo.setStartingYear(getIntent().getIntExtra(DBConstants.startingYear, 0));
+//
+//        adInfo.setLatitude(getIntent().getDoubleExtra(DBConstants.latitude, 0));
+//        adInfo.setLongitude(getIntent().getDoubleExtra(DBConstants.longitude, 0));
+//        adInfo.setFlatSpace(getIntent().getLongExtra(DBConstants.flatSpace, 0));
+//
+//        adInfo.setFullAddress(getIntent().getStringExtra(DBConstants.fullAddress));
+//
+//        images = getIntent().getStringArrayExtra(DBConstants.images);
+//        map = getIntent().getStringExtra(DBConstants.map);
     }
 
     private TextView rentDate, totalRent, roomDetails, addressDetails,
@@ -96,20 +96,20 @@ public class AdDetailsActivity extends BaseActivity implements View.OnClickListe
     private Button callBtn, emailBtn;
 
     private void init() {
-        rentDate = (TextView) findViewById(R.id.rentDate);
-        totalRent = (TextView) findViewById(R.id.totalRent);
-        roomDetails = (TextView) findViewById(R.id.roomDetails);
-        addressDetails = (TextView) findViewById(R.id.addressDetails);
-        descriptionDetails = (TextView) findViewById(R.id.descriptionDetails);
+        rentDate = findViewById(R.id.rentDate);
+        totalRent = findViewById(R.id.totalRent);
+        roomDetails = findViewById(R.id.roomDetails);
+        addressDetails = findViewById(R.id.addressDetails);
+        descriptionDetails = findViewById(R.id.descriptionDetails);
 
-        privacyPolicy = (TextView) findViewById(R.id.privacyPolicy);
+        privacyPolicy = findViewById(R.id.privacyPolicy);
         privacyPolicy.setText(getString(R.string.privacy_policy_note, getString(R.string.terms_of_use), getString(R.string.privacy_policy)));
-        reportThis = (TextView) findViewById(R.id.reportThis);
+        reportThis = findViewById(R.id.reportThis);
 
-        photoCount = (TextView) findViewById(R.id.photoCount);
+        photoCount = findViewById(R.id.photoCount);
 
-        callBtn = (Button) findViewById(R.id.callBtn);
-        emailBtn = (Button) findViewById(R.id.emailBtn);
+        callBtn = findViewById(R.id.callBtn);
+        emailBtn = findViewById(R.id.emailBtn);
 
         if (adInfo != null) {
             String totalRent = "৳" + adInfo.getFlatRent();
@@ -303,8 +303,8 @@ public class AdDetailsActivity extends BaseActivity implements View.OnClickListe
 
             MyViewHolder(final View itemView) {
                 super(itemView);
-                icon = (ImageView) itemView.findViewById(R.id.icon);
-                title = (TextView) itemView.findViewById(R.id.title);
+                icon = itemView.findViewById(R.id.icon);
+                title = itemView.findViewById(R.id.title);
 
                 itemView.setOnClickListener(new View.OnClickListener() {
                     @Override

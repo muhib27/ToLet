@@ -30,6 +30,7 @@
     <string name="dummy_button">Dummy Button</string>
     <string name="dummy_content">DUMMY\nCONTENT</string>
     <string name="loading">loading…</string>
+    <string name="loading_please_wait">Loading, please wait…</string>
 
     <!--new post resources-->
     <string name="rent_type">Rent type:</string>
@@ -128,6 +129,12 @@
     <string name="mess_member_type">Mess member type: </string>
     <string name="male">Male</string>
     <string name="female">Female</string>
+
+    <string-array name="mess_member_type_array">
+        <item>@string/male</item>
+        <item>@string/female</item>
+    </string-array>
+
     <string name="maid_servant">Maid servant</string>
     <string name="meal_facility">Meal facility</string>
     <string name="all_time_water">All time water</string>
@@ -142,9 +149,23 @@
     <string name="tiny_family">Tiny family(only husband &amp; wife)</string>
     <string name="small_family">Small family(only husband &amp; wife with single kid)</string>
     <string name="female_sublet">Female student\'s or service holder\'s (maximum 2/3)</string>
+
+    <string-array name="sublet_type_array">
+        <item>@string/tiny_family</item>
+        <item>@string/small_family</item>
+        <item>@string/female_sublet</item>
+    </string-array>
+
     <string name="attached">Attached</string>
     <string name="non_attached">Non-attached</string>
     <string name="shared">Shared/Common</string>
+
+    <string-array name="sublet_bath_type_array">
+        <item>@string/attached</item>
+        <item>@string/non_attached</item>
+        <item>@string/shared</item>
+    </string-array>
+
     <string name="bathroom_type">Bathroom/Toilet type:</string>
     <string name="mess_member">Mess member</string>
     <string name="title_activity_test">TestActivity</string>
@@ -179,8 +200,13 @@
     <string name="please_select_rent_type">Please select rent type</string>
     <string name="search">Search</string>
     <string name="lorem">lorem</string>
+    <string name="ad_list">Ad List</string>
+    <string name="no_network_connection_available">No network connection available</string>
+    <string name="retry">tap to retry</string>
+    <string name="internal_server_error">Internal server error</string>
+    <string name="no_data_found">No data found</string>
 
-    <string-array name="rent_type_array">
+    <string-array name="others_rent_type_array">
         <item>@string/office_space</item>
         <item>@string/commercial_space</item>
         <item>@string/mini_shop</item>

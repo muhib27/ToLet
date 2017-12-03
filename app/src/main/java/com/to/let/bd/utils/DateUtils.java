@@ -1,5 +1,6 @@
 package com.to.let.bd.utils;
 
+import java.text.ParseException;
 import java.text.SimpleDateFormat;
 import java.util.Calendar;
 import java.util.Date;
@@ -46,8 +47,46 @@ public class DateUtils {
                 return new SimpleDateFormat("dd-MM-yyyy", Locale.US).format(date);
             case format2:
                 return new SimpleDateFormat("MMM dd, yyyy", Locale.US).format(date);
+            case format3:
+                return new SimpleDateFormat("MMM yyyy", Locale.US).format(date);
             default:
                 return null;
         }
+    }
+
+    public static Date getDate(final String date, final String requestFor) {
+        SimpleDateFormat simpleDateFormat = null;
+        switch (requestFor) {
+            case format1:
+                simpleDateFormat = new SimpleDateFormat("dd-MM-yyyy", Locale.US);
+            case format2:
+                simpleDateFormat = new SimpleDateFormat("MMM dd, yyyy", Locale.US);
+            case format3:
+                simpleDateFormat = new SimpleDateFormat("MMM yyyy", Locale.US);
+            case format4:
+                simpleDateFormat = new SimpleDateFormat("yyyy-MM-dd", Locale.US);
+        }
+
+        if (simpleDateFormat != null) {
+            try {
+                return simpleDateFormat.parse(date);
+            } catch (ParseException e) {
+                e.printStackTrace();
+            }
+        }
+
+        return new Date(0);
+    }
+
+    public static String getRentDateString(long yearMonthDay) {
+        String value = String.valueOf(yearMonthDay);
+        if (value.length() == 8) {
+            String year = value.substring(0, 4);
+            String month = value.substring(4, 6);
+            String day = value.substring(6);
+
+            return getFormattedDateString(getDate(year + "-" + month + "-" + day, format4), format2);
+        }
+        return null;
     }
 }

@@ -1,10 +1,12 @@
 package com.to.let.bd.model;
 
+import java.io.Serializable;
+
 /**
  * Created by MAKINUL on 11/5/17.
  */
 
-public class MessInfo {
+public class MessInfo implements Serializable {
     private int memberType;
     private int numberOfSeat;
     private int numberOfRoom;

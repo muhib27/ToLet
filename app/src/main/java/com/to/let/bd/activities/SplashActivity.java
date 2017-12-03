@@ -21,12 +21,16 @@ import com.to.let.bd.R;
 import com.to.let.bd.common.BaseActivity;
 import com.to.let.bd.utils.DBConstants;
 
+import java.text.DecimalFormat;
+import java.util.Calendar;
 import java.util.HashMap;
 
 public class SplashActivity extends BaseActivity {
     private static final String TAG = SplashActivity.class.getSimpleName();
 
     public static DisplayMetrics metrics;
+    public static long todayYearMonthDate;
+    public static DecimalFormat formatterTwoDigit = new DecimalFormat("00");
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -35,6 +39,12 @@ public class SplashActivity extends BaseActivity {
         setContentView(R.layout.activity_splash);
         metrics = getResources().getDisplayMetrics();
 
+        Calendar calendar = Calendar.getInstance();
+        int dayOfMonth = calendar.get(Calendar.DAY_OF_MONTH);
+        int month = calendar.get(Calendar.MONTH);
+        int year = calendar.get(Calendar.YEAR);
+
+        todayYearMonthDate = Long.parseLong(year + formatterTwoDigit.format(month) + formatterTwoDigit.format(dayOfMonth));
         firebaseInit();
     }
 
@@ -156,9 +166,7 @@ public class SplashActivity extends BaseActivity {
 
     private void startHomeActivity() {
         finish();
-        Intent intent = new Intent(this, AdListActivity.class);
+        Intent intent = new Intent(this, AdListActivity2.class);
         startActivity(intent);
-
-
     }
 }

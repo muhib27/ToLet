@@ -21,9 +21,24 @@
         app:tabSelectedTextColor="@color/colorPrimary"
         app:tabTextColor="@color/black" />
 
+    <View
+        android:layout_width="match_parent"
+        android:layout_height="@dimen/size_1dp"
+        android:background="@color/black_transparent" />
+
     <android.support.v4.view.ViewPager
         android:id="@+id/pager"
         android:layout_width="match_parent"
         android:layout_height="0dp"
         android:layout_weight="1" />
+
+    <Button
+        android:id="@+id/postYourAdd"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:background="@drawable/custom_button_bg"
+        android:text="@string/post_your_ad"
+        android:textAllCaps="true"
+        android:textColor="@color/white"
+        android:textStyle="bold" />
 </LinearLayout>

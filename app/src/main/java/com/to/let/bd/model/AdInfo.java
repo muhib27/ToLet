@@ -1,21 +1,23 @@
 package com.to.let.bd.model;
 
 import com.google.firebase.database.Exclude;
-import com.to.let.bd.utils.AppConstants;
+import com.to.let.bd.activities.SplashActivity;
 import com.to.let.bd.utils.DBConstants;
 
+import java.io.Serializable;
 import java.text.DecimalFormat;
 import java.util.ArrayList;
 import java.util.HashMap;
+import java.util.Map;
 
-public class AdInfo {
+public class AdInfo implements Serializable {
     private String adId;
 
     private int startingMonth;
     private int startingDate;
     private int startingYear;
 
-    private String startingFinalDate;
+    private long startingFinalDate;
 
     private double latitude;
     private double longitude;
@@ -51,6 +53,8 @@ public class AdInfo {
     private OthersInfo othersInfo;
 
     private String userId;
+    public Map<String, Boolean> fav = new HashMap<>();
+    public int favCount = 0;
 
     public AdInfo() {
 
@@ -171,11 +175,11 @@ public class AdInfo {
         this.startingYear = startingYear;
     }
 
-    public String getStartingFinalDate() {
+    public long getStartingFinalDate() {
         return startingFinalDate;
     }
 
-    public void setStartingFinalDate(String startingFinalDate) {
+    public void setStartingFinalDate(long startingFinalDate) {
         this.startingFinalDate = startingFinalDate;
     }
 
@@ -388,8 +392,9 @@ public class AdInfo {
         result.put(DBConstants.startingMonth, startingMonth);
         result.put(DBConstants.startingYear, startingYear);
 
-        DecimalFormat formatter = new DecimalFormat("00");
-        startingFinalDate = startingYear + "-" + formatter.format(startingMonth) + "-" + formatter.format(startingDate);
+        startingFinalDate = Long.parseLong(startingYear
+                + SplashActivity.formatterTwoDigit.format(startingMonth)
+                + SplashActivity.formatterTwoDigit.format(startingDate));
 
         result.put(DBConstants.startingFinalDate, startingFinalDate);
 

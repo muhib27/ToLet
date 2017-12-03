@@ -33,7 +33,7 @@ public class OthersFlatAd extends BaseFragment {
         super.onCreate(savedInstanceState);
 
         rentType.clear();
-        rentType.addAll(Arrays.asList(getResources().getStringArray(R.array.rent_type_array)));
+        rentType.addAll(Arrays.asList(getResources().getStringArray(R.array.others_rent_type_array)));
     }
 
     private View rootView;

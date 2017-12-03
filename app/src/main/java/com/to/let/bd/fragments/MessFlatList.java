@@ -8,7 +8,7 @@ import com.google.firebase.database.Query;
 import com.to.let.bd.R;
 import com.to.let.bd.utils.DBConstants;
 
-public class MessFlatList extends AdListFragment {
+public class MessFlatList extends AdListBaseFragment {
 
     @Override
     public Query getQuery(DatabaseReference databaseReference) {
@@ -18,7 +18,7 @@ public class MessFlatList extends AdListFragment {
 
     @Override
     public Query refreshQuery(DatabaseReference databaseReference) {
-        return databaseReference.child(DBConstants.adList).startAt(12000).endAt(20000);
+        return getQuery(databaseReference);
     }
 
     public static final String keyPosition = "position";

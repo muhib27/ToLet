@@ -43,6 +43,7 @@ import com.google.firebase.auth.AuthResult;
 import com.google.firebase.auth.FirebaseAuth;
 import com.google.firebase.auth.FirebaseUser;
 import com.google.firebase.auth.GoogleAuthProvider;
+import com.google.firebase.auth.UserProfileChangeRequest;
 import com.to.let.bd.R;
 import com.to.let.bd.utils.AppConstants;
 
@@ -132,6 +133,15 @@ public abstract class BaseMapActivity extends BaseActivity implements OnMapReady
         }
 
         mapScrollView = findViewById(R.id.mapScrollView);
+
+        if (firebaseUser != null) {
+            if (!firebaseUser.isAnonymous()) {
+                String email = firebaseUser.getEmail();
+                if (!(email == null || email.isEmpty())) {
+                    setEmailAddress(false);
+                }
+            }
+        }
     }
 
     protected abstract String getActivityTitle();
@@ -177,10 +187,10 @@ public abstract class BaseMapActivity extends BaseActivity implements OnMapReady
 
     private void firebaseAuthWithGoogle(GoogleSignInAccount acct) {
         AuthCredential credential = GoogleAuthProvider.getCredential(acct.getIdToken(), null);
-        firebaseLoginWithCredential(credential);
+        firebaseLoginWithCredential(credential, acct);
     }
 
-    private void firebaseLoginWithCredential(AuthCredential credential) {
+    private void firebaseLoginWithCredential(AuthCredential credential, final GoogleSignInAccount acct) {
         mAuth.signInWithCredential(credential).addOnCompleteListener(this,
                 new OnCompleteListener<AuthResult>() {
                     @Override
@@ -197,13 +207,22 @@ public abstract class BaseMapActivity extends BaseActivity implements OnMapReady
                             String message = task.getException().getMessage();
                             showToast(message);
                         } else {
-                            setEmailAddress();
+                            updateFirebaseUser(acct);
                         }
                     }
                 });
     }
 
-    protected abstract void setEmailAddress();
+    private void updateFirebaseUser(GoogleSignInAccount acct) {
+        UserProfileChangeRequest profileUpdates = new UserProfileChangeRequest.Builder()
+                .setDisplayName(acct.getDisplayName())
+                .setPhotoUri(acct.getPhotoUrl())
+                .build();
+        firebaseUser.updateProfile(profileUpdates);
+        setEmailAddress(true);
+    }
+
+    protected abstract void setEmailAddress(boolean afterSuccessfulLogin);
 
     private FirebaseAuth mAuth;
     private FirebaseAuth.AuthStateListener mAuthListener;
@@ -409,9 +428,10 @@ public abstract class BaseMapActivity extends BaseActivity implements OnMapReady
         switch (requestCode) {
             case PERMISSIONS_REQUEST_CODE:
                 // If request is cancelled, the result arrays are empty.
-                if (grantResults.length > 0 && grantResults[0] == PackageManager.PERMISSION_GRANTED) {
-                    enableGoogleMapMyLocation();
-                }
+//                if (grantResults.length > 0 && grantResults[0] == PackageManager.PERMISSION_GRANTED) {
+//                      enableGoogleMapMyLocation();
+//                }
+                enableGoogleMapMyLocation();
             default:
                 break;
         }

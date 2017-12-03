@@ -33,7 +33,7 @@ public abstract class AdListFragment extends BaseFragment {
     private DatabaseReference mDatabase;
     // [END define_database_reference]
 
-    private SwipeRefreshLayout swipeRefresh;
+//    private SwipeRefreshLayout swipeRefresh;
     private FirebaseRecyclerAdapter<AdInfo, AdViewHolder> mAdapter;
     private RecyclerView adList;
 
@@ -41,7 +41,7 @@ public abstract class AdListFragment extends BaseFragment {
     public void onCreate(@Nullable Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
 
-
+        showLog();
     }
 
     @Override
@@ -53,20 +53,20 @@ public abstract class AdListFragment extends BaseFragment {
         mDatabase = FirebaseDatabase.getInstance().getReference();
         // [END create_database_reference]
 
-        swipeRefresh = rootView.findViewById(R.id.swipeRefresh);
-
         adList = rootView.findViewById(R.id.adList);
         adList.setHasFixedSize(true);
 
-        swipeRefresh.setColorSchemeResources(R.color.swipeRefresh1, R.color.swipeRefresh2, R.color.swipeRefresh3);
-        swipeRefresh.setOnRefreshListener(new SwipeRefreshLayout.OnRefreshListener() {
-            @Override
-            public void onRefresh() {
-                // Set up FirebaseRecyclerAdapter with the Query
-                Query adQuery = refreshQuery(mDatabase);
-                loadData(adQuery);
-            }
-        });
+//        swipeRefresh = rootView.findViewById(R.id.swipeRefresh);
+//
+//        swipeRefresh.setColorSchemeResources(R.color.swipeRefresh1, R.color.swipeRefresh2, R.color.swipeRefresh3);
+//        swipeRefresh.setOnRefreshListener(new SwipeRefreshLayout.OnRefreshListener() {
+//            @Override
+//            public void onRefresh() {
+//                // Set up FirebaseRecyclerAdapter with the Query
+//                Query adQuery = refreshQuery(mDatabase);
+//                loadData(adQuery);
+//            }
+//        });
         return rootView;
     }
 
@@ -88,32 +88,32 @@ public abstract class AdListFragment extends BaseFragment {
         FirebaseRecyclerOptions options = new FirebaseRecyclerOptions.Builder<AdInfo>()
                 .setQuery(adQuery, AdInfo.class)
                 .build();
-        swipeRefresh.setRefreshing(true);
-        if (mAdapter == null) {
-            mAdapter = new FirebaseRecyclerAdapter<AdInfo, AdViewHolder>(options) {
+//        swipeRefresh.setRefreshing(true);
+//        if (mAdapter == null) {
+        mAdapter = new FirebaseRecyclerAdapter<AdInfo, AdViewHolder>(options) {
 
-                @Override
-                public AdViewHolder onCreateViewHolder(ViewGroup viewGroup, int i) {
-                    LayoutInflater inflater = LayoutInflater.from(viewGroup.getContext());
-                    return new AdViewHolder(inflater.inflate(R.layout.item_ad, viewGroup, false));
-                }
+            @Override
+            public AdViewHolder onCreateViewHolder(ViewGroup viewGroup, int i) {
+                LayoutInflater inflater = LayoutInflater.from(viewGroup.getContext());
+                return new AdViewHolder(inflater.inflate(R.layout.item_ad, viewGroup, false));
+            }
 
-                @Override
-                protected void onBindViewHolder(AdViewHolder viewHolder, int position, final AdInfo model) {
-                    swipeRefresh.setRefreshing(false);
-                    final DatabaseReference adRef = getRef(position);
+            @Override
+            protected void onBindViewHolder(AdViewHolder viewHolder, int position, final AdInfo model) {
+//                swipeRefresh.setRefreshing(false);
+                final DatabaseReference adRef = getRef(position);
 
-                    // Set click listener for the whole ad view
-                    final String adKey = adRef.getKey();
-                    viewHolder.itemView.setOnClickListener(new View.OnClickListener() {
-                        @Override
-                        public void onClick(View v) {
-                            // Launch AdDetailActivity
-//                        Intent intent = new Intent(getActivity(), AdDetailActivity.class);
-//                        intent.putExtra(AdDetailActivity.EXTRA_POST_KEY, adKey);
-//                        startActivity(intent);
-                        }
-                    });
+                // Set click listener for the whole ad view
+                final String adKey = adRef.getKey();
+//                viewHolder.itemView.setOnClickListener(new View.OnClickListener() {
+//                    @Override
+//                    public void onClick(View v) {
+//                        // Launch AdDetailActivity
+////                        Intent intent = new Intent(getActivity(), AdDetailActivity.class);
+////                        intent.putExtra(AdDetailActivity.EXTRA_POST_KEY, adKey);
+////                        startActivity(intent);
+//                    }
+//                });
 
 //                // Determine if the current user has liked this ad and set UI accordingly
 //                if (model.stars.containsKey(getUid())) {
@@ -122,25 +122,25 @@ public abstract class AdListFragment extends BaseFragment {
 //                    viewHolder.starView.setImageResource(R.drawable.ic_toggle_star_outline_24);
 //                }
 
-                    // Bind AdInfo to ViewHolder, setting OnClickListener for the star button
-                    viewHolder.bindToAd(model, new View.OnClickListener() {
-                        @Override
-                        public void onClick(View starView) {
-//                        // Need to write to both places the ad is stored
-//                        DatabaseReference globalAdRef = mDatabase.child(DBConstants.adList).child(adRef.getKey());
-//                        DatabaseReference userAdRef = mDatabase.child("user-ads").child(model.getAdId()).child(adRef.getKey());
-//
-//                        // Run two transactions
-//                        onStarClicked(globalAdRef);
-//                        onStarClicked(userAdRef);
-                        }
-                    });
-                }
-            };
-            adList.setAdapter(mAdapter);
-        } else {
-            mAdapter.notifyDataSetChanged();
-        }
+                // Bind AdInfo to ViewHolder, setting OnClickListener for the star button
+//                viewHolder.bindToAd(model, new View.OnClickListener() {
+//                    @Override
+//                    public void onClick(View starView) {
+////                        // Need to write to both places the ad is stored
+////                        DatabaseReference globalAdRef = mDatabase.child(DBConstants.adList).child(adRef.getKey());
+////                        DatabaseReference userAdRef = mDatabase.child("user-ads").child(model.getAdId()).child(adRef.getKey());
+////
+////                        // Run two transactions
+////                        onStarClicked(globalAdRef);
+////                        onStarClicked(userAdRef);
+//                    }
+//                });
+            }
+        };
+        adList.setAdapter(mAdapter);
+//        } else {
+//            mAdapter.notifyDataSetChanged();
+//        }
     }
 
     // [START ad_stars_transaction]

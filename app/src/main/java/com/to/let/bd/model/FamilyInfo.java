@@ -1,10 +1,12 @@
 package com.to.let.bd.model;
 
+import java.io.Serializable;
+
 /**
  * Created by MAKINUL on 11/5/17.
  */
 
-public class FamilyInfo {
+public class FamilyInfo implements Serializable {
     private int bedRoom;
     private int bathroom;
     private int balcony;
@@ -44,11 +46,11 @@ public class FamilyInfo {
         this.balcony = balcony;
     }
 
-    public boolean isItDuplex() {
+    public boolean getIsItDuplex() {
         return isItDuplex;
     }
 
-    public void setItDuplex(boolean itDuplex) {
+    public void setIsItDuplex(boolean itDuplex) {
         isItDuplex = itDuplex;
     }
 

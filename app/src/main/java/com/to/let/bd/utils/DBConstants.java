@@ -49,6 +49,7 @@ public class DBConstants {
     public static final String images = "images";
     public static final String map = "map";
     public static final String location = "location";
+    public static final String fav = "fav";
 
     public static final String familyInfo = "familyInfo";
     public static final String messInfo = "messInfo";

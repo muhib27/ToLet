@@ -1,10 +1,12 @@
 package com.to.let.bd.model;
 
+import java.io.Serializable;
+
 /**
  * Created by MAKINUL on 11/5/17.
  */
 
-public class SubletInfo {
+public class SubletInfo implements Serializable {
     private int subletType;
     private String subletTypeOthers;
     private int bathroomType;

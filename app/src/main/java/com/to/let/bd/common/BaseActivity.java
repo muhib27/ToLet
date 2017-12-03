@@ -1,6 +1,7 @@
 package com.to.let.bd.common;
 
 import android.app.ProgressDialog;
+import android.content.Intent;
 import android.support.v7.app.AppCompatActivity;
 import android.util.Log;
 import android.util.Patterns;
@@ -9,6 +10,10 @@ import android.widget.Toast;
 import com.google.firebase.auth.FirebaseAuth;
 import com.google.firebase.auth.FirebaseUser;
 import com.to.let.bd.R;
+import com.to.let.bd.activities.AdDetailsActivity;
+import com.to.let.bd.model.AdInfo;
+import com.to.let.bd.utils.AppConstants;
+import com.to.let.bd.utils.DBConstants;
 
 public class BaseActivity extends AppCompatActivity {
 
@@ -60,7 +65,11 @@ public class BaseActivity extends AppCompatActivity {
     }
 
     public void showToast() {
-        showToast("Test toast");
+        showToast(R.string.app_name);
+    }
+
+    public void showToast(int resourceId) {
+        showToast(getString(resourceId));
     }
 
     public void showToast(String message) {
@@ -172,4 +181,39 @@ public class BaseActivity extends AppCompatActivity {
 //        }
 //        startActivity(intent);
 //    }
+
+    public void startAdDetailsActivity(AdInfo adInfo) {
+        Intent adDetailsIntent = new Intent(this, AdDetailsActivity.class);
+//        adDetailsIntent.putExtra(DBConstants.adId, adInfo.getAdId());
+//        adDetailsIntent.putExtra(DBConstants.flatRent, adInfo.getFlatRent());
+//        adDetailsIntent.putExtra(DBConstants.othersFee, adInfo.getOthersFee());
+
+//        adDetailsIntent.putExtra(DBConstants.bedRoom, adInfo.getBedRoom());
+//        adDetailsIntent.putExtra(DBConstants.bathroom, adInfo.getBathroom());
+//        adDetailsIntent.putExtra(DBConstants.balcony, adInfo.getBalcony());
+
+//        adDetailsIntent.putExtra(DBConstants.startingDate, adInfo.getStartingDate());
+//        adDetailsIntent.putExtra(DBConstants.startingMonth, adInfo.getStartingMonth());
+//        adDetailsIntent.putExtra(DBConstants.startingYear, adInfo.getStartingYear());
+//
+//        adDetailsIntent.putExtra(DBConstants.latitude, adInfo.getLatitude());
+//        adDetailsIntent.putExtra(DBConstants.longitude, adInfo.getLongitude());
+//        adDetailsIntent.putExtra(DBConstants.flatSpace, adInfo.getFlatSpace());
+//
+//        adDetailsIntent.putExtra(DBConstants.fullAddress, adInfo.getFullAddress());
+//
+//        if (!(adInfo.getImages() == null || adInfo.getImages().isEmpty())) {
+//            String[] images = new String[adInfo.getImages().size()];
+//            for (int i = 0; i < adInfo.getImages().size(); i++) {
+//                images[i] = adInfo.getImages().get(i).getDownloadUrl();
+//            }
+//            adDetailsIntent.putExtra(DBConstants.images, images);
+//        }
+//
+//        if (adInfo.getMap() != null) {
+//            adDetailsIntent.putExtra(DBConstants.map, adInfo.getMap().getDownloadUrl());
+//        }
+        adDetailsIntent.putExtra(AppConstants.keyAdInfo, adInfo);
+        startActivity(adDetailsIntent);
+    }
 }

@@ -304,99 +304,84 @@ public class AdListActivity extends BaseActivity implements NavigationView.OnNav
 
     }
 
+    private ValueEventListener valueEventListener = new ValueEventListener() {
+        @Override
+        public void onDataChange(DataSnapshot dataSnapshot) {
+            for (DataSnapshot postSnapshot : dataSnapshot.getChildren()) {
+                AdInfo adInfo = postSnapshot.getValue(AdInfo.class);
+                adList.add(adInfo);
+            }
+
+            Collections.sort(adList, new Comparator<AdInfo>() {
+                @Override
+                public int compare(AdInfo o1, AdInfo o2) {
+                    return o2.getAdId().compareTo(o1.getAdId());
+                }
+            });
+            closeProgressDialog();
+            displayAdList();
+        }
+
+        @Override
+        public void onCancelled(DatabaseError databaseError) {
+            closeProgressDialog();
+        }
+    };
+
     private void loadAllData() {
         Query recentAd = databaseReference.child(DBConstants.adList).orderByChild(DBConstants.createdTime).limitToLast(100);
         showProgressDialog();
-        recentAd.addListenerForSingleValueEvent(new ValueEventListener() {
-            @Override
-            public void onDataChange(DataSnapshot dataSnapshot) {
-                for (DataSnapshot postSnapshot : dataSnapshot.getChildren()) {
-                    AdInfo adInfo = postSnapshot.getValue(AdInfo.class);
-                    adList.add(adInfo);
-                }
-
-                Collections.sort(adList, new Comparator<AdInfo>() {
-                    @Override
-                    public int compare(AdInfo o1, AdInfo o2) {
-                        return o2.getAdId().compareTo(o1.getAdId());
-                    }
-                });
-                closeProgressDialog();
-                displayAdList();
-            }
-
-            @Override
-            public void onCancelled(DatabaseError databaseError) {
-                closeProgressDialog();
-            }
-        });
+        recentAd.addListenerForSingleValueEvent(valueEventListener);
     }
 
     private void loadData(String flatType, long startRange, long endRange) {
-        Query recentAd = databaseReference.child(DBConstants.adList);
+//        databaseReference.removeEventListener(valueEventListener);
+
+        Query recentAd = null;
 
         if (flatType != null) {
-            recentAd.orderByChild(DBConstants.flatType).equalTo(flatType);
+            recentAd = databaseReference.child(DBConstants.adList).orderByChild(DBConstants.flatType).equalTo(flatType);
         }
 
-        if (!(startRange == 0 && endRange == 0)) {
-            if (startRange == 0) {
-                recentAd.orderByChild(DBConstants.flatRent).endAt(endRange);
-            } else if (endRange == 0) {
-                recentAd.orderByChild(DBConstants.flatRent).startAt(startRange);
-            } else {
-                recentAd.orderByChild(DBConstants.flatRent).startAt(startRange).endAt(endRange);
-            }
-        }
+        if (recentAd == null)
+            return;
 
-        recentAd = recentAd.limitToLast(100);
+//        if (!(startRange == 0 && endRange == 0)) {
+//            if (startRange == 0) {
+//                recentAd.orderByChild(DBConstants.flatRent).endAt(endRange);
+//            } else if (endRange == 0) {
+//                recentAd.orderByChild(DBConstants.flatRent).startAt(startRange);
+//            } else {
+//                recentAd.orderByChild(DBConstants.flatRent).startAt(startRange).endAt(endRange);
+//            }
+//        }
+//
+//        recentAd = recentAd.limitToLast(100);
         adList.clear();
         showProgressDialog();
-        recentAd.addListenerForSingleValueEvent(new ValueEventListener() {
-            @Override
-            public void onDataChange(DataSnapshot dataSnapshot) {
-                for (DataSnapshot postSnapshot : dataSnapshot.getChildren()) {
-                    AdInfo adInfo = postSnapshot.getValue(AdInfo.class);
-                    adList.add(adInfo);
-                }
-
-                Collections.sort(adList, new Comparator<AdInfo>() {
-                    @Override
-                    public int compare(AdInfo o1, AdInfo o2) {
-                        return o2.getAdId().compareTo(o1.getAdId());
-                    }
-                });
-                closeProgressDialog();
-                displayAdList();
-            }
-
-            @Override
-            public void onCancelled(DatabaseError databaseError) {
-                closeProgressDialog();
-            }
-        });
+        recentAd.addListenerForSingleValueEvent(valueEventListener);
     }
 
     private void displayAdList() {
-        if (adAdapter == null) {
-            adAdapter = new AdAdapter(AdListActivity.this, adList, new AdAdapter.ClickListener() {
-                @Override
-                public void onItemClick(View view, int position, AdInfo adInfo) {
-                    startAdDetailsActivity(adInfo);
-                }
-
-                @Override
-                public void onFavClick(View view, int position, AdInfo adInfo) {
-                    if (view instanceof ImageView) {
-                        ((ImageView) view).setImageResource(R.drawable.ic_fav_selected);
-                    }
-                }
-            });
-            adRecyclerView.setAdapter(adAdapter);
-        } else {
-            adAdapter.setData(adList);
-            adAdapter.notifyDataSetChanged();
-        }
+//        if (adAdapter == null) {
+//            adAdapter = new AdAdapter(AdListActivity.this, adList, new AdAdapter.ClickListener() {
+//                @Override
+//                public void onItemClick(View view, int position, AdInfo adInfo) {
+//                    startAdDetailsActivity(adInfo);
+//                }
+//
+//                @Override
+//                public void onFavClick(View view, int position, AdInfo adInfo) {
+//                    if (view instanceof ImageView) {
+//                        ((ImageView) view).setImageResource(R.drawable.ic_fav_selected);
+//                    }
+//                }
+//            });
+//            adRecyclerView.setAdapter(adAdapter);
+//        } else {
+//            adAdapter.setData(adList);
+//            adAdapter.notifyDataSetChanged();
+//        }
     }
 
     private static ArrayList<AdInfo> adList;
@@ -441,7 +426,6 @@ public class AdListActivity extends BaseActivity implements NavigationView.OnNav
             loadAllData();
         else
             displayAdList();
-
     }
 
     RecyclerView.OnScrollListener scrollListener = new RecyclerView.OnScrollListener() {
@@ -592,7 +576,7 @@ public class AdListActivity extends BaseActivity implements NavigationView.OnNav
             logoutAndAnonymousLogin();
         }
 
-        DrawerLayout drawer = (DrawerLayout) findViewById(R.id.drawer_layout);
+        DrawerLayout drawer = findViewById(R.id.drawer_layout);
         drawer.closeDrawer(GravityCompat.START);
         return true;
     }
@@ -640,40 +624,6 @@ public class AdListActivity extends BaseActivity implements NavigationView.OnNav
         HashMap<String, Object> childUpdates = new HashMap<>();
         childUpdates.put("/" + DBConstants.user + "/" + getUid(), userValues);
         mDatabase.updateChildren(childUpdates);
-    }
-
-    private void startAdDetailsActivity(AdInfo adInfo) {
-        Intent adDetailsIntent = new Intent(this, AdDetailsActivity.class);
-        adDetailsIntent.putExtra(DBConstants.adId, adInfo.getAdId());
-        adDetailsIntent.putExtra(DBConstants.flatRent, adInfo.getFlatRent());
-        adDetailsIntent.putExtra(DBConstants.othersFee, adInfo.getOthersFee());
-
-//        adDetailsIntent.putExtra(DBConstants.bedRoom, adInfo.getBedRoom());
-//        adDetailsIntent.putExtra(DBConstants.bathroom, adInfo.getBathroom());
-//        adDetailsIntent.putExtra(DBConstants.balcony, adInfo.getBalcony());
-
-        adDetailsIntent.putExtra(DBConstants.startingDate, adInfo.getStartingDate());
-        adDetailsIntent.putExtra(DBConstants.startingMonth, adInfo.getStartingMonth());
-        adDetailsIntent.putExtra(DBConstants.startingYear, adInfo.getStartingYear());
-
-        adDetailsIntent.putExtra(DBConstants.latitude, adInfo.getLatitude());
-        adDetailsIntent.putExtra(DBConstants.longitude, adInfo.getLongitude());
-        adDetailsIntent.putExtra(DBConstants.flatSpace, adInfo.getFlatSpace());
-
-        adDetailsIntent.putExtra(DBConstants.fullAddress, adInfo.getFullAddress());
-
-        if (!(adInfo.getImages() == null || adInfo.getImages().isEmpty())) {
-            String[] images = new String[adInfo.getImages().size()];
-            for (int i = 0; i < adInfo.getImages().size(); i++) {
-                images[i] = adInfo.getImages().get(i).getDownloadUrl();
-            }
-            adDetailsIntent.putExtra(DBConstants.images, images);
-        }
-
-        if (adInfo.getMap() != null) {
-            adDetailsIntent.putExtra(DBConstants.map, adInfo.getMap().getDownloadUrl());
-        }
-        startActivity(adDetailsIntent);
     }
 
     // https://developers.google.com/identity/sms-retriever/overview

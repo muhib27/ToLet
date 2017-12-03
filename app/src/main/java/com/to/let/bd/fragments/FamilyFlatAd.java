@@ -223,7 +223,7 @@ public class FamilyFlatAd extends BaseFragment {
         familyInfo.setBathroom(familyRoom[1]);
         familyInfo.setBalcony(familyRoom[2]);
         familyInfo.setHasDrawingDining(drawingDining.getCheckedRadioButtonId() == R.id.drawingDiningYes);
-        familyInfo.setItDuplex(isItDuplex.getCheckedRadioButtonId() == R.id.isItDuplexYes);
+        familyInfo.setIsItDuplex(isItDuplex.getCheckedRadioButtonId() == R.id.isItDuplexYes);
 
         familyInfo.setWellFurnished(wellFurnishedCB.isChecked());
         familyInfo.setGasSupply(gasSupplyCB.isChecked());

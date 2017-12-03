@@ -1,6 +1,8 @@
 package com.to.let.bd.model;
 
-public class ImageInfo {
+import java.io.Serializable;
+
+public class ImageInfo implements Serializable {
     private String downloadUrl;
     private String imageName;
     private String imagePath;
