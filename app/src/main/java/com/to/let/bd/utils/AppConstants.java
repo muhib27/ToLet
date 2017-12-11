@@ -18,6 +18,9 @@ import android.widget.LinearLayout;
 import android.widget.TextView;
 
 import com.to.let.bd.R;
+import com.to.let.bd.model.AdInfo;
+
+import java.text.DecimalFormat;
 
 public class AppConstants {
     public static final long autoScrollDuration = 5000;
@@ -189,5 +192,48 @@ public class AppConstants {
             }
         });
         popup.show(); //showing popup menu
+    }
+
+    public static String rentFormatter(long rent) {
+        DecimalFormat formatter = new DecimalFormat("#,###,###");
+        return formatter.format(rent);
+    }
+
+    public static String flatDescription(Context context, AdInfo adInfo) {
+        String adDescription = "";
+        if (adInfo.getFamilyInfo() != null) {
+            boolean isItDulpex = adInfo.getFamilyInfo().isItDuplex;
+            if (isItDulpex)
+                adDescription = "Duplex house with ";
+            adDescription = adDescription + adInfo.getFamilyInfo().bedRoom + "bed " +
+                    adInfo.getFamilyInfo().bathroom + "bath ";
+
+            if (adInfo.getFamilyInfo().balcony > 0) {
+                adDescription = adDescription + adInfo.getFamilyInfo().balcony + "balcony";
+            }
+
+            if (adInfo.getFlatSpace() > 0) {
+                adDescription = adDescription + " " + adInfo.getFlatSpace() + "sqft";
+            }
+
+            if (adInfo.getFamilyInfo().hasDrawingDining) {
+                adDescription = adDescription + " with drawing & dining";
+            }
+        } else if (adInfo.getMessInfo() != null) {
+            String[] messTypeArray = context.getResources().getStringArray(R.array.mess_member_type_array);
+            adDescription = messTypeArray[adInfo.getMessInfo().memberType] + " member ";
+            adDescription += adInfo.getMessInfo().numberOfSeat + "seat in " +
+                    adInfo.getMessInfo().numberOfRoom + "room ";
+        } else if (adInfo.getSubletInfo() != null) {
+            String[] subletTypeArray = context.getResources().getStringArray(R.array.sublet_type_array);
+            adDescription = adInfo.getSubletInfo().subletType >= 3 ? adInfo.getSubletInfo().subletTypeOthers :
+                    subletTypeArray[adInfo.getSubletInfo().subletType];
+
+            adDescription += " with ";
+
+            String[] subletBathTypeArray = context.getResources().getStringArray(R.array.sublet_bath_type_array);
+            adDescription += subletBathTypeArray[adInfo.getSubletInfo().bathroomType] + " bath";
+        }
+        return adDescription;
     }
 }

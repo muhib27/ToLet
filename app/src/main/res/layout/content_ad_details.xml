@@ -28,6 +28,14 @@
                     android:layout_width="match_parent"
                     android:layout_height="match_parent" />
 
+                <ImageView
+                    android:id="@+id/noImageView"
+                    android:layout_width="match_parent"
+                    android:layout_height="match_parent"
+                    android:scaleType="centerInside"
+                    android:src="@drawable/no_image_available" />
+
+
                 <RelativeLayout
                     android:layout_width="wrap_content"
                     android:layout_height="wrap_content"
@@ -63,10 +71,27 @@
                     android:gravity="center"
                     android:maxLines="2"
                     android:padding="@dimen/size_10dp"
-                    android:textAllCaps="true"
+                    android:textAllCaps="false"
                     android:textColor="@color/white"
                     android:textSize="@dimen/text_size_12sp"
                     android:textStyle="bold" />
+
+                <TextView
+                    android:id="@+id/rentType"
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    android:layout_marginTop="@dimen/size_10dp"
+                    android:background="@drawable/green_round_bg"
+                    android:paddingBottom="@dimen/size_5dp"
+                    android:paddingEnd="@dimen/size_10dp"
+                    android:paddingLeft="@dimen/size_10dp"
+                    android:paddingRight="@dimen/size_10dp"
+                    android:paddingStart="@dimen/size_10dp"
+                    android:paddingTop="@dimen/size_5dp"
+                    android:text="@string/rent_type"
+                    android:textColor="@color/white"
+                    android:textSize="@dimen/text_size_16sp"
+                    android:textStyle="normal" />
 
                 <TextView
                     android:id="@+id/totalRent"
@@ -94,21 +119,21 @@
                     android:textStyle="normal" />
 
                 <TextView
-                    android:id="@+id/description"
+                    android:id="@+id/othersFacility"
                     android:layout_width="match_parent"
                     android:layout_height="wrap_content"
                     android:layout_marginTop="@dimen/size_10dp"
-                    android:text="@string/flat_description"
+                    android:text="@string/others_facility"
                     android:textColor="@color/black"
                     android:textSize="@dimen/text_size_16sp"
                     android:textStyle="bold" />
 
                 <TextView
-                    android:id="@+id/descriptionDetails"
+                    android:id="@+id/othersFacilityDetails"
                     android:layout_width="match_parent"
                     android:layout_height="wrap_content"
                     android:layout_marginTop="@dimen/size_10dp"
-                    android:singleLine="false"
+                    android:textColor="@color/colorPrimary"
                     android:textSize="@dimen/text_size_12sp"
                     android:textStyle="normal" />
 

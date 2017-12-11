@@ -102,10 +102,10 @@ public class MessFlatAd extends BaseFragment {
 
     public MessInfo getMessInfo() {
         MessInfo messInfo = new MessInfo();
-        messInfo.setMemberType(messMemberType.getCheckedRadioButtonId() == R.id.messMemberMale ? 0 : 1);
-        messInfo.setNumberOfSeat(messInfoArray[0]);
-        messInfo.setNumberOfRoom(messInfoArray[1]);
-        messInfo.setTotalMember(messInfoArray[2]);
+        messInfo.memberType = messMemberType.getCheckedRadioButtonId() == R.id.messMemberFemale ? 1 : 0;
+        messInfo.numberOfSeat = messInfoArray[0];
+        messInfo.numberOfRoom = messInfoArray[1];
+        messInfo.totalMember = messInfoArray[2];
 
         int messManagementSystem = 0;
         if (this.messManagementSystem.getCheckedRadioButtonId() == R.id.manageByIndividual) {
@@ -114,16 +114,16 @@ public class MessFlatAd extends BaseFragment {
             messManagementSystem = 2;
         }
 
-        messInfo.setMessManagementSystem(messManagementSystem);
+        messInfo.messManagementSystem = messManagementSystem;
 
-        messInfo.setMealFacility(mealFacilityCB.isChecked());
-        messInfo.setMaidServant(maidServantCB.isChecked());
-        messInfo.setTwentyFourWater(twentyFourWaterCB.isChecked());
-        messInfo.setNonSmoker(nonSmokerCB.isChecked());
-        messInfo.setWifi(wifiCB.isChecked());
-        messInfo.setFridge(fridgeCB.isChecked());
+        messInfo.mealFacility = mealFacilityCB.isChecked();
+        messInfo.maidServant = maidServantCB.isChecked();
+        messInfo.twentyFourWater = twentyFourWaterCB.isChecked();
+        messInfo.nonSmoker = nonSmokerCB.isChecked();
+        messInfo.wifi = wifiCB.isChecked();
+        messInfo.fridge = fridgeCB.isChecked();
 
-        messInfo.setMealRate(mealRate.getText().toString().trim().isEmpty() ? 0 : Integer.parseInt(mealRate.getText().toString()));
+        messInfo.mealRate = mealRate.getText().toString().trim().isEmpty() ? 0 : Integer.parseInt(mealRate.getText().toString());
 
         return messInfo;
     }

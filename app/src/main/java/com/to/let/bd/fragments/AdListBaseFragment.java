@@ -7,13 +7,12 @@ import android.support.v7.widget.RecyclerView;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
-import android.widget.ImageView;
 import android.widget.LinearLayout;
 import android.widget.ProgressBar;
 import android.widget.TextView;
 
 import com.google.firebase.auth.FirebaseAuth;
-import com.google.firebase.database.ChildEventListener;
+import com.google.firebase.auth.FirebaseUser;
 import com.google.firebase.database.DataSnapshot;
 import com.google.firebase.database.DatabaseError;
 import com.google.firebase.database.DatabaseReference;
@@ -29,6 +28,7 @@ import com.to.let.bd.common.BaseActivity;
 import com.to.let.bd.common.BaseFragment;
 import com.to.let.bd.model.AdInfo;
 import com.to.let.bd.utils.DBConstants;
+import com.to.let.bd.utils.MyAnalyticsUtil;
 import com.to.let.bd.utils.NetworkConnection;
 
 import java.util.ArrayList;
@@ -54,8 +54,11 @@ public abstract class AdListBaseFragment extends BaseFragment implements AdAdapt
         databaseReference = FirebaseDatabase.getInstance().getReference();
         // [END create_database_reference]
 
+        myAnalyticsUtil = new MyAnalyticsUtil(getActivity());
 //        networkCheck();
     }
+
+    private MyAnalyticsUtil myAnalyticsUtil;
 
     private boolean hasNetwork = false;
 
@@ -219,6 +222,7 @@ public abstract class AdListBaseFragment extends BaseFragment implements AdAdapt
 
         DatabaseReference userAdRef = databaseReference.child(DBConstants.adList).child(adInfo.getAdId());
         onStarClicked(userAdRef, clickedPosition);
+        myAnalyticsUtil.favItem(adInfo, getUid());
     }
 
     // [START ad_stars_transaction]
@@ -247,12 +251,10 @@ public abstract class AdListBaseFragment extends BaseFragment implements AdAdapt
 
             @Override
             public void onComplete(DatabaseError databaseError, boolean b, DataSnapshot dataSnapshot) {
-                showLog("adTransaction:onComplete:" + databaseError);
-
                 if (databaseError == null) {
                     AdInfo adInfo = dataSnapshot.getValue(AdInfo.class);
                     adList.set(clickedPosition, adInfo);
-                    adAdapter.notifyItemChanged(clickedPosition);
+//                    adAdapter.notifyItemChanged(clickedPosition);
                 }
             }
         });
@@ -269,7 +271,10 @@ public abstract class AdListBaseFragment extends BaseFragment implements AdAdapt
     }
 
     public String getUid() {
-        return FirebaseAuth.getInstance().getCurrentUser().getUid();
+        FirebaseUser firebaseUser = FirebaseAuth.getInstance().getCurrentUser();
+        if (firebaseUser == null)
+            return null;
+        return firebaseUser.getUid();
     }
 
     public abstract Query getQuery(DatabaseReference databaseReference);

@@ -32,8 +32,7 @@
     <string name="loading">loading…</string>
     <string name="loading_please_wait">Loading, please wait…</string>
 
-    <!--new post resources-->
-    <string name="rent_type">Rent type:</string>
+    <string name="rent_type">Rent type</string>
     <string name="family">Family</string>
     <string name="sublet">Sublet</string>
     <string name="mess">Mess</string>
@@ -48,10 +47,9 @@
     <string name="no">No</string>
     <string name="bathroom">Bathroom</string>
     <string name="balcony">Balcony</string>
-    <string name="others_facility">Others Facility: </string>
+    <string name="others_facility">Others Facility</string>
     <string name="water">Water</string>
     <string name="gas">Gas(Supply)</string>
-    <string name="wellFurnished">Electricity</string>
     <string name="lift">Lift</string>
     <string name="generator">Generator</string>
     <string name="emailAddress">Email Address</string>
@@ -106,7 +104,7 @@
     <string name="image_upload_starting">Your image uploading is going to start.</string>
 
     <string name="your_selected_location">Your selected location</string>
-    <string name="map">map</string>
+    <string name="map">Map</string>
     <string name="is_everything_ok">Is Everything OK?</string>
     <string name="summary">Summary</string>
     <string name="please_pick_a_location_into_the_map">Please pick a location into the map.</string>
@@ -140,7 +138,7 @@
     <string name="all_time_water">All time water</string>
     <string name="wifi_facility">WiFi facility</string>
     <string name="fridge_facility">Fridge facility</string>
-    <string name="non_smoker_only">Non-smoker only?</string>
+    <string name="non_smoker_only">Non-smoker only</string>
     <string name="non_smoker">Non-smoker</string>
     <string name="description">Description</string>
     <string name="description_if_need">Description (if need)</string>
@@ -213,5 +211,26 @@
         <item>@string/market_place</item>
         <item>@string/godown</item>
         <item>@string/others</item>
+    </string-array>
+
+    <string name="default_notification_channel_id">default_notification_channel_id</string>
+    <string name="FACEBOOK_APP_ID">1193242097486888</string>
+    <string name="ACCOUNT_KIT_CLIENT_TOKEN">d22bfc9edb912ff7aa5bd1e111464608</string>
+
+    <string name="report_fake">Fake ad</string>
+    <string name="report_fraud">Fraud user</string>
+    <string name="report_already_rented">Already rented</string>
+    <string name="report_mismatch">Mismatch with description</string>
+    <string name="report_others">Others</string>
+    <string name="supply_gas">Supply Gas</string>
+    <string name="near_by">Near By</string>
+    <string name="share">Share</string>
+
+    <string-array name="ad_report_type_array">
+        <item>@string/report_fake</item>
+        <item>@string/report_fraud</item>
+        <item>@string/report_already_rented</item>
+        <item>@string/report_mismatch</item>
+        <item>@string/report_others</item>
     </string-array>
 </resources>

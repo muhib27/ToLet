@@ -3,6 +3,10 @@ package com.to.let.bd.utils;
 public class DBConstants {
     public static final String adList = "adList";
     public static final String user = "user";
+    public static final String users = "users";
+
+    public static final String anonymousUsers = "anonymousUsers";
+    public static final String registeredUsers = "registeredUsers";
 
     public static final String adId = "adId";
     public static final String startingMonth = "startingMonth";
@@ -55,4 +59,6 @@ public class DBConstants {
     public static final String messInfo = "messInfo";
     public static final String subletInfo = "subletInfo";
     public static final String othersInfo = "othersInfo";
+
+    public static final String fcmToken = "fcmToken";
 }

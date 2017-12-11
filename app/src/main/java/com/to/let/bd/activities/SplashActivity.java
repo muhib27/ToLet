@@ -17,6 +17,7 @@ import com.google.firebase.auth.FirebaseAuth;
 import com.google.firebase.auth.FirebaseUser;
 import com.google.firebase.database.DatabaseReference;
 import com.google.firebase.database.FirebaseDatabase;
+import com.google.firebase.iid.FirebaseInstanceId;
 import com.to.let.bd.R;
 import com.to.let.bd.common.BaseActivity;
 import com.to.let.bd.utils.DBConstants;
@@ -159,8 +160,11 @@ public class SplashActivity extends BaseActivity {
         HashMap<String, Object> userValues = new HashMap<>();
         userValues.put(DBConstants.userId, getUid());
 
+        String fcmToken = FirebaseInstanceId.getInstance().getToken();
+        userValues.put(DBConstants.fcmToken, fcmToken);
         HashMap<String, Object> childUpdates = new HashMap<>();
-        childUpdates.put("/" + DBConstants.user + "/" + getUid(), userValues);
+        childUpdates.put("/" + DBConstants.users + "/" + DBConstants.anonymousUsers + "/" + getUid(), userValues);
+
         mDatabase.updateChildren(childUpdates);
     }
 

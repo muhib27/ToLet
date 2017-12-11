@@ -622,7 +622,10 @@ public class AdListActivity extends BaseActivity implements NavigationView.OnNav
         }
 
         HashMap<String, Object> childUpdates = new HashMap<>();
-        childUpdates.put("/" + DBConstants.user + "/" + getUid(), userValues);
+        if (firebaseUser.isAnonymous())
+            childUpdates.put("/" + DBConstants.users + "/" + DBConstants.anonymousUsers + "/" + getUid(), userValues);
+        else
+            childUpdates.put("/" + DBConstants.users + "/" + DBConstants.registeredUsers + "/" + getUid(), userValues);
         mDatabase.updateChildren(childUpdates);
     }
 

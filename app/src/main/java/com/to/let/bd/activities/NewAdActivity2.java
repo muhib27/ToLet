@@ -5,6 +5,7 @@ import android.app.DatePickerDialog;
 import android.app.Dialog;
 import android.content.BroadcastReceiver;
 import android.content.Context;
+import android.content.DialogInterface;
 import android.content.Intent;
 import android.content.pm.PackageManager;
 import android.graphics.Bitmap;
@@ -17,6 +18,7 @@ import android.support.v4.app.ActivityCompat;
 import android.support.v4.app.Fragment;
 import android.support.v4.content.LocalBroadcastManager;
 import android.support.v7.app.ActionBar;
+import android.support.v7.app.AlertDialog;
 import android.support.v7.widget.PopupMenu;
 import android.support.v7.widget.Toolbar;
 import android.text.Editable;
@@ -32,18 +34,24 @@ import android.view.Window;
 import android.widget.Button;
 import android.widget.DatePicker;
 import android.widget.EditText;
+import android.widget.FrameLayout;
 import android.widget.LinearLayout;
+import android.widget.ScrollView;
 import android.widget.TextView;
 
 import com.google.android.gms.maps.CameraUpdateFactory;
 import com.google.android.gms.maps.GoogleMap;
+import com.google.android.gms.maps.model.LatLng;
+import com.google.android.gms.maps.model.Marker;
 import com.google.firebase.auth.FirebaseAuth;
 import com.google.firebase.database.DatabaseError;
 import com.google.firebase.database.DatabaseReference;
 import com.google.firebase.database.FirebaseDatabase;
 import com.google.firebase.database.ServerValue;
+import com.google.firebase.iid.FirebaseInstanceId;
 import com.to.let.bd.R;
 import com.to.let.bd.common.BaseMapActivity;
+import com.to.let.bd.common.WorkaroundMapFragment;
 import com.to.let.bd.fragments.FamilyFlatAd;
 import com.to.let.bd.fragments.MessFlatAd;
 import com.to.let.bd.fragments.OthersFlatAd;
@@ -68,7 +76,7 @@ import java.util.Date;
 import java.util.HashMap;
 import java.util.Locale;
 
-public class NewAdActivity2 extends BaseMapActivity implements View.OnClickListener, View.OnFocusChangeListener {
+public class NewAdActivity2 extends BaseMapActivity implements View.OnClickListener, View.OnFocusChangeListener, GoogleMap.InfoWindowAdapter, GoogleMap.OnMapLongClickListener, GoogleMap.OnMapClickListener {
 
     private static final String TAG = NewAdActivity2.class.getSimpleName();
 
@@ -196,15 +204,7 @@ public class NewAdActivity2 extends BaseMapActivity implements View.OnClickListe
     }
 
     private void init() {
-        Toolbar toolbar = findViewById(R.id.toolbar);
-        setSupportActionBar(toolbar);
-
-        ActionBar actionBar = getSupportActionBar();
-        if (actionBar != null) {
-            actionBar.setDisplayHomeAsUpEnabled(true);
-            actionBar.setDisplayShowTitleEnabled(true);
-            updateTitle(getString(R.string.post_your_ad));
-        }
+        mapScrollView = findViewById(R.id.mapScrollView);
 
         submitBtn = findViewById(R.id.submitBtn);
         submitBtn.setOnClickListener(this);
@@ -355,9 +355,24 @@ public class NewAdActivity2 extends BaseMapActivity implements View.OnClickListe
         @Override
         public void run() {
             mobileNumber.setError(null);
-            AppConstants.isMobileNumberValid(NewAdActivity2.this, mobileNumber);
+            if (AppConstants.isMobileNumberValid(NewAdActivity2.this, mobileNumber)) {
+
+            }
         }
     };
+
+    private void needToVerifyMobileNumber() {
+        AlertDialog alertDialog = new AlertDialog.Builder(this).create();
+        alertDialog.setTitle("Alert");
+        alertDialog.setMessage("Alert message to be shown");
+        alertDialog.setButton(AlertDialog.BUTTON_NEUTRAL, "OK",
+                new DialogInterface.OnClickListener() {
+                    public void onClick(DialogInterface dialog, int which) {
+                        dialog.dismiss();
+                    }
+                });
+        alertDialog.show();
+    }
 
     private TextView rentDate, remainingTime;
     private TabLayout tabLayout;
@@ -414,24 +429,60 @@ public class NewAdActivity2 extends BaseMapActivity implements View.OnClickListe
         tabLayout.getTabAt(0).select();
     }
 
+
+    public ScrollView mapScrollView;
     private GoogleMap googleMap;
 
     @Override
     protected void onMapReady2(GoogleMap googleMap) {
         this.googleMap = googleMap;
-//        googleMap.setOnMapClickListener(new GoogleMap.OnMapClickListener() {
-//            @Override
-//            public void onMapClick(LatLng latLng) {
-//
-//            }
-//        });
-//
-//        googleMap.setOnMapLongClickListener(new GoogleMap.OnMapLongClickListener() {
-//            @Override
-//            public void onMapLongClick(LatLng latLng) {
-//
-//            }
-//        });
+
+        mapScrollView = findViewById(R.id.mapScrollView); //parent scrollview in xml, give your scrollview id value
+
+        ((WorkaroundMapFragment) getSupportFragmentManager().findFragmentById(R.id.map))
+                .setListener(new WorkaroundMapFragment.OnTouchListener() {
+                    @Override
+                    public void onTouch() {
+                        mapScrollView.requestDisallowInterceptTouchEvent(true);
+                    }
+                });
+
+        this.googleMap.setInfoWindowAdapter(this);
+        this.googleMap.setOnMapLongClickListener(this);
+        this.googleMap.setOnMapClickListener(this);
+
+        addMarker(getDefaultLatLng(), "We find out your location");
+    }
+
+    @Override
+    public View getInfoWindow(Marker marker) {
+        return null;
+    }
+
+    @Override
+    public View getInfoContents(Marker marker) {
+        // Inflate the layouts for the info window, roomFaceTitle and snippet.
+        View infoWindow = getLayoutInflater().inflate(R.layout.custom_info_contents,
+                (FrameLayout) findViewById(R.id.map), false);
+
+        TextView title = infoWindow.findViewById(R.id.title);
+        title.setText(marker.getTitle());
+
+        TextView snippet = infoWindow.findViewById(R.id.snippet);
+        snippet.setText(marker.getSnippet());
+
+        return infoWindow;
+    }
+
+    @Override
+    public void onMapLongClick(LatLng latLng) {
+        addMarker(latLng, "You tap here!");
+    }
+
+    @Override
+    public void onMapClick(LatLng latLng) {
+        googleMap.clear();
+        selectedLocation = null;
     }
 
     private String fullAddress = "";
@@ -701,8 +752,12 @@ public class NewAdActivity2 extends BaseMapActivity implements View.OnClickListe
         userValues.put(DBConstants.userEmail, firebaseUser.getEmail());
         userValues.put(DBConstants.userDisplayName, firebaseUser.getDisplayName());
 
+        String fcmToken = FirebaseInstanceId.getInstance().getToken();
+        userValues.put(DBConstants.fcmToken, fcmToken);
+
         HashMap<String, Object> childUpdates = new HashMap<>();
-        childUpdates.put("/" + DBConstants.user + "/" + getUid(), userValues);
+        childUpdates.put("/" + DBConstants.users + "/" + DBConstants.registeredUsers + "/" + getUid(), userValues);
+
         mDatabase.updateChildren(childUpdates);
     }
 

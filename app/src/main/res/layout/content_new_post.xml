@@ -185,7 +185,7 @@
                         android:checked="true"
                         android:ellipsize="end"
                         android:singleLine="true"
-                        android:text="@string/wellFurnished"
+                        android:text="@string/well_furnished"
                         android:textColor="@color/black" />
                 </LinearLayout>
 

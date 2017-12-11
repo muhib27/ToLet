@@ -219,20 +219,20 @@ public class FamilyFlatAd extends BaseFragment {
 
     public FamilyInfo getFamilyInfo() {
         FamilyInfo familyInfo = new FamilyInfo();
-        familyInfo.setBedRoom(familyRoom[0]);
-        familyInfo.setBathroom(familyRoom[1]);
-        familyInfo.setBalcony(familyRoom[2]);
-        familyInfo.setHasDrawingDining(drawingDining.getCheckedRadioButtonId() == R.id.drawingDiningYes);
-        familyInfo.setIsItDuplex(isItDuplex.getCheckedRadioButtonId() == R.id.isItDuplexYes);
+        familyInfo.bedRoom = familyRoom[0];
+        familyInfo.bathroom = familyRoom[1];
+        familyInfo.balcony = familyRoom[2];
+        familyInfo.hasDrawingDining = drawingDining.getCheckedRadioButtonId() == R.id.drawingDiningYes;
+        familyInfo.isItDuplex = isItDuplex.getCheckedRadioButtonId() == R.id.isItDuplexYes;
 
-        familyInfo.setWellFurnished(wellFurnishedCB.isChecked());
-        familyInfo.setGasSupply(gasSupplyCB.isChecked());
-        familyInfo.setTwentyFourWater(twentyFourWaterCB.isChecked());
-        familyInfo.setSecurityGuard(securityGuardCB.isChecked());
-        familyInfo.setLift(liftCB.isChecked());
-        familyInfo.setGenerator(generatorCB.isChecked());
-        familyInfo.setParkingGarage(parkingGarageCB.isChecked());
-        familyInfo.setKitchenCabinet(kitchenCabinetCB.isChecked());
+        familyInfo.wellFurnished = wellFurnishedCB.isChecked();
+        familyInfo.gasSupply = gasSupplyCB.isChecked();
+        familyInfo.twentyFourWater = twentyFourWaterCB.isChecked();
+        familyInfo.securityGuard = securityGuardCB.isChecked();
+        familyInfo.lift = liftCB.isChecked();
+        familyInfo.generator = generatorCB.isChecked();
+        familyInfo.parkingGarage = parkingGarageCB.isChecked();
+        familyInfo.kitchenCabinet = kitchenCabinetCB.isChecked();
 
         return familyInfo;
     }

@@ -8,11 +8,16 @@ import android.widget.ImageView;
 import android.widget.TextView;
 
 import com.bumptech.glide.Glide;
+import com.google.firebase.auth.FirebaseAuth;
+import com.google.firebase.auth.FirebaseUser;
 import com.to.let.bd.R;
 import com.to.let.bd.activities.AdListActivity2;
 import com.to.let.bd.adapters.AdAdapter;
+import com.to.let.bd.common.BaseActivity;
 import com.to.let.bd.model.AdInfo;
+import com.to.let.bd.utils.AppConstants;
 import com.to.let.bd.utils.DateUtils;
+import com.to.let.bd.utils.MyAnalyticsUtil;
 
 import java.text.DecimalFormat;
 
@@ -44,40 +49,10 @@ public class AdViewHolder extends RecyclerView.ViewHolder {
     }
 
     public void bindToAd(final AdInfo adInfo, final int clickedPosition, final AdAdapter.ClickListener clickListener) {
-        DecimalFormat formatter = new DecimalFormat("#,###,###");
-        String adRent = "Rent per month: TK " + formatter.format(adInfo.getFlatRent());
+        String adRent = "Rent per month: TK " + AppConstants.rentFormatter(adInfo.getFlatRent());
         this.adRent.setText(adRent);
 
-        String adDescription = "";
-
-        if (adInfo.getFamilyInfo() != null) {
-            boolean isItDulpex = adInfo.getFamilyInfo().getIsItDuplex();
-            if (isItDulpex)
-                adDescription = "Duplex house with ";
-            adDescription = adDescription + adInfo.getFamilyInfo().getBedRoom() + "bed " +
-                    adInfo.getFamilyInfo().getBathroom() + "bath ";
-
-            if (adInfo.getFamilyInfo().getBalcony() > 0) {
-                adDescription = adDescription + adInfo.getFamilyInfo().getBalcony() + "balcony ";
-            }
-            if (adInfo.getFlatSpace() > 0) {
-                adDescription = adDescription + adInfo.getFlatSpace() + " sqft";
-            }
-        } else if (adInfo.getMessInfo() != null) {
-            String[] messTypeArray = context.getResources().getStringArray(R.array.mess_member_type_array);
-            adDescription = messTypeArray[adInfo.getMessInfo().getMemberType()] + " member ";
-            adDescription += adInfo.getMessInfo().getNumberOfSeat() + "seat " +
-                    adInfo.getMessInfo().getNumberOfRoom() + "room ";
-        } else if (adInfo.getSubletInfo() != null) {
-            String[] subletTypeArray = context.getResources().getStringArray(R.array.sublet_type_array);
-            adDescription = adInfo.getSubletInfo().getSubletType() >= 3 ? adInfo.getSubletInfo().getSubletTypeOthers() :
-                    subletTypeArray[adInfo.getSubletInfo().getSubletType()];
-
-            adDescription += " with ";
-
-            String[] subletBathTypeArray = context.getResources().getStringArray(R.array.sublet_bath_type_array);
-            adDescription += subletBathTypeArray[adInfo.getSubletInfo().getBathroomType()] + " bath";
-        }
+        String adDescription = AppConstants.flatDescription(context, adInfo);
         this.adDescription.setText(adDescription);
 
         String rentDate = "Rent from: " + DateUtils.getRentDateString(adInfo.getStartingFinalDate());
@@ -89,11 +64,11 @@ public class AdViewHolder extends RecyclerView.ViewHolder {
 
         if (adInfo.getImages() == null || adInfo.getImages().isEmpty()) {
             if (adInfo.getMap() != null) {
-                imagePath = adInfo.getMap().getDownloadUrl();
+                imagePath = adInfo.getMap().downloadUrl;
             }
         } else {
             imageCount = adInfo.getImages().size();
-            imagePath = adInfo.getImages().get(0).getDownloadUrl();
+            imagePath = adInfo.getImages().get(0).downloadUrl;
         }
 
         if (imagePath != null)
@@ -117,7 +92,7 @@ public class AdViewHolder extends RecyclerView.ViewHolder {
         starView.setSelected(false);
 
         if (adInfo.favCount > 0) {
-            if (adInfo.fav.containsKey(AdListActivity2.firebaseUserId)) {
+            if (adInfo.fav.containsKey(BaseActivity.getUid())) {
                 starView.setSelected(true);
             }
         }
@@ -125,6 +100,7 @@ public class AdViewHolder extends RecyclerView.ViewHolder {
             @Override
             public void onClick(View view) {
                 starView.setSelected(!starView.isSelected());
+
                 if (clickListener != null)
                     clickListener.onFavClick(starView, clickedPosition, adInfo);
             }

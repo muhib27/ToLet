@@ -109,8 +109,8 @@ public class SubletFlatAd extends BaseFragment {
             } else if (this.subletType.getCheckedRadioButtonId() == R.id.othersSublet) {
                 subletType = 3;
             }
-            subletInfo.setSubletType(subletType);
-            subletInfo.setSubletTypeOthers(subletTypeOthers.getText().toString());
+            subletInfo.subletType = subletType;
+            subletInfo.subletTypeOthers = subletTypeOthers.getText().toString();
         }
         {
             int bathroomType = 0;
@@ -119,15 +119,15 @@ public class SubletFlatAd extends BaseFragment {
             } else if (this.bathroomType.getCheckedRadioButtonId() == R.id.shared) {
                 bathroomType = 2;
             }
-            subletInfo.setBathroomType(bathroomType);
+            subletInfo.bathroomType = bathroomType;
         }
 
-        subletInfo.setTwentyFourWater(twentyFourWaterCB.isChecked());
-        subletInfo.setGasSupply(gasSupplyCB.isChecked());
-        subletInfo.setKitchenShare(kitchenShareCB.isChecked());
-        subletInfo.setWellFurnished(wellFurnishedCB.isChecked());
-        subletInfo.setLift(liftCB.isChecked());
-        subletInfo.setGenerator(generatorCB.isChecked());
+        subletInfo.twentyFourWater = twentyFourWaterCB.isChecked();
+        subletInfo.gasSupply = gasSupplyCB.isChecked();
+        subletInfo.kitchenShare = kitchenShareCB.isChecked();
+        subletInfo.wellFurnished = wellFurnishedCB.isChecked();
+        subletInfo.lift = liftCB.isChecked();
+        subletInfo.generator = generatorCB.isChecked();
 
         return subletInfo;
     }

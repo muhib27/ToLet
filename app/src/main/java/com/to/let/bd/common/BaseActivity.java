@@ -160,7 +160,7 @@ public class BaseActivity extends AppCompatActivity {
         return FirebaseAuth.getInstance().getCurrentUser();
     }
 
-    public String getUid() {
+    public static String getUid() {
         FirebaseUser user = FirebaseAuth.getInstance().getCurrentUser();
         if (user == null) {
             return null;
@@ -168,7 +168,7 @@ public class BaseActivity extends AppCompatActivity {
         return user.getUid();
     }
 
-    public FirebaseUser getCurrentUser() {
+    public  FirebaseUser getCurrentUser() {
         return FirebaseAuth.getInstance().getCurrentUser();
     }
 
@@ -215,5 +215,14 @@ public class BaseActivity extends AppCompatActivity {
 //        }
         adDetailsIntent.putExtra(AppConstants.keyAdInfo, adInfo);
         startActivity(adDetailsIntent);
+    }
+
+    protected void shareAction() {
+        Intent sendIntent = new Intent();
+        sendIntent.setAction(Intent.ACTION_SEND);
+        sendIntent.putExtra(Intent.EXTRA_TEXT, "Hey check out the latest To-Let app:\nhttps://play.google.com/store/apps/details?id=" +
+                getPackageName());
+        sendIntent.setType("text/plain");
+        startActivity(sendIntent);
     }
 }

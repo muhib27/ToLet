@@ -1062,7 +1062,7 @@ public class NewAdActivity extends BaseImageUploadActivity
         userValues.put(DBConstants.userDisplayName, firebaseUser.getDisplayName());
 
         HashMap<String, Object> childUpdates = new HashMap<>();
-        childUpdates.put("/" + DBConstants.user + "/" + getUid(), userValues);
+        childUpdates.put("/" + DBConstants.users + "/" + DBConstants.registeredUsers + "/" + getUid(), userValues);
         mDatabase.updateChildren(childUpdates);
     }
 

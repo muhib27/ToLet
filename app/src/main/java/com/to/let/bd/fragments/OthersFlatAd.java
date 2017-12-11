@@ -130,14 +130,14 @@ public class OthersFlatAd extends BaseFragment {
 
     public OthersInfo getOthersInfo() {
         OthersInfo subletInfo = new OthersInfo();
-        subletInfo.setRentType(rentType.get(selectedPosition));
+        subletInfo.rentType = rentType.get(selectedPosition);
 
-        subletInfo.setLift(liftCB.isChecked());
-        subletInfo.setGenerator(generatorCB.isChecked());
-        subletInfo.setSecurityGuard(securityGuardCB.isChecked());
-        subletInfo.setParkingGarage(parkingGarageCB.isChecked());
-        subletInfo.setFullyDecorated(fullyDecoratedCB.isChecked());
-        subletInfo.setWellFurnished(wellFurnishedCB.isChecked());
+        subletInfo.lift = liftCB.isChecked();
+        subletInfo.generator = generatorCB.isChecked();
+        subletInfo.securityGuard=securityGuardCB.isChecked();
+        subletInfo.parkingGarage = parkingGarageCB.isChecked();
+        subletInfo.fullyDecorated = fullyDecoratedCB.isChecked();
+        subletInfo.wellFurnished = wellFurnishedCB.isChecked();
         return subletInfo;
     }
 }

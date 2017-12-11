@@ -53,8 +53,7 @@ import java.util.List;
 import java.util.Locale;
 
 public abstract class BaseMapActivity extends BaseActivity implements OnMapReadyCallback,
-        GoogleApiClient.ConnectionCallbacks,
-        GoogleApiClient.OnConnectionFailedListener, GoogleMap.InfoWindowAdapter, GoogleMap.OnMapLongClickListener, GoogleMap.OnMapClickListener {
+        GoogleApiClient.ConnectionCallbacks, GoogleApiClient.OnConnectionFailedListener {
 
     private static final String TAG = BaseMapActivity.class.getSimpleName();
 
@@ -87,9 +86,6 @@ public abstract class BaseMapActivity extends BaseActivity implements OnMapReady
 
         setContentView(getLayoutResourceId());
 
-        initFirebase();
-        initView();
-
         // Configure Google Sign In
         GoogleSignInOptions gso = new GoogleSignInOptions.Builder(GoogleSignInOptions.DEFAULT_SIGN_IN)
                 .requestIdToken(getString(R.string.default_web_client_id))
@@ -106,6 +102,9 @@ public abstract class BaseMapActivity extends BaseActivity implements OnMapReady
                 .addApi(Auth.GOOGLE_SIGN_IN_API, gso)
                 .build();
         mGoogleApiClient.connect();
+
+        initFirebase();
+        initView();
         onCreate();
     }
 
@@ -119,8 +118,6 @@ public abstract class BaseMapActivity extends BaseActivity implements OnMapReady
         }
     }
 
-    public ScrollView mapScrollView;
-
     private void initView() {
         Toolbar toolbar = findViewById(R.id.toolbar);
         setSupportActionBar(toolbar);
@@ -131,8 +128,6 @@ public abstract class BaseMapActivity extends BaseActivity implements OnMapReady
             actionBar.setDisplayShowTitleEnabled(true);
             actionBar.setTitle(getActivityTitle());
         }
-
-        mapScrollView = findViewById(R.id.mapScrollView);
 
         if (firebaseUser != null) {
             if (!firebaseUser.isAnonymous()) {
@@ -186,11 +181,11 @@ public abstract class BaseMapActivity extends BaseActivity implements OnMapReady
     // [END onActivityResult]
 
     private void firebaseAuthWithGoogle(GoogleSignInAccount acct) {
-        AuthCredential credential = GoogleAuthProvider.getCredential(acct.getIdToken(), null);
-        firebaseLoginWithCredential(credential, acct);
+        firebaseLoginWithCredential(acct);
     }
 
-    private void firebaseLoginWithCredential(AuthCredential credential, final GoogleSignInAccount acct) {
+    private void firebaseLoginWithCredential(final GoogleSignInAccount acct) {
+        AuthCredential credential = GoogleAuthProvider.getCredential(acct.getIdToken(), null);
         mAuth.signInWithCredential(credential).addOnCompleteListener(this,
                 new OnCompleteListener<AuthResult>() {
                     @Override
@@ -299,58 +294,12 @@ public abstract class BaseMapActivity extends BaseActivity implements OnMapReady
         this.googleMap = googleMap;
         this.googleMap.setMapType(GoogleMap.MAP_TYPE_NORMAL);
         this.googleMap.getUiSettings().setZoomControlsEnabled(true);
-        mapScrollView = findViewById(R.id.mapScrollView); //parent scrollview in xml, give your scrollview id value
-
-        ((WorkaroundMapFragment) getSupportFragmentManager().findFragmentById(R.id.map))
-                .setListener(new WorkaroundMapFragment.OnTouchListener() {
-                    @Override
-                    public void onTouch() {
-                        mapScrollView.requestDisallowInterceptTouchEvent(true);
-                    }
-                });
 
         requestLocationPermission();
         onMapReady2(this.googleMap);
-        // Use a custom info window adapter to handle multiple lines of text in the
-        // info window contents.
-        this.googleMap.setInfoWindowAdapter(this);
-        this.googleMap.setOnMapLongClickListener(this);
-        this.googleMap.setOnMapClickListener(this);
-    }
-
-    @Override
-    public View getInfoWindow(Marker marker) {
-        return null;
-    }
-
-    @Override
-    public View getInfoContents(Marker marker) {
-        // Inflate the layouts for the info window, roomFaceTitle and snippet.
-        View infoWindow = getLayoutInflater().inflate(R.layout.custom_info_contents,
-                (FrameLayout) findViewById(R.id.map), false);
-
-        TextView title = infoWindow.findViewById(R.id.title);
-        title.setText(marker.getTitle());
-
-        TextView snippet = infoWindow.findViewById(R.id.snippet);
-        snippet.setText(marker.getSnippet());
-
-        return infoWindow;
-    }
-
-    @Override
-    public void onMapLongClick(LatLng latLng) {
-        addMarker(latLng, "You tap here!");
-//        googleMap.setInfoWindowAdapter(new CustomInfoWindowAdapter());
     }
 
     protected abstract void onLoadLocationDetails(String fullAddress);
-
-    @Override
-    public void onMapClick(LatLng latLng) {
-        googleMap.clear();
-        selectedLocation = null;
-    }
 
     protected abstract void onMapReady2(GoogleMap googleMap);
 
@@ -393,8 +342,6 @@ public abstract class BaseMapActivity extends BaseActivity implements OnMapReady
             googleMap.moveCamera(CameraUpdateFactory.newLatLngZoom(defaultLatLng, DEFAULT_ZOOM));
             googleMap.getUiSettings().setMyLocationButtonEnabled(false);
         }
-
-        addMarker(defaultLatLng, "We find out your location");
     }
 
     protected LatLng getDefaultLatLng() {
@@ -458,7 +405,7 @@ public abstract class BaseMapActivity extends BaseActivity implements OnMapReady
         gotoDeviceLocation();
     }
 
-    private final int maxAddressResult = 3;
+    private final int maxAddressResult = 2;
     protected double rentLatitude, rentLongitude;
     private String countryName;
     private String division;

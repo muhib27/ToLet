@@ -19,8 +19,10 @@ import com.google.firebase.auth.AuthResult;
 import com.google.firebase.auth.FirebaseAuth;
 import com.google.firebase.auth.FirebaseUser;
 import com.google.firebase.auth.GoogleAuthProvider;
+import com.google.firebase.auth.UserProfileChangeRequest;
 import com.google.firebase.database.DatabaseReference;
 import com.google.firebase.database.FirebaseDatabase;
+import com.google.firebase.iid.FirebaseInstanceId;
 import com.to.let.bd.R;
 import com.to.let.bd.utils.AppConstants;
 import com.to.let.bd.utils.DBConstants;
@@ -101,11 +103,11 @@ public abstract class BaseFirebaseAuthActivity extends BaseActivity implements
     // [END onActivityResult]
 
     private void firebaseAuthWithGoogle(GoogleSignInAccount acct) {
-        AuthCredential credential = GoogleAuthProvider.getCredential(acct.getIdToken(), null);
-        firebaseLoginWithCredential(credential);
+        firebaseLoginWithCredential(acct);
     }
 
-    private void firebaseLoginWithCredential(AuthCredential credential) {
+    private void firebaseLoginWithCredential(final GoogleSignInAccount acct) {
+        AuthCredential credential = GoogleAuthProvider.getCredential(acct.getIdToken(), null);
         mAuth.signInWithCredential(credential).addOnCompleteListener(this,
                 new OnCompleteListener<AuthResult>() {
                     @Override
@@ -122,10 +124,20 @@ public abstract class BaseFirebaseAuthActivity extends BaseActivity implements
                             String message = task.getException().getMessage();
                             showToast(message);
                         } else {
-                            setEmailAddress();
+                            updateFirebaseUser(acct);
                         }
                     }
                 });
+    }
+
+    private void updateFirebaseUser(GoogleSignInAccount acct) {
+        UserProfileChangeRequest profileUpdates = new UserProfileChangeRequest.Builder()
+                .setDisplayName(acct.getDisplayName())
+                .setPhotoUri(acct.getPhotoUrl())
+                .build();
+        firebaseUser.updateProfile(profileUpdates);
+        writeNewUser();
+        setEmailAddress();
     }
 
     private FirebaseAuth mAuth;
@@ -207,12 +219,21 @@ public abstract class BaseFirebaseAuthActivity extends BaseActivity implements
         firebaseUser = FirebaseAuth.getInstance().getCurrentUser();
         HashMap<String, Object> userValues = new HashMap<>();
         userValues.put(DBConstants.userId, getUid());
+
         if (!firebaseUser.isAnonymous() && firebaseUser.getEmail() != null) {
             userValues.put(DBConstants.userEmail, firebaseUser.getEmail());
+            userValues.put(DBConstants.userDisplayName, firebaseUser.getDisplayName());
         }
 
+        String fcmToken = FirebaseInstanceId.getInstance().getToken();
+        userValues.put(DBConstants.fcmToken, fcmToken);
+
         HashMap<String, Object> childUpdates = new HashMap<>();
-        childUpdates.put("/" + DBConstants.user + "/" + getUid(), userValues);
+
+        if (firebaseUser.isAnonymous())
+            childUpdates.put("/" + DBConstants.users + "/" + DBConstants.anonymousUsers + "/" + getUid(), userValues);
+        else
+            childUpdates.put("/" + DBConstants.users + "/" + DBConstants.registeredUsers + "/" + getUid(), userValues);
         mDatabase.updateChildren(childUpdates);
     }
 
