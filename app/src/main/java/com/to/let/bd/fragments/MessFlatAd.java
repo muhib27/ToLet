@@ -10,6 +10,8 @@ import android.widget.EditText;
 import android.widget.LinearLayout;
 import android.widget.RadioGroup;
 
+import com.google.android.gms.ads.AdRequest;
+import com.google.android.gms.ads.AdView;
 import com.to.let.bd.R;
 import com.to.let.bd.activities.NewAdActivity2;
 import com.to.let.bd.common.BaseFragment;
@@ -36,6 +38,11 @@ public class MessFlatAd extends BaseFragment {
 
         activity = (NewAdActivity2) getActivity();
         rootView = inflater.inflate(R.layout.fragment_mess, container, false);
+
+        AdView adView = rootView.findViewById(R.id.adView);
+        AdRequest adRequest = new AdRequest.Builder().build();
+        adView.loadAd(adRequest);
+
         return rootView;
     }
 
@@ -77,7 +84,7 @@ public class MessFlatAd extends BaseFragment {
     private LinearLayout roomNumberLay;
     private RadioGroup messMemberType, messManagementSystem;
     private CheckBox mealFacilityCB, maidServantCB, twentyFourWaterCB,
-            nonSmokerCB, wifiCB, fridgeCB;
+            nonSmokerCB, onlyStudentsCB, onlyJobHoldersCB, wifiCB, fridgeCB;
     private EditText mealRate;
 
     private void init() {
@@ -90,6 +97,10 @@ public class MessFlatAd extends BaseFragment {
         twentyFourWaterCB = rootView.findViewById(R.id.twentyFourWaterCB);
 
         nonSmokerCB = rootView.findViewById(R.id.nonSmokerCB);
+
+        onlyStudentsCB = rootView.findViewById(R.id.onlyStudentsCB);
+        onlyJobHoldersCB = rootView.findViewById(R.id.onlyJobHoldersCB);
+
         wifiCB = rootView.findViewById(R.id.wifiCB);
         fridgeCB = rootView.findViewById(R.id.fridgeCB);
 
@@ -120,6 +131,8 @@ public class MessFlatAd extends BaseFragment {
         messInfo.maidServant = maidServantCB.isChecked();
         messInfo.twentyFourWater = twentyFourWaterCB.isChecked();
         messInfo.nonSmoker = nonSmokerCB.isChecked();
+        messInfo.onlyStudents = onlyStudentsCB.isChecked();
+        messInfo.onlyJobHolders = onlyJobHoldersCB.isChecked();
         messInfo.wifi = wifiCB.isChecked();
         messInfo.fridge = fridgeCB.isChecked();
 

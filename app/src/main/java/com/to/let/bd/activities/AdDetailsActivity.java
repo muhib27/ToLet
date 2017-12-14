@@ -10,11 +10,8 @@ import android.os.Bundle;
 import android.support.v4.view.ViewPager;
 import android.support.v7.app.ActionBar;
 import android.support.v7.app.AlertDialog;
-import android.support.v7.widget.LinearLayoutManager;
-import android.support.v7.widget.RecyclerView;
 import android.support.v7.widget.Toolbar;
 import android.view.Gravity;
-import android.view.LayoutInflater;
 import android.view.Menu;
 import android.view.MenuItem;
 import android.view.View;
@@ -23,9 +20,19 @@ import android.view.Window;
 import android.widget.ArrayAdapter;
 import android.widget.Button;
 import android.widget.ImageView;
+import android.widget.LinearLayout;
 import android.widget.TextView;
 
 import com.bumptech.glide.Glide;
+import com.google.android.gms.ads.AdListener;
+import com.google.android.gms.ads.AdRequest;
+import com.google.android.gms.ads.InterstitialAd;
+import com.google.firebase.database.DataSnapshot;
+import com.google.firebase.database.DatabaseError;
+import com.google.firebase.database.DatabaseReference;
+import com.google.firebase.database.FirebaseDatabase;
+import com.google.firebase.database.MutableData;
+import com.google.firebase.database.Transaction;
 import com.to.let.bd.R;
 import com.to.let.bd.adapters.SlidingImageAdapter;
 import com.to.let.bd.common.BaseActivity;
@@ -40,10 +47,11 @@ import com.to.let.bd.utils.DBConstants;
 import com.to.let.bd.utils.DateUtils;
 import com.to.let.bd.utils.MyAnalyticsUtil;
 
-import java.util.ArrayList;
 import java.util.Date;
 
 public class AdDetailsActivity extends BaseActivity implements View.OnClickListener {
+
+    public static boolean needToRefreshData = false;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -59,21 +67,58 @@ public class AdDetailsActivity extends BaseActivity implements View.OnClickListe
             actionBar.setTitle(R.string.ad_details);
         }
 
+        needToRefreshData = false;
+
         myAnalyticsUtil = new MyAnalyticsUtil(this);
+        databaseReference = FirebaseDatabase.getInstance().getReference();
 
         getData();
         init();
-        initRecycler();
 
         if (images != null && images.length > 0) {
             initSlider();
         }
 
-        myAnalyticsUtil.adDetails(adInfo, getUid());
-
-        showLog();
+        myAnalyticsUtil.showAdDetails(adInfo, getUid());
+        initInterstitialAd();
     }
 
+    private InterstitialAd interstitialAd;
+
+    private void initInterstitialAd() {
+        interstitialAd = new InterstitialAd(this);
+        interstitialAd.setAdUnitId(getString(R.string.ad_mob_interstitial_id));
+        interstitialAd.loadAd(new AdRequest.Builder().build());
+
+        interstitialAd.setAdListener(new AdListener() {
+            @Override
+            public void onAdLoaded() {
+                showLog("Code to be executed when an ad finishes loading.");
+            }
+
+            @Override
+            public void onAdFailedToLoad(int errorCode) {
+                showLog("Code to be executed when an ad request fails.");
+            }
+
+            @Override
+            public void onAdOpened() {
+                showLog("Code to be executed when the ad is displayed.");
+            }
+
+            @Override
+            public void onAdLeftApplication() {
+                showLog("Code to be executed when the user has left the app.");
+            }
+
+            @Override
+            public void onAdClosed() {
+                showLog("Code to be executed when when the interstitial ad is closed.");
+            }
+        });
+    }
+
+    private DatabaseReference databaseReference;
     private MyAnalyticsUtil myAnalyticsUtil;
 
     private AdInfo adInfo;
@@ -81,12 +126,12 @@ public class AdDetailsActivity extends BaseActivity implements View.OnClickListe
     private void getData() {
         adInfo = (AdInfo) getIntent().getExtras().getSerializable(AppConstants.keyAdInfo);
 
-        if (adInfo == null || adInfo.getImages() == null || adInfo.getImages().isEmpty()) {
+        if (adInfo == null || adInfo.images == null || adInfo.images.isEmpty()) {
             images = new String[0];
         } else {
-            images = new String[adInfo.getImages().size()];
-            for (int i = 0; i < adInfo.getImages().size(); i++) {
-                images[i] = adInfo.getImages().get(i).downloadUrl;
+            images = new String[adInfo.images.size()];
+            for (int i = 0; i < adInfo.images.size(); i++) {
+                images[i] = adInfo.images.get(i).downloadUrl;
             }
         }
     }
@@ -94,6 +139,8 @@ public class AdDetailsActivity extends BaseActivity implements View.OnClickListe
     private TextView rentDate, totalRent, roomDetails, addressDetails, rentType,
             othersFacility, othersFacilityDetails, reportThis, photoCount, privacyPolicy;
     private Button callBtn, emailBtn;
+    private LinearLayout showInMapView;
+    private ImageView star;
 
     private void init() {
         rentDate = findViewById(R.id.rentDate);
@@ -109,25 +156,47 @@ public class AdDetailsActivity extends BaseActivity implements View.OnClickListe
         privacyPolicy.setText(getString(R.string.privacy_policy_note, getString(R.string.terms_of_use), getString(R.string.privacy_policy)));
         reportThis = findViewById(R.id.reportThis);
 
+        reportThis.setEnabled(true);
+
+        if (adInfo.reportCount > 0) {
+            if (adInfo.report.containsKey(BaseActivity.getUid())) {
+                reportThis.setEnabled(false);
+                reportThis.setText(R.string.already_reported);
+            }
+        }
+
+        star = findViewById(R.id.star);
+        star.setSelected(false);
+
+        if (adInfo.favCount > 0) {
+            if (adInfo.fav.containsKey(BaseActivity.getUid())) {
+                star.setSelected(true);
+            }
+        }
+
+
+        star.setOnClickListener(this);
+
         photoCount = findViewById(R.id.photoCount);
 
+        showInMapView = findViewById(R.id.showInMapView);
         callBtn = findViewById(R.id.callBtn);
         emailBtn = findViewById(R.id.emailBtn);
 
         if (adInfo != null) {
-            String totalRent = "TK " + AppConstants.rentFormatter(adInfo.getFlatRent());
+            String totalRent = "TK " + AppConstants.rentFormatter(adInfo.flatRent);
             this.totalRent.setText(totalRent);
             this.roomDetails.setText(AppConstants.flatDescription(this, adInfo));
 
             StringBuilder stringBuilder = new StringBuilder();
-            stringBuilder.append(adInfo.getFullAddress());
-            if (adInfo.getFlatDescription() != null && !adInfo.getFlatDescription().isEmpty()) {
+            stringBuilder.append(adInfo.fullAddress);
+            if (adInfo.flatDescription != null && !adInfo.flatDescription.isEmpty()) {
                 stringBuilder.append("\n\n");
-                stringBuilder.append(adInfo.getFlatDescription());
+                stringBuilder.append(adInfo.flatDescription);
             }
 
             addressDetails.setText(stringBuilder);
-            String[] splittedDate = DateUtils.splittedDate(adInfo.getStartingFinalDate());
+            String[] splittedDate = DateUtils.splittedDate(adInfo.startingFinalDate);
             Date date = DateUtils.getDate(splittedDate, DateUtils.format4);
 
             String rentDate = DateUtils.getFormattedDateString(date, DateUtils.format2);
@@ -143,60 +212,92 @@ public class AdDetailsActivity extends BaseActivity implements View.OnClickListe
             this.photoCount.setText(photoCount);
         } else {
             noImageView.setVisibility(View.VISIBLE);
-            if (adInfo.getMap() != null && adInfo.getMap().downloadUrl != null) {
+            if (adInfo.map != null && adInfo.map.downloadUrl != null) {
                 Glide.with(this)
-                        .load(Uri.parse(adInfo.getMap().downloadUrl))
+                        .load(Uri.parse(adInfo.map.downloadUrl))
                         .into(noImageView);
             }
         }
 
+        showInMapView.setOnClickListener(this);
         callBtn.setOnClickListener(this);
         emailBtn.setOnClickListener(this);
         reportThis.setOnClickListener(this);
     }
 
+    private void onFavClicked() {
+        DatabaseReference userAdRef = databaseReference.child(DBConstants.adList).child(adInfo.adId);
+        userAdRef.runTransaction(new Transaction.Handler() {
+            @Override
+            public Transaction.Result doTransaction(MutableData mutableData) {
+                AdInfo p = mutableData.getValue(AdInfo.class);
+                if (p == null) {
+                    return Transaction.success(mutableData);
+                }
+                if (p.fav.containsKey(getUid())) {
+                    // Unstar the ad and remove self from stars
+                    p.favCount = p.favCount - 1;
+                    p.fav.remove(getUid());
+                } else {
+                    // Star the ad and add self to stars
+                    p.favCount = p.favCount + 1;
+                    p.fav.put(getUid(), true);
+                }
+
+                // Set value and report transaction success
+                mutableData.setValue(p);
+                return Transaction.success(mutableData);
+            }
+
+            @Override
+            public void onComplete(DatabaseError databaseError, boolean b, DataSnapshot dataSnapshot) {
+                needToRefreshData = true;
+            }
+        });
+    }
+
     private void othersFacilityDetails() {
         StringBuilder stringBuilder = new StringBuilder();
         String rentType = "";
-        if (adInfo.getFamilyInfo() != null) {
-            FamilyInfo familyInfo = adInfo.getFamilyInfo();
+        if (adInfo.familyInfo != null) {
+            FamilyInfo familyInfo = adInfo.familyInfo;
             rentType = getString(R.string.family);
 
             if (familyInfo.twentyFourWater) {
-                stringBuilder.append(getString(R.string.twenty_four_water));
+                stringBuilder.append(getString(R.string.twenty_four_water_facility));
                 stringBuilder.append("\n");
             }
             if (familyInfo.gasSupply) {
-                stringBuilder.append(getString(R.string.supply_gas));
+                stringBuilder.append(getString(R.string.supply_gas_facility));
                 stringBuilder.append("\n");
             }
             if (familyInfo.securityGuard) {
-                stringBuilder.append(getString(R.string.security_guard));
+                stringBuilder.append(getString(R.string.always_security_guard));
                 stringBuilder.append("\n");
             }
 
             if (familyInfo.parkingGarage) {
-                stringBuilder.append(getString(R.string.parking_garage));
+                stringBuilder.append(getString(R.string.parking_garage_facility));
                 stringBuilder.append("\n");
             }
             if (familyInfo.lift) {
-                stringBuilder.append(getString(R.string.lift));
+                stringBuilder.append(getString(R.string.lift_facility));
                 stringBuilder.append("\n");
             }
             if (familyInfo.generator) {
-                stringBuilder.append(getString(R.string.generator));
+                stringBuilder.append(getString(R.string.generator_facility));
                 stringBuilder.append("\n");
             }
             if (familyInfo.wellFurnished) {
-                stringBuilder.append(getString(R.string.well_furnished));
+                stringBuilder.append(getString(R.string.fully_furnished));
                 stringBuilder.append("\n");
             }
             if (familyInfo.kitchenCabinet) {
-                stringBuilder.append(getString(R.string.kitchen_cabinet));
+                stringBuilder.append(getString(R.string.have_a_kitchen_cabinet));
                 stringBuilder.append("\n");
             }
-        } else if (adInfo.getMessInfo() != null) {
-            MessInfo messInfo = adInfo.getMessInfo();
+        } else if (adInfo.messInfo != null) {
+            MessInfo messInfo = adInfo.messInfo;
 
             rentType = getString(R.string.mess);
 
@@ -209,82 +310,92 @@ public class AdDetailsActivity extends BaseActivity implements View.OnClickListe
             if (messInfo.mealFacility) {
                 stringBuilder.append(getString(R.string.meal_facility));
                 stringBuilder.append("\n");
+
+                if (messInfo.mealRate > 0) {
+                    stringBuilder.append(getString(R.string.approximate_meal_rate));
+                    stringBuilder.append(" ");
+                    stringBuilder.append(messInfo.mealRate);
+                    stringBuilder.append("\n");
+                }
             }
             if (messInfo.maidServant) {
                 stringBuilder.append(getString(R.string.maid_servant));
                 stringBuilder.append("\n");
             }
             if (messInfo.twentyFourWater) {
-                stringBuilder.append(getString(R.string.twenty_four_water));
+                stringBuilder.append(getString(R.string.twenty_four_water_facility));
                 stringBuilder.append("\n");
             }
             if (messInfo.nonSmoker) {
-                stringBuilder.append(getString(R.string.non_smoker_only));
+                stringBuilder.append(getString(R.string.only_non_smoker));
                 stringBuilder.append("\n");
             }
             if (messInfo.fridge) {
-                stringBuilder.append(getString(R.string.fridge_facility));
+                stringBuilder.append(getString(R.string.have_fridge_facility));
                 stringBuilder.append("\n");
             }
             if (messInfo.wifi) {
-                stringBuilder.append(getString(R.string.wifi_facility));
+                stringBuilder.append(getString(R.string.have_wifi_facility));
                 stringBuilder.append("\n");
             }
-        } else if (adInfo.getSubletInfo() != null) {
-            SubletInfo subletInfo = adInfo.getSubletInfo();
+        } else if (adInfo.subletInfo != null) {
+            SubletInfo subletInfo = adInfo.subletInfo;
             rentType = getString(R.string.sublet);
             if (subletInfo.twentyFourWater) {
-                stringBuilder.append(getString(R.string.twenty_four_water));
+                stringBuilder.append(getString(R.string.twenty_four_water_facility));
                 stringBuilder.append("\n");
             }
             if (subletInfo.gasSupply) {
-                stringBuilder.append(getString(R.string.supply_gas));
+                stringBuilder.append(getString(R.string.supply_gas_facility));
                 stringBuilder.append("\n");
             }
             if (subletInfo.generator) {
-                stringBuilder.append(getString(R.string.generator));
+                stringBuilder.append(getString(R.string.generator_facility));
                 stringBuilder.append("\n");
             }
             if (subletInfo.lift) {
-                stringBuilder.append(getString(R.string.lift));
+                stringBuilder.append(getString(R.string.lift_facility));
                 stringBuilder.append("\n");
             }
             if (subletInfo.wellFurnished) {
-                stringBuilder.append(getString(R.string.well_furnished));
+                stringBuilder.append(getString(R.string.fully_furnished));
                 stringBuilder.append("\n");
             }
             if (subletInfo.kitchenShare) {
-                stringBuilder.append(getString(R.string.kitchen_share));
+                stringBuilder.append(getString(R.string.need_to_share_kitchen));
+                stringBuilder.append("\n");
+            } else {
+                stringBuilder.append(getString(R.string.no_need_to_share_kitchen));
                 stringBuilder.append("\n");
             }
-        } else if (adInfo.getOthersInfo() != null) {
-            OthersInfo othersInfo = adInfo.getOthersInfo();
+        } else if (adInfo.othersInfo != null) {
+            OthersInfo othersInfo = adInfo.othersInfo;
             rentType = othersInfo.rentType;
             stringBuilder.append(othersInfo.rentType);
             stringBuilder.append("\n");
 
             if (othersInfo.lift) {
-                stringBuilder.append(getString(R.string.lift));
+                stringBuilder.append(getString(R.string.lift_facility));
                 stringBuilder.append("\n");
             }
             if (othersInfo.generator) {
-                stringBuilder.append(getString(R.string.generator));
+                stringBuilder.append(getString(R.string.generator_facility));
                 stringBuilder.append("\n");
             }
             if (othersInfo.securityGuard) {
-                stringBuilder.append(getString(R.string.security_guard));
+                stringBuilder.append(getString(R.string.always_security_guard));
                 stringBuilder.append("\n");
             }
             if (othersInfo.parkingGarage) {
-                stringBuilder.append(getString(R.string.parking_garage));
+                stringBuilder.append(getString(R.string.parking_garage_facility));
                 stringBuilder.append("\n");
             }
             if (othersInfo.fullyDecorated) {
-                stringBuilder.append(getString(R.string.fully_decorated));
+                stringBuilder.append(getString(R.string.interior_fully_decorated));
                 stringBuilder.append("\n");
             }
             if (othersInfo.wellFurnished) {
-                stringBuilder.append(getString(R.string.well_furnished));
+                stringBuilder.append(getString(R.string.fully_furnished));
                 stringBuilder.append("\n");
             }
         }
@@ -300,29 +411,52 @@ public class AdDetailsActivity extends BaseActivity implements View.OnClickListe
 
     @Override
     public void onClick(View view) {
-        if (view == callBtn) {
+        if (view == showInMapView) {
+            openMapActivity(0);
+        } else if (view == callBtn) {
             callTheUser();
         } else if (view == emailBtn) {
             mailTheUser();
         } else if (view == reportThis) {
             showReportAlert();
+        } else if (view == star) {
+            star.setSelected(!star.isSelected());
+            onFavClicked();
         }
     }
 
     private void callTheUser() {
-        String mobileNumber = "+8801914868646";
+        String mobileNumber = adInfo.mobileNumber;
+        if (mobileNumber == null || mobileNumber.trim().isEmpty()) {
+            showToast(R.string.mobile_number_not_found);
+            return;
+        }
         Intent intent = new Intent(Intent.ACTION_DIAL, Uri.fromParts("tel", mobileNumber, null));
-        startActivity(intent);
+        startActivityForResult(intent, 1);
+    }
+
+    @Override
+    protected void onActivityResult(int requestCode, int resultCode, Intent data) {
+        super.onActivityResult(requestCode, resultCode, data);
+
+        if (interstitialAd.isLoaded()) {
+            interstitialAd.show();
+        }
     }
 
     private void mailTheUser() {
-        String emailAddress = "mcnasim@gmail.com";
+        String emailAddress = adInfo.emailAddress;
+        if (emailAddress == null || emailAddress.trim().isEmpty()) {
+            showToast(R.string.email_address_not_found);
+            return;
+        }
+
         Intent emailIntent = new Intent(Intent.ACTION_SENDTO);
         emailIntent.setData(Uri.parse("mailto:"));
         emailIntent.putExtra(Intent.EXTRA_EMAIL, emailAddress);
         emailIntent.putExtra(Intent.EXTRA_SUBJECT, "Interested in your ad");
         emailIntent.putExtra(Intent.EXTRA_TEXT, "Hello dear, I would like to inform you that the ");
-        startActivity(Intent.createChooser(emailIntent, "Send email..."));
+        startActivityForResult(Intent.createChooser(emailIntent, "Send email..."), 2);
     }
 
     private void showReportAlert() {
@@ -338,31 +472,32 @@ public class AdDetailsActivity extends BaseActivity implements View.OnClickListe
             @Override
             public void onClick(DialogInterface dialog, int which) {
                 String strName = arrayAdapter.getItem(which);
+                onReportClicked(strName);
             }
         });
         builderSingle.show();
     }
 
-    private RecyclerView recyclerView;
-
-    private void initRecycler() {
-        recyclerView = findViewById(R.id.recyclerView);
-
-        mapIcon.clear();
-        mapTitle.clear();
-
-        mapIcon.add(R.mipmap.ic_launcher);
-        mapIcon.add(R.mipmap.ic_launcher);
-
-        mapTitle.add(getString(R.string.map_view));
-        mapTitle.add(getString(R.string.near_by));
-
-        MapListAdapter mapListAdapter = new MapListAdapter();
-        recyclerView.setAdapter(mapListAdapter);
-
-        LinearLayoutManager categoryLLM = new LinearLayoutManager(this, LinearLayoutManager.HORIZONTAL, false);
-        recyclerView.setLayoutManager(categoryLLM);
-    }
+//    private RecyclerView recyclerView;
+//
+//    private void initRecycler() {
+//        recyclerView = findViewById(R.id.recyclerView);
+//
+//        mapIcon.clear();
+//        mapTitle.clear();
+//
+//        mapIcon.add(R.mipmap.ic_launcher);
+//        mapIcon.add(R.mipmap.ic_launcher);
+//
+//        mapTitle.add(getString(R.string.map_view));
+//        mapTitle.add(getString(R.string.near_by));
+//
+//        MapListAdapter mapListAdapter = new MapListAdapter();
+//        recyclerView.setAdapter(mapListAdapter);
+//
+//        LinearLayoutManager categoryLLM = new LinearLayoutManager(this, LinearLayoutManager.HORIZONTAL, false);
+//        recyclerView.setLayoutManager(categoryLLM);
+//    }
 
     private String[] images;
 
@@ -388,61 +523,59 @@ public class AdDetailsActivity extends BaseActivity implements View.OnClickListe
         rentDate.setText(date);
     }
 
-    private ArrayList<String> mapTitle = new ArrayList<>();
-    private ArrayList<Integer> mapIcon = new ArrayList<>();
-
-    private class MapListAdapter extends RecyclerView.Adapter<MapListAdapter.MyViewHolder> {
-
-        private LayoutInflater layoutInflater;
-
-        MapListAdapter() {
-            layoutInflater = LayoutInflater.from(AdDetailsActivity.this);
-        }
-
-        @Override
-        public MyViewHolder onCreateViewHolder(ViewGroup parent, int viewType) {
-            View view = layoutInflater.inflate(R.layout.row_item_map, parent, false);
-            return new MyViewHolder(view);
-        }
-
-        @Override
-        public void onBindViewHolder(final MyViewHolder holder, int position) {
-            holder.icon.setImageResource(mapIcon.get(position));
-            holder.title.setText(mapTitle.get(position));
-        }
-
-        @Override
-        public int getItemCount() {
-            return mapIcon.size();
-        }
-
-        class MyViewHolder extends RecyclerView.ViewHolder {
-            ImageView icon;
-            TextView title;
-
-            MyViewHolder(final View itemView) {
-                super(itemView);
-                icon = itemView.findViewById(R.id.icon);
-                title = itemView.findViewById(R.id.title);
-
-                itemView.setOnClickListener(new View.OnClickListener() {
-                    @Override
-                    public void onClick(View view) {
-                        openMapActivity(getLayoutPosition());
-                    }
-                });
-            }
-        }
-    }
+//    private ArrayList<String> mapTitle = new ArrayList<>();
+//    private ArrayList<Integer> mapIcon = new ArrayList<>();
+//
+//    private class MapListAdapter extends RecyclerView.Adapter<MapListAdapter.MyViewHolder> {
+//
+//        private LayoutInflater layoutInflater;
+//
+//        MapListAdapter() {
+//            layoutInflater = LayoutInflater.from(AdDetailsActivity.this);
+//        }
+//
+//        @Override
+//        public MyViewHolder onCreateViewHolder(ViewGroup parent, int viewType) {
+//            View view = layoutInflater.inflate(R.layout.row_item_map, parent, false);
+//            return new MyViewHolder(view);
+//        }
+//
+//        @Override
+//        public void onBindViewHolder(final MyViewHolder holder, int position) {
+//            holder.icon.setImageResource(mapIcon.get(position));
+//            holder.title.setText(mapTitle.get(position));
+//        }
+//
+//        @Override
+//        public int getItemCount() {
+//            return mapIcon.size();
+//        }
+//
+//        class MyViewHolder extends RecyclerView.ViewHolder {
+//            ImageView icon;
+//            TextView title;
+//
+//            MyViewHolder(final View itemView) {
+//                super(itemView);
+//                icon = itemView.findViewById(R.id.icon);
+//                title = itemView.findViewById(R.id.title);
+//
+//                itemView.setOnClickListener(new View.OnClickListener() {
+//                    @Override
+//                    public void onClick(View view) {
+//                        openMapActivity(getLayoutPosition());
+//                    }
+//                });
+//            }
+//        }
+//    }
 
     private void openMapActivity(int typePosition) {
         if (adInfo == null)
             return;
 
         Intent mapIntent = new Intent(this, MapActivity.class);
-        mapIntent.putExtra(AppConstants.keyType, typePosition);
-        mapIntent.putExtra(DBConstants.latitude, adInfo.getLatitude());
-        mapIntent.putExtra(DBConstants.longitude, adInfo.getLongitude());
+        mapIntent.putExtra(AppConstants.keyAdInfo, adInfo);
         startActivity(mapIntent);
     }
 
@@ -488,5 +621,35 @@ public class AdDetailsActivity extends BaseActivity implements View.OnClickListe
             default:
                 return super.onOptionsItemSelected(item);
         }
+    }
+
+    // [START ad_stars_transaction]
+    private void onReportClicked(final String reportType) {
+        DatabaseReference userAdRef = databaseReference.child(DBConstants.adList).child(adInfo.adId);
+        userAdRef.runTransaction(new Transaction.Handler() {
+            @Override
+            public Transaction.Result doTransaction(MutableData mutableData) {
+                AdInfo p = mutableData.getValue(AdInfo.class);
+                if (p == null) {
+                    return Transaction.success(mutableData);
+                }
+                if (!p.report.containsKey(getUid())) {
+                    p.reportCount = p.reportCount + 1;
+                    p.report.put(getUid(), reportType);
+                }
+
+                // Set value and report transaction success
+                mutableData.setValue(p);
+                return Transaction.success(mutableData);
+            }
+
+            @Override
+            public void onComplete(DatabaseError databaseError, boolean b, DataSnapshot dataSnapshot) {
+                needToRefreshData = true;
+                if (databaseError == null) {
+                    reportThis.setEnabled(false);
+                }
+            }
+        });
     }
 }

@@ -5,24 +5,24 @@ import android.net.Uri;
 import android.support.v7.widget.RecyclerView;
 import android.view.View;
 import android.widget.ImageView;
+import android.widget.LinearLayout;
 import android.widget.TextView;
 
 import com.bumptech.glide.Glide;
-import com.google.firebase.auth.FirebaseAuth;
-import com.google.firebase.auth.FirebaseUser;
+import com.google.android.gms.ads.AdRequest;
+import com.google.android.gms.ads.AdSize;
+import com.google.android.gms.ads.AdView;
+import com.google.android.gms.ads.NativeExpressAdView;
 import com.to.let.bd.R;
-import com.to.let.bd.activities.AdListActivity2;
 import com.to.let.bd.adapters.AdAdapter;
 import com.to.let.bd.common.BaseActivity;
 import com.to.let.bd.model.AdInfo;
 import com.to.let.bd.utils.AppConstants;
 import com.to.let.bd.utils.DateUtils;
-import com.to.let.bd.utils.MyAnalyticsUtil;
-
-import java.text.DecimalFormat;
 
 public class AdViewHolder extends RecyclerView.ViewHolder {
 
+    public LinearLayout mainLay;
     public ImageView adMainPhoto;
     private TextView photoCount;
     private TextView adRent;
@@ -39,6 +39,7 @@ public class AdViewHolder extends RecyclerView.ViewHolder {
 
         context = itemView.getContext();
         this.itemView = itemView;
+        mainLay = itemView.findViewById(R.id.mainLay);
         adMainPhoto = itemView.findViewById(R.id.adMainPhoto);
         photoCount = itemView.findViewById(R.id.photoCount);
         adRent = itemView.findViewById(R.id.adRent);
@@ -49,26 +50,42 @@ public class AdViewHolder extends RecyclerView.ViewHolder {
     }
 
     public void bindToAd(final AdInfo adInfo, final int clickedPosition, final AdAdapter.ClickListener clickListener) {
-        String adRent = "Rent per month: TK " + AppConstants.rentFormatter(adInfo.getFlatRent());
+        if (adInfo.adId == null) {
+//            NativeExpressAdView adView = new NativeExpressAdView(context);
+//            adView.setAdSize(new AdSize(400, 100));
+//            adView.setAdUnitId("ca-app-pub-3940256099942544/2793859312");
+            AdView adView = new AdView(context);
+            adView.setAdSize(AdSize.BANNER);
+            adView.setAdUnitId(context.getString(R.string.ad_mob_banner_id));
+            AdRequest adRequest = new AdRequest
+                    .Builder()
+                    .addTestDevice(context.getString(R.string.test_device_id1))
+                    .build();
+            adView.loadAd(adRequest);
+            mainLay.removeAllViews();
+            mainLay.addView(adView);
+            return;
+        }
+        String adRent = "Rent per month: TK " + AppConstants.rentFormatter(adInfo.flatRent);
         this.adRent.setText(adRent);
 
         String adDescription = AppConstants.flatDescription(context, adInfo);
         this.adDescription.setText(adDescription);
 
-        String rentDate = "Rent from: " + DateUtils.getRentDateString(adInfo.getStartingFinalDate());
+        String rentDate = "Rent from: " + DateUtils.getRentDateString(adInfo.startingFinalDate);
         this.rentDate.setText(rentDate);
-        address.setText(adInfo.getFullAddress());
+        address.setText(adInfo.fullAddress);
 
         String imagePath = null;
         int imageCount = 0;
 
-        if (adInfo.getImages() == null || adInfo.getImages().isEmpty()) {
-            if (adInfo.getMap() != null) {
-                imagePath = adInfo.getMap().downloadUrl;
+        if (adInfo.images == null || adInfo.images.isEmpty()) {
+            if (adInfo.map != null) {
+                imagePath = adInfo.map.downloadUrl;
             }
         } else {
-            imageCount = adInfo.getImages().size();
-            imagePath = adInfo.getImages().get(0).downloadUrl;
+            imageCount = adInfo.images.size();
+            imagePath = adInfo.images.get(0).downloadUrl;
         }
 
         if (imagePath != null)

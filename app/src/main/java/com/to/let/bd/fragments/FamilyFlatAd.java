@@ -11,6 +11,8 @@ import android.widget.EditText;
 import android.widget.LinearLayout;
 import android.widget.RadioGroup;
 
+import com.google.android.gms.ads.AdRequest;
+import com.google.android.gms.ads.AdView;
 import com.to.let.bd.R;
 import com.to.let.bd.activities.NewAdActivity2;
 import com.to.let.bd.common.BaseFragment;
@@ -37,6 +39,11 @@ public class FamilyFlatAd extends BaseFragment {
 
         activity = (NewAdActivity2) getActivity();
         rootView = inflater.inflate(R.layout.fragment_family, container, false);
+
+        AdView adView = rootView.findViewById(R.id.adView);
+        AdRequest adRequest = new AdRequest.Builder().build();
+        adView.loadAd(adRequest);
+
         return rootView;
     }
 

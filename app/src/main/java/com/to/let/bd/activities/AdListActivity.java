@@ -315,7 +315,7 @@ public class AdListActivity extends BaseActivity implements NavigationView.OnNav
             Collections.sort(adList, new Comparator<AdInfo>() {
                 @Override
                 public int compare(AdInfo o1, AdInfo o2) {
-                    return o2.getAdId().compareTo(o1.getAdId());
+                    return o2.adId.compareTo(o1.adId);
                 }
             });
             closeProgressDialog();

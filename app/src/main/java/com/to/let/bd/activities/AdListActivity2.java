@@ -17,6 +17,7 @@
 package com.to.let.bd.activities;
 
 import android.content.Intent;
+import android.support.annotation.NonNull;
 import android.support.design.widget.NavigationView;
 import android.support.design.widget.TabLayout;
 import android.support.v4.app.Fragment;
@@ -48,12 +49,16 @@ import com.facebook.accountkit.PhoneNumber;
 import com.facebook.accountkit.ui.AccountKitActivity;
 import com.facebook.accountkit.ui.AccountKitConfiguration;
 import com.facebook.accountkit.ui.LoginType;
+import com.google.android.gms.ads.AdListener;
+import com.google.android.gms.ads.AdRequest;
+import com.google.android.gms.ads.InterstitialAd;
 import com.to.let.bd.R;
 import com.to.let.bd.common.BaseFirebaseAuthActivity;
 import com.to.let.bd.fragments.FamilyFlatList;
 import com.to.let.bd.fragments.MessFlatList;
 import com.to.let.bd.fragments.OthersFlatList;
 import com.to.let.bd.fragments.SubletFlatList;
+import com.to.let.bd.utils.AppConstants;
 
 public class AdListActivity2 extends BaseFirebaseAuthActivity implements
         NavigationView.OnNavigationItemSelectedListener {
@@ -86,7 +91,7 @@ public class AdListActivity2 extends BaseFirebaseAuthActivity implements
         toggle.syncState();
 
         initNavigationDrawer();
-        updateNavHeader();
+        initInterstitialAd();
     }
 
     private NavigationView navigationView;
@@ -110,11 +115,17 @@ public class AdListActivity2 extends BaseFirebaseAuthActivity implements
         navPostYourAdd.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View view) {
-//                googleSignOut();
+                googleSignOut();
 //                facebookAccountKit();
-                phoneNumberVerification("1674547477");
+//                phoneNumberVerification("1674547477");
             }
         });
+    }
+
+    @Override
+    protected void onResume() {
+        super.onResume();
+        updateNavHeader();
     }
 
     private void facebookAccountKit() {
@@ -300,17 +311,28 @@ public class AdListActivity2 extends BaseFirebaseAuthActivity implements
     }
 
     @Override
-    public boolean onNavigationItemSelected(MenuItem item) {
+    public boolean onNavigationItemSelected(@NonNull MenuItem item) {
         // Handle navigation view item clicks here.
         int id = item.getItemId();
 
         if (id == R.id.navLogout) {
             logoutAndAnonymousLogin();
+        } else if (id == R.id.navMyAds) {
+            startSubAdListActivity(AppConstants.subQueryFav);
+        } else if (id == R.id.navAllAds) {
+            startSubAdListActivity(AppConstants.subQueryAll);
         }
 
         DrawerLayout drawer = findViewById(R.id.drawer_layout);
         drawer.closeDrawer(GravityCompat.START);
         return true;
+    }
+
+    private void startSubAdListActivity(int subAdListType) {
+        Intent subAdListIntent = new Intent(this, SubAdListActivity.class);
+        subAdListIntent.putExtra(AppConstants.keySubAdListType, subAdListType);
+        subAdListIntent.addFlags(Intent.FLAG_ACTIVITY_CLEAR_TASK);
+        startActivity(subAdListIntent);
     }
 
     @Override
@@ -364,5 +386,49 @@ public class AdListActivity2 extends BaseFirebaseAuthActivity implements
             default:
                 return super.onOptionsItemSelected(item);
         }
+    }
+
+    @Override
+    public void onBackPressed() {
+        super.onBackPressed();
+
+        if (interstitialAd.isLoaded()) {
+            interstitialAd.show();
+        }
+    }
+
+    private InterstitialAd interstitialAd;
+
+    private void initInterstitialAd() {
+        interstitialAd = new InterstitialAd(this);
+        interstitialAd.setAdUnitId(getString(R.string.ad_mob_interstitial_id));
+        interstitialAd.loadAd(new AdRequest.Builder().build());
+
+        interstitialAd.setAdListener(new AdListener() {
+            @Override
+            public void onAdLoaded() {
+                showLog("Code to be executed when an ad finishes loading.");
+            }
+
+            @Override
+            public void onAdFailedToLoad(int errorCode) {
+                showLog("Code to be executed when an ad request fails.");
+            }
+
+            @Override
+            public void onAdOpened() {
+                showLog("Code to be executed when the ad is displayed.");
+            }
+
+            @Override
+            public void onAdLeftApplication() {
+                showLog("Code to be executed when the user has left the app.");
+            }
+
+            @Override
+            public void onAdClosed() {
+                showLog("Code to be executed when when the interstitial ad is closed.");
+            }
+        });
     }
 }

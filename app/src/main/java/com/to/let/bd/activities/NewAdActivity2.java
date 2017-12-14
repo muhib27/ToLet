@@ -20,7 +20,6 @@ import android.support.v4.content.LocalBroadcastManager;
 import android.support.v7.app.ActionBar;
 import android.support.v7.app.AlertDialog;
 import android.support.v7.widget.PopupMenu;
-import android.support.v7.widget.Toolbar;
 import android.text.Editable;
 import android.text.TextWatcher;
 import android.view.Gravity;
@@ -63,8 +62,8 @@ import com.to.let.bd.model.OthersInfo;
 import com.to.let.bd.model.SubletInfo;
 import com.to.let.bd.utils.ActivityUtils;
 import com.to.let.bd.utils.AppConstants;
-import com.to.let.bd.utils.DBConstants;
 import com.to.let.bd.utils.AppSharedPrefs;
+import com.to.let.bd.utils.DBConstants;
 import com.to.let.bd.utils.UploadImageService;
 
 import java.io.ByteArrayOutputStream;
@@ -674,6 +673,9 @@ public class NewAdActivity2 extends BaseMapActivity implements View.OnClickListe
             othersInfo = ((OthersFlatAd) fragment).getOthersInfo();
         }
 
+        String mobileNumber = this.mobileNumber.getText().toString();
+        String emailAddress = this.emailAddress.getText().toString();
+
         final AdInfo adInfo = new AdInfo(adId, startingMonth, startingDate, startingYear,
                 latitude, longitude,
                 fullAddress, country, division, district, subDistrict, knownAsArea,
@@ -682,7 +684,8 @@ public class NewAdActivity2 extends BaseMapActivity implements View.OnClickListe
                 whichFloor.getText().toString().trim().isEmpty() ? -1 : Integer.parseInt(whichFloor.getText().toString()),
                 roomFaceArray[flatFaceSelection], description.getText().toString(),
                 flatTypes.get(tabLayout.getSelectedTabPosition()),
-                familyInfo, messInfo, subletInfo, othersInfo, getUid());
+                familyInfo, messInfo, subletInfo, othersInfo,
+                getUid(), mobileNumber, emailAddress);
 
 //        AdInfo adInfo = new AdInfo(adId, getUid());
         HashMap<String, Object> adValues = adInfo.toMap();
@@ -726,6 +729,24 @@ public class NewAdActivity2 extends BaseMapActivity implements View.OnClickListe
                 }
             }
         });
+
+        updateUserMobileNumber(mobileNumber);
+    }
+
+    private void updateUserMobileNumber(String mobileNumber) {
+        if (mDatabase == null)
+            mDatabase = FirebaseDatabase.getInstance().getReference();
+
+        firebaseUser = FirebaseAuth.getInstance().getCurrentUser();
+        HashMap<String, Object> userValues = new HashMap<>();
+        userValues.put(DBConstants.userId, getUid());
+
+        HashMap<String, Object> childUpdates = new HashMap<>();
+        childUpdates.put(DBConstants.mobileNumber, mobileNumber);
+        childUpdates.put(DBConstants.mobileNumberVerified, false);
+
+        childUpdates.put("/" + DBConstants.users + "/" + DBConstants.registeredUsers + "/" + getUid(), userValues);
+        mDatabase.updateChildren(childUpdates);
     }
 
     protected void uploadImage(int type, String adId, byte[] imageByte) {

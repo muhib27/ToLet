@@ -30,18 +30,18 @@ public class MyAnalyticsUtil {
 
     public void favItem(AdInfo adInfo, String firebaseUid) {
         Bundle bundle = new Bundle();
-        bundle.putString(keyAdId, adInfo.getAdId());
+        bundle.putString(keyAdId, adInfo.adId);
         bundle.putString(keyUserId, firebaseUid);
         firebaseAnalytics.logEvent(keyFavItem, bundle);
     }
 
-    private static final String keyAdDetails = "adDetails";
+    private static final String keyShowAdDetails = "showAdDetails";
 
-    public void adDetails(AdInfo adInfo, String firebaseUid) {
+    public void showAdDetails(AdInfo adInfo, String firebaseUid) {
         Bundle bundle = new Bundle();
-        bundle.putString(keyAdId, adInfo.getAdId());
+        bundle.putString(keyAdId, adInfo.adId);
         bundle.putString(keyUserId, firebaseUid);
-        firebaseAnalytics.logEvent(keyAdDetails, bundle);
+        firebaseAnalytics.logEvent(keyShowAdDetails, bundle);
     }
 
 //    public static final String keyNameLogin = "Login";

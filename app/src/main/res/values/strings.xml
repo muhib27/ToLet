@@ -18,7 +18,7 @@
     <string name="my_ads">My Ads</string>
     <string name="favorites">Favorites</string>
     <string name="ads">Ads</string>
-    <string name="all_ads">All Ads</string>
+    <string name="all_ad_list">All Ads</string>
     <string name="nearest_ads">Nearest Ads</string>
     <string name="logout">Logout</string>
     <string name="smart_ads">Smart Ads</string>
@@ -72,7 +72,7 @@
     <string name="pick_photo_size">(%1$s)</string>
     <string name="pick_photo_size_limit">Max size %1$s </string>
     <string name="please_select_photo">Please select any photo to publish.</string>
-    <string name="tk">Tk</string>
+    <string name="tk">TK</string>
     <string name="sq_ft">sq ft</string>
     <string name="rent_from">Rent From</string>
     <string name="select_date">Select Date</string>
@@ -138,7 +138,9 @@
     <string name="all_time_water">All time water</string>
     <string name="wifi_facility">WiFi facility</string>
     <string name="fridge_facility">Fridge facility</string>
-    <string name="non_smoker_only">Non-smoker only</string>
+    <string name="non_smoker_only">Non-smoker only?</string>
+    <string name="only_students">Only students</string>
+    <string name="only_job_holders">Only job holders</string>
     <string name="non_smoker">Non-smoker</string>
     <string name="description">Description</string>
     <string name="description_if_need">Description (if need)</string>
@@ -192,7 +194,6 @@
     <string name="from">From</string>
     <string name="to">To</string>
     <string name="rent_range">Rent range</string>
-    <!--<string name="tk">Tk</string>-->
     <string name="min">Min</string>
     <string name="max">Max</string>
     <string name="please_select_rent_type">Please select rent type</string>
@@ -222,9 +223,13 @@
     <string name="report_already_rented">Already rented</string>
     <string name="report_mismatch">Mismatch with description</string>
     <string name="report_others">Others</string>
-    <string name="supply_gas">Supply Gas</string>
+
+    <string name="already_reported">Already reported</string>
+
     <string name="near_by">Near By</string>
     <string name="share">Share</string>
+    <string name="title_stores">Stores</string>
+    <string name="show_in_google_map">Show in Google Map</string>
 
     <string-array name="ad_report_type_array">
         <item>@string/report_fake</item>
@@ -233,4 +238,36 @@
         <item>@string/report_mismatch</item>
         <item>@string/report_others</item>
     </string-array>
+
+    <string name="twenty_four_water_facility">24 hour water facility</string>
+    <string name="supply_gas_facility">Supply gas facility</string>
+    <string name="always_security_guard">Always security guard</string>
+    <string name="parking_garage_facility">Parking garage facility</string>
+    <string name="lift_facility">Lift facility</string>
+    <string name="generator_facility">Generator facility</string>
+    <string name="fully_furnished">Fully furnished</string>
+    <string name="have_a_kitchen_cabinet">Have a kitchen cabinet</string>
+
+    <string name="have_maid_servant">Have maid servant</string>
+    <string name="only_non_smoker">Only non-smoker</string>
+    <string name="have_fridge_facility">Have fridge facility</string>
+    <string name="have_wifi_facility">Have WiFi facility</string>
+
+    <string name="need_to_share_kitchen">Need to share kitchen</string>
+    <string name="no_need_to_share_kitchen">No need to share kitchen</string>
+
+    <string name="interior_fully_decorated">Interior fully decorated</string>
+    <string name="login">Login</string>
+    <string name="title_activity_sub_ad_list">SubAdListActivity</string>
+    <string name="my_favorite_list">My Favorite List</string>
+    <string name="my_ad_list">My Ad List</string>
+    <string name="my_nearest_list">My Nearest List</string>
+
+
+    <string name="mobile_number_not_found">Mobile number not found, please do report about this.</string>
+    <string name="email_address_not_found">Email address not found, please do report about this.</string>
+
+    <string name="ad_mob_banner_id">ca-app-pub-3940256099942544/6300978111</string>
+    <string name="test_device_id1">374088B3E61A9C20DECF1F53A2051EA8</string>
+    <string name="ad_mob_interstitial_id">ca-app-pub-3940256099942544/1033173712</string>
 </resources>

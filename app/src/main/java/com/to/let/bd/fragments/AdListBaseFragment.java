@@ -11,6 +11,8 @@ import android.widget.LinearLayout;
 import android.widget.ProgressBar;
 import android.widget.TextView;
 
+import com.google.android.gms.ads.AdRequest;
+import com.google.android.gms.ads.AdView;
 import com.google.firebase.auth.FirebaseAuth;
 import com.google.firebase.auth.FirebaseUser;
 import com.google.firebase.database.DataSnapshot;
@@ -22,11 +24,13 @@ import com.google.firebase.database.Query;
 import com.google.firebase.database.Transaction;
 import com.google.firebase.database.ValueEventListener;
 import com.to.let.bd.R;
+import com.to.let.bd.activities.AdDetailsActivity;
 import com.to.let.bd.activities.SplashActivity;
 import com.to.let.bd.adapters.AdAdapter;
 import com.to.let.bd.common.BaseActivity;
 import com.to.let.bd.common.BaseFragment;
 import com.to.let.bd.model.AdInfo;
+import com.to.let.bd.utils.AppConstants;
 import com.to.let.bd.utils.DBConstants;
 import com.to.let.bd.utils.MyAnalyticsUtil;
 import com.to.let.bd.utils.NetworkConnection;
@@ -96,6 +100,10 @@ public abstract class AdListBaseFragment extends BaseFragment implements AdAdapt
         tapToRetry = rootView.findViewById(R.id.tapToRetry);
         loadingMessage = rootView.findViewById(R.id.loadingMessage);
 
+        AdView adView = rootView.findViewById(R.id.adView);
+        AdRequest adRequest = new AdRequest.Builder().build();
+        adView.loadAd(adRequest);
+
         loadingLay.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View view) {
@@ -144,6 +152,15 @@ public abstract class AdListBaseFragment extends BaseFragment implements AdAdapt
         reload();
     }
 
+    @Override
+    public void onResume() {
+        super.onResume();
+
+        if (AdDetailsActivity.needToRefreshData) {
+            reload();
+        }
+    }
+
     private void loadData(Query adQuery) {
         if (adList.size() > 0) {
             displayAdList();
@@ -166,20 +183,28 @@ public abstract class AdListBaseFragment extends BaseFragment implements AdAdapt
         @Override
         public void onDataChange(DataSnapshot dataSnapshot) {
             adList.clear();
+
             for (DataSnapshot adSnapshot : dataSnapshot.getChildren()) {
                 AdInfo adInfo = adSnapshot.getValue(AdInfo.class);
 
-                if ((adInfo != null ? adInfo.getStartingFinalDate() : 0) >= SplashActivity.todayYearMonthDate)
+                if ((adInfo != null ? adInfo.startingFinalDate : 0) >= SplashActivity.todayYearMonthDate) {
                     adList.add(adInfo);
+                }
+            }
+
+            if (getSubQuery() > -1) {
+                adList = filterList(getSubQuery(), adList);
             }
 
             if (adList.size() > 0) {
                 Collections.sort(adList, new Comparator<AdInfo>() {
                     @Override
                     public int compare(AdInfo o1, AdInfo o2) {
-                        return (int) (o2.getCreatedTime() - o1.getCreatedTime());
+                        return (int) (o1.createdTime - o2.createdTime);
                     }
                 });
+
+                adList = addAdvertiseView(adList);
                 displayAdList();
             } else {
                 loadingLay.setVisibility(View.VISIBLE);
@@ -197,6 +222,7 @@ public abstract class AdListBaseFragment extends BaseFragment implements AdAdapt
             tapToRetry.setVisibility(View.VISIBLE);
         }
     };
+
     private AdAdapter adAdapter;
 
     private void displayAdList() {
@@ -220,13 +246,13 @@ public abstract class AdListBaseFragment extends BaseFragment implements AdAdapt
 //            ((ImageView) view).setImageResource(R.drawable.ic_fav_selected);
 //        }
 
-        DatabaseReference userAdRef = databaseReference.child(DBConstants.adList).child(adInfo.getAdId());
-        onStarClicked(userAdRef, clickedPosition);
+        DatabaseReference userAdRef = databaseReference.child(DBConstants.adList).child(adInfo.adId);
+        onFavClicked(userAdRef, clickedPosition);
         myAnalyticsUtil.favItem(adInfo, getUid());
     }
 
     // [START ad_stars_transaction]
-    private void onStarClicked(DatabaseReference adRef, final int clickedPosition) {
+    private void onFavClicked(DatabaseReference adRef, final int clickedPosition) {
         adRef.runTransaction(new Transaction.Handler() {
             @Override
             public Transaction.Result doTransaction(MutableData mutableData) {
@@ -276,6 +302,40 @@ public abstract class AdListBaseFragment extends BaseFragment implements AdAdapt
             return null;
         return firebaseUser.getUid();
     }
+
+    private ArrayList<AdInfo> addAdvertiseView(ArrayList<AdInfo> foundList) {
+        ArrayList<AdInfo> finalList = new ArrayList<>();
+        finalList.clear();
+
+        for (int i = 0; i < foundList.size(); i++) {
+            finalList.add(foundList.get(i));
+            if (i % 3 == 0) {
+                AdInfo adInfo = new AdInfo();
+                finalList.add(adInfo);
+            }
+        }
+        return finalList;
+    }
+
+    private ArrayList<AdInfo> filterList(int type, ArrayList<AdInfo> foundList) {
+        if (type == AppConstants.subQueryFav) {
+            ArrayList<AdInfo> filterList = new ArrayList<>();
+            filterList.clear();
+
+            String userId = BaseActivity.getUid();
+            for (AdInfo adInfo : foundList) {
+                if (adInfo.fav == null)
+                    continue;
+                if (adInfo.fav.containsKey(userId) && adInfo.fav.get(userId)) {
+                    filterList.add(adInfo);
+                }
+            }
+            return filterList;
+        }
+        return foundList;
+    }
+
+    public abstract int getSubQuery();
 
     public abstract Query getQuery(DatabaseReference databaseReference);
 

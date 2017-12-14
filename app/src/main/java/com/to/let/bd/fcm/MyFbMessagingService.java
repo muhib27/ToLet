@@ -5,6 +5,7 @@ import android.os.Bundle;
 
 import com.google.firebase.messaging.FirebaseMessagingService;
 import com.google.firebase.messaging.RemoteMessage;
+import com.to.let.bd.R;
 
 import java.util.Map;
 
@@ -15,7 +16,7 @@ public class MyFbMessagingService extends FirebaseMessagingService {
     @Override
     public void onMessageReceived(RemoteMessage remoteMessage) {
         String body = "";
-        String title = "Sheiboi Message";
+        String title = getString(R.string.app_name) + " Message";
 
         if (remoteMessage.getData().size() > 0) {
             Map<String, String> dataMap = remoteMessage.getData();

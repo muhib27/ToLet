@@ -12,7 +12,7 @@ public class SubletFlatList extends AdListBaseFragment {
 
     @Override
     public Query getQuery(DatabaseReference databaseReference) {
-        // All my posts
+        // All sublet type ad
         return databaseReference.child(DBConstants.adList).orderByChild(DBConstants.flatType).equalTo(getString(R.string.sublet));
     }
 
@@ -29,5 +29,10 @@ public class SubletFlatList extends AdListBaseFragment {
         bundle.putInt(keyPosition, position);
         subletFlatList.setArguments(bundle);
         return subletFlatList;
+    }
+
+    @Override
+    public int getSubQuery() {
+        return -1;
     }
 }

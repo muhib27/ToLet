@@ -12,7 +12,7 @@ public class FamilyFlatList extends AdListBaseFragment {
 
     @Override
     public Query getQuery(DatabaseReference databaseReference) {
-        // All family ad
+        // All family type ad
         return databaseReference
                 .child(DBConstants.adList)
                 .orderByChild(DBConstants.flatType)
@@ -32,5 +32,10 @@ public class FamilyFlatList extends AdListBaseFragment {
         bundle.putInt(keyPosition, position);
         familyFlatList.setArguments(bundle);
         return familyFlatList;
+    }
+
+    @Override
+    public int getSubQuery() {
+        return -1;
     }
 }

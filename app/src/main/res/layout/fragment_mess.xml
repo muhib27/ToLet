@@ -1,5 +1,6 @@
 <?xml version="1.0" encoding="utf-8"?>
 <LinearLayout xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:ads="http://schemas.android.com/apk/res-auto"
     android:layout_width="match_parent"
     android:layout_height="match_parent"
     android:orientation="vertical">
@@ -167,6 +168,34 @@
         android:orientation="horizontal">
 
         <CheckBox
+            android:id="@+id/onlyStudentsCB"
+            android:layout_width="0dp"
+            android:layout_height="wrap_content"
+            android:layout_weight="1"
+            android:ellipsize="end"
+            android:singleLine="true"
+            android:text="@string/only_students"
+            android:textColor="@color/black" />
+
+        <CheckBox
+            android:id="@+id/onlyJobHoldersCB"
+            android:layout_width="0dp"
+            android:layout_height="wrap_content"
+            android:layout_weight="1"
+            android:ellipsize="end"
+            android:singleLine="true"
+            android:text="@string/only_job_holders"
+            android:textColor="@color/black" />
+    </LinearLayout>
+
+    <LinearLayout
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:layout_marginBottom="@dimen/new_post_common_padding"
+        android:layout_marginTop="@dimen/new_post_common_padding"
+        android:orientation="horizontal">
+
+        <CheckBox
             android:id="@+id/wifiCB"
             android:layout_width="0dp"
             android:layout_height="wrap_content"
@@ -227,4 +256,14 @@
             android:textSize="@dimen/text_size_14sp"
             android:textStyle="bold" />
     </LinearLayout>
+
+    <com.google.android.gms.ads.AdView
+        android:id="@+id/adView"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:layout_marginTop="@dimen/size_10dp"
+        ads:adSize="BANNER"
+        ads:adUnitId="@string/ad_mob_banner_id">
+
+    </com.google.android.gms.ads.AdView>
 </LinearLayout>

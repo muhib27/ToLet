@@ -12,7 +12,7 @@ public class OthersFlatList extends AdListBaseFragment {
 
     @Override
     public Query getQuery(DatabaseReference databaseReference) {
-        // All my posts
+        // All others type ad
         return databaseReference.child(DBConstants.adList).orderByChild(DBConstants.flatType).equalTo(getString(R.string.others));
     }
 
@@ -29,5 +29,10 @@ public class OthersFlatList extends AdListBaseFragment {
         bundle.putInt(keyPosition, position);
         othersFlatList.setArguments(bundle);
         return othersFlatList;
+    }
+
+    @Override
+    public int getSubQuery() {
+        return -1;
     }
 }

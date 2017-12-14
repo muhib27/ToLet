@@ -44,7 +44,7 @@
     <dimen name="ad_details_recycler_view_item_height">120dp</dimen>
     <dimen name="ad_details_recycler_view_item_width">150dp</dimen>
 
-    <dimen name="ad_cell_image_height">100dp</dimen>
+    <dimen name="ad_cell_image_height">80dp</dimen>
     <dimen name="ad_cell_image_width">100dp</dimen>
 
 </resources>

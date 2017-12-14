@@ -46,16 +46,43 @@
 
                     <include layout="@layout/photo_count_lay" />
                 </RelativeLayout>
+
+                <ImageView
+                    android:id="@+id/star"
+                    android:layout_width="@dimen/size_50dp"
+                    android:layout_height="@dimen/size_50dp"
+                    android:layout_alignParentEnd="true"
+                    android:layout_alignParentRight="true"
+                    android:src="@drawable/selector_fav" />
             </RelativeLayout>
 
-            <android.support.v7.widget.RecyclerView
-                android:id="@+id/recyclerView"
+            <LinearLayout
+                android:id="@+id/showInMapView"
                 android:layout_width="match_parent"
-                android:layout_height="@dimen/ad_details_recycler_view_item_height" />
+                android:layout_height="wrap_content"
+                android:background="@drawable/custom_button_bg"
+                android:clickable="true"
+                android:gravity="center"
+                android:orientation="horizontal"
+                android:padding="@dimen/size_5dp">
+
+                <TextView
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    android:drawableEnd="@drawable/right_arrow"
+                    android:drawableLeft="@drawable/marker_map"
+                    android:drawablePadding="@dimen/size_10dp"
+                    android:drawableRight="@drawable/right_arrow"
+                    android:drawableStart="@drawable/marker_map"
+                    android:gravity="center"
+                    android:text="@string/show_in_google_map"
+                    android:textColor="@color/white" />
+            </LinearLayout>
 
             <LinearLayout
                 android:layout_width="match_parent"
                 android:layout_height="wrap_content"
+                android:layout_marginTop="@dimen/size_10dp"
                 android:orientation="vertical"
                 android:paddingEnd="@dimen/new_post_common_padding"
                 android:paddingLeft="@dimen/new_post_common_padding"
@@ -66,7 +93,7 @@
                     android:id="@+id/rentDate"
                     android:layout_width="match_parent"
                     android:layout_height="wrap_content"
-                    android:background="@drawable/custom_button_bg"
+                    android:background="@color/colorPrimaryDark"
                     android:ellipsize="end"
                     android:gravity="center"
                     android:maxLines="2"
@@ -98,6 +125,7 @@
                     android:layout_width="wrap_content"
                     android:layout_height="wrap_content"
                     android:layout_marginTop="@dimen/size_10dp"
+                    android:text="@string/app_name"
                     android:textColor="@color/black"
                     android:textSize="@dimen/text_size_24sp"
                     android:textStyle="normal" />
@@ -107,6 +135,11 @@
                     android:layout_width="match_parent"
                     android:layout_height="wrap_content"
                     android:layout_marginTop="@dimen/size_10dp"
+                    android:ellipsize="end"
+                    android:maxLines="1"
+                    android:singleLine="true"
+                    android:text="@string/app_name"
+                    android:textColor="@color/colorPrimaryDark"
                     android:textSize="@dimen/text_size_12sp"
                     android:textStyle="normal" />
 
@@ -115,6 +148,7 @@
                     android:layout_width="match_parent"
                     android:layout_height="wrap_content"
                     android:layout_marginTop="@dimen/size_10dp"
+                    android:text="@string/app_name"
                     android:textSize="@dimen/text_size_12sp"
                     android:textStyle="normal" />
 
@@ -123,7 +157,7 @@
                     android:layout_width="match_parent"
                     android:layout_height="wrap_content"
                     android:layout_marginTop="@dimen/size_10dp"
-                    android:text="@string/others_facility"
+                    android:text="@string/others"
                     android:textColor="@color/black"
                     android:textSize="@dimen/text_size_16sp"
                     android:textStyle="bold" />
@@ -133,6 +167,7 @@
                     android:layout_width="match_parent"
                     android:layout_height="wrap_content"
                     android:layout_marginTop="@dimen/size_10dp"
+                    android:text="@string/app_name"
                     android:textColor="@color/colorPrimary"
                     android:textSize="@dimen/text_size_12sp"
                     android:textStyle="normal" />
@@ -163,7 +198,7 @@
                         android:padding="@dimen/size_10dp"
                         android:text="@string/report_this"
                         android:textAllCaps="true"
-                        android:textColor="@color/red"
+                        android:textColor="@color/status_report_this"
                         android:textSize="@dimen/text_size_16sp"
                         android:textStyle="bold" />
                 </LinearLayout>

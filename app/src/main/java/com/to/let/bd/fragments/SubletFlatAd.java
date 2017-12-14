@@ -10,7 +10,10 @@ import android.widget.CheckBox;
 import android.widget.RadioGroup;
 import android.widget.TextView;
 
+import com.google.android.gms.ads.AdRequest;
+import com.google.android.gms.ads.AdView;
 import com.to.let.bd.R;
+import com.to.let.bd.activities.NewAdActivity2;
 import com.to.let.bd.common.BaseFragment;
 import com.to.let.bd.model.SubletInfo;
 
@@ -27,13 +30,20 @@ public class SubletFlatAd extends BaseFragment {
     }
 
     private View rootView;
+    private NewAdActivity2 activity;
 
     @Override
     public View onCreateView(final LayoutInflater inflater, final ViewGroup container,
                              final Bundle savedInstanceState) {
 
+        activity = (NewAdActivity2) getActivity();
         rootView = inflater.inflate(R.layout.fragment_sublet, container, false);
         init();
+
+        AdView adView = rootView.findViewById(R.id.adView);
+        AdRequest adRequest = new AdRequest.Builder().build();
+        adView.loadAd(adRequest);
+
         return rootView;
     }
 
@@ -65,7 +75,7 @@ public class SubletFlatAd extends BaseFragment {
 
         wellFurnishedCB = rootView.findViewById(R.id.wellFurnishedCB);
         liftCB = rootView.findViewById(R.id.liftCB);
-        generatorCB = rootView.findViewById(R.id.fridgeCB);
+        generatorCB = rootView.findViewById(R.id.generatorCB);
     }
 
     public String getRoomDetails() {

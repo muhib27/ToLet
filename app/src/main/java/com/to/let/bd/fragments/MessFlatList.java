@@ -12,7 +12,7 @@ public class MessFlatList extends AdListBaseFragment {
 
     @Override
     public Query getQuery(DatabaseReference databaseReference) {
-        // All my posts
+        // All mess type ad
         return databaseReference.child(DBConstants.adList).orderByChild(DBConstants.flatType).equalTo(getString(R.string.mess_member));
     }
 
@@ -29,5 +29,10 @@ public class MessFlatList extends AdListBaseFragment {
         bundle.putInt(keyPosition, position);
         messFlatList.setArguments(bundle);
         return messFlatList;
+    }
+
+    @Override
+    public int getSubQuery() {
+        return -1;
     }
 }

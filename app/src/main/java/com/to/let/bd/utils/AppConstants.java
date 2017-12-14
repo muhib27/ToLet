@@ -18,6 +18,7 @@ import android.widget.LinearLayout;
 import android.widget.TextView;
 
 import com.to.let.bd.R;
+import com.to.let.bd.activities.AdDetailsActivity;
 import com.to.let.bd.model.AdInfo;
 
 import java.text.DecimalFormat;
@@ -36,6 +37,14 @@ public class AppConstants {
     public static final String firebaseAccountConflictMessage2 = "different user account";
     public static final String mediaExtra = "mediaExtra";
     public static final String keyType = "keyType";
+    public static final String keySubAdListType = "keySubAdListType";
+
+    public static final int subQueryFav = 0;
+    public static final int subQueryMy = 1;
+    public static final int subQueryNearest = 2;
+    public static final int subQuerySmart = 3;
+    public static final int subQueryAll = 100;
+
     public static final String actionUpload = "actionUpload";
     public static final String fileUri = "fileUri";
     public static final String photos = "photos";
@@ -57,7 +66,7 @@ public class AppConstants {
     public static final long textWatcherDelay = 2000;
 
     //-------------methods-----------
-    public Bitmap writeOnDrawable(Context context, int drawableId, String text) {
+    public static Bitmap writeOnDrawable(Context context, int drawableId, String text) {
 
         Bitmap bm = BitmapFactory.decodeResource(context.getResources(), drawableId).copy(Bitmap.Config.ARGB_8888, true);
 
@@ -74,7 +83,7 @@ public class AppConstants {
         paint.setTypeface(tf);
 
         Canvas canvas = new Canvas(bm);
-        canvas.drawText(text, bm.getWidth() / 2, (float) ((bm.getHeight() / 2) - 1.5), paint);
+        canvas.drawText(text, bm.getWidth() / 2, (bm.getHeight() / 10) * 4, paint);
 
         return bm;
     }
@@ -201,38 +210,40 @@ public class AppConstants {
 
     public static String flatDescription(Context context, AdInfo adInfo) {
         String adDescription = "";
-        if (adInfo.getFamilyInfo() != null) {
-            boolean isItDulpex = adInfo.getFamilyInfo().isItDuplex;
+        if (adInfo.familyInfo != null) {
+            boolean isItDulpex = adInfo.familyInfo.isItDuplex;
             if (isItDulpex)
                 adDescription = "Duplex house with ";
-            adDescription = adDescription + adInfo.getFamilyInfo().bedRoom + "bed " +
-                    adInfo.getFamilyInfo().bathroom + "bath ";
+            adDescription = adDescription + adInfo.familyInfo.bedRoom + "bed " +
+                    adInfo.familyInfo.bathroom + "bath ";
 
-            if (adInfo.getFamilyInfo().balcony > 0) {
-                adDescription = adDescription + adInfo.getFamilyInfo().balcony + "balcony";
+            if (context instanceof AdDetailsActivity)
+                if (adInfo.familyInfo.balcony > 0) {
+                    adDescription = adDescription + adInfo.familyInfo.balcony + "balcony";
+                }
+
+            if (adInfo.flatSpace > 0) {
+                adDescription = adDescription + " " + adInfo.flatSpace + "sqft";
             }
 
-            if (adInfo.getFlatSpace() > 0) {
-                adDescription = adDescription + " " + adInfo.getFlatSpace() + "sqft";
-            }
-
-            if (adInfo.getFamilyInfo().hasDrawingDining) {
+            if (adInfo.familyInfo.hasDrawingDining) {
                 adDescription = adDescription + " with drawing & dining";
             }
-        } else if (adInfo.getMessInfo() != null) {
+        } else if (adInfo.messInfo != null) {
             String[] messTypeArray = context.getResources().getStringArray(R.array.mess_member_type_array);
-            adDescription = messTypeArray[adInfo.getMessInfo().memberType] + " member ";
-            adDescription += adInfo.getMessInfo().numberOfSeat + "seat in " +
-                    adInfo.getMessInfo().numberOfRoom + "room ";
-        } else if (adInfo.getSubletInfo() != null) {
+            if (!(context instanceof AdDetailsActivity))
+                adDescription = messTypeArray[adInfo.messInfo.memberType] + " member ";
+            adDescription += adInfo.messInfo.numberOfSeat + "seat in " +
+                    adInfo.messInfo.numberOfRoom + "room ";
+        } else if (adInfo.subletInfo != null) {
             String[] subletTypeArray = context.getResources().getStringArray(R.array.sublet_type_array);
-            adDescription = adInfo.getSubletInfo().subletType >= 3 ? adInfo.getSubletInfo().subletTypeOthers :
-                    subletTypeArray[adInfo.getSubletInfo().subletType];
+            adDescription = adInfo.subletInfo.subletType >= 3 ? adInfo.subletInfo.subletTypeOthers :
+                    subletTypeArray[adInfo.subletInfo.subletType];
 
             adDescription += " with ";
 
             String[] subletBathTypeArray = context.getResources().getStringArray(R.array.sublet_bath_type_array);
-            adDescription += subletBathTypeArray[adInfo.getSubletInfo().bathroomType] + " bath";
+            adDescription += subletBathTypeArray[adInfo.subletInfo.bathroomType] + " bath";
         }
         return adDescription;
     }

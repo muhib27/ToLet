@@ -2,6 +2,7 @@
 <LinearLayout xmlns:android="http://schemas.android.com/apk/res/android"
     android:layout_width="match_parent"
     android:layout_height="match_parent"
+    xmlns:ads="http://schemas.android.com/apk/res-auto"
     android:orientation="vertical">
 
     <LinearLayout
@@ -148,4 +149,14 @@
             android:text="@string/well_furnished"
             android:textColor="@color/black" />
     </LinearLayout>
+
+    <com.google.android.gms.ads.AdView
+        android:id="@+id/adView"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:layout_marginTop="@dimen/size_10dp"
+        ads:adSize="BANNER"
+        ads:adUnitId="@string/ad_mob_banner_id">
+
+    </com.google.android.gms.ads.AdView>
 </LinearLayout>

@@ -44,6 +44,9 @@ public class DBConstants {
     public static final String flatRent = "flatRent";
     public static final String othersFee = "othersFee";
     public static final String userId = "userId";
+    public static final String mobileNumber = "mobileNumber";
+    public static final String mobileNumberVerified = "mobileNumberVerified";
+    public static final String emailAddress = "emailAddress";
 
     public static final String createdTime = "createdTime";
     public static final String modifiedTime = "modifiedTime";
@@ -54,6 +57,7 @@ public class DBConstants {
     public static final String map = "map";
     public static final String location = "location";
     public static final String fav = "fav";
+    public static final String favCount = "favCount";
 
     public static final String familyInfo = "familyInfo";
     public static final String messInfo = "messInfo";
