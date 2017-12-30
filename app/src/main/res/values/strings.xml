@@ -270,4 +270,10 @@
     <string name="ad_mob_banner_id">ca-app-pub-3940256099942544/6300978111</string>
     <string name="test_device_id1">374088B3E61A9C20DECF1F53A2051EA8</string>
     <string name="ad_mob_interstitial_id">ca-app-pub-3940256099942544/1033173712</string>
+    <string name="this_is_your_own_post">This is your own post, you don\'t need to add as favorite.</string>
+    <string name="edit">Edit</string>
+    <string name="update">Update</string>
+    <string name="please_select_rent_range">Please select rent range</string>
+    <string name="please_select_date_range">Please select date range</string>
+    <string name="any">Any</string>
 </resources>

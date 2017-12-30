@@ -22,6 +22,7 @@ import com.to.let.bd.activities.AdDetailsActivity;
 import com.to.let.bd.model.AdInfo;
 
 import java.text.DecimalFormat;
+import java.util.Calendar;
 
 public class AppConstants {
     public static final long autoScrollDuration = 5000;
@@ -29,6 +30,8 @@ public class AppConstants {
     public static final int notifyIdUpload = 1002;
     public static final int adImageType = 1003;
     public static final int adMapImageType = 1004;
+    public static final int placeAutoComplete = 1005;
+    public static final int phoneHint = 1006;
 
     public static final double defaultLatitude = 23.8103d;
     public static final double defaultLongitude = 90.4125d;
@@ -66,24 +69,23 @@ public class AppConstants {
     public static final long textWatcherDelay = 2000;
 
     //-------------methods-----------
-    public static Bitmap writeOnDrawable(Context context, int drawableId, String text) {
+    public static Bitmap writeOnDrawable(Context context, int drawableId, String smallText) {
 
         Bitmap bm = BitmapFactory.decodeResource(context.getResources(), drawableId).copy(Bitmap.Config.ARGB_8888, true);
 
         final float scale = context.getResources().getDisplayMetrics().density;
 
-        int size = (int) (12.0 * scale + 0.5f);
+        int size = (int) (15.0 * scale);
 
         Paint paint = new Paint();
         paint.setTextAlign(Paint.Align.CENTER);
         paint.setTextSize(size);
         paint.setColor(Color.WHITE);
-
-        Typeface tf = Typeface.create(Typeface.SANS_SERIF, Typeface.BOLD);
+        Typeface tf = Typeface.create(Typeface.DEFAULT, Typeface.BOLD);
         paint.setTypeface(tf);
 
         Canvas canvas = new Canvas(bm);
-        canvas.drawText(text, bm.getWidth() / 2, (bm.getHeight() / 10) * 4, paint);
+        canvas.drawText(smallText, bm.getWidth() / 2, (bm.getHeight() / 10) * 4, paint);
 
         return bm;
     }
@@ -206,6 +208,11 @@ public class AppConstants {
     public static String rentFormatter(long rent) {
         DecimalFormat formatter = new DecimalFormat("#,###,###");
         return formatter.format(rent);
+    }
+
+    public static String twoDigitIntFormatter(int number) {
+        DecimalFormat formatter = new DecimalFormat("00");
+        return formatter.format(number);
     }
 
     public static String flatDescription(Context context, AdInfo adInfo) {

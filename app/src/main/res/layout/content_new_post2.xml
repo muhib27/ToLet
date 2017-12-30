@@ -14,12 +14,23 @@
         android:gravity="center_horizontal"
         android:orientation="vertical">
 
-        <fragment
-            android:id="@+id/map"
-            android:name="com.to.let.bd.common.WorkaroundMapFragment"
+        <RelativeLayout
             android:layout_width="match_parent"
-            android:layout_height="@dimen/new_post_map_height"
-            android:visibility="visible" />
+            android:layout_height="@dimen/new_post_map_height">
+
+            <fragment
+                android:id="@+id/map"
+                android:name="com.to.let.bd.common.WorkaroundMapFragment"
+                android:layout_width="match_parent"
+                android:layout_height="match_parent"
+                android:visibility="visible" />
+
+            <!--<fragment-->
+            <!--android:id="@+id/placeAutocomplete"-->
+            <!--android:name="com.google.android.gms.location.places.ui.PlaceAutocompleteFragment"-->
+            <!--android:layout_width="match_parent"-->
+            <!--android:layout_height="wrap_content" />-->
+        </RelativeLayout>
 
         <LinearLayout
             android:layout_width="match_parent"
@@ -35,20 +46,37 @@
                 android:textSize="@dimen/text_size_16sp"
                 android:textStyle="bold" />
 
-            <EditText
-                android:id="@+id/addressDetails"
+            <LinearLayout
                 android:layout_width="match_parent"
                 android:layout_height="wrap_content"
                 android:background="@drawable/rectangle_black_border"
-                android:drawableEnd="@drawable/cross"
-                android:drawableRight="@drawable/cross"
                 android:gravity="center_vertical"
-                android:hint="@string/dummy_full_address"
-                android:maxLines="1"
-                android:padding="@dimen/size_10dp"
-                android:singleLine="true"
-                android:textColor="@color/black"
-                android:textSize="@dimen/text_size_12sp" />
+                android:orientation="horizontal"
+                android:paddingEnd="@dimen/size_10dp"
+                android:paddingLeft="@dimen/size_10dp"
+                android:paddingRight="@dimen/size_10dp"
+                android:paddingStart="@dimen/size_10dp">
+
+                <EditText
+                    android:id="@+id/addressDetails"
+                    android:layout_width="0dp"
+                    android:layout_height="wrap_content"
+                    android:layout_weight="1"
+                    android:gravity="center_vertical"
+                    android:hint="@string/dummy_full_address"
+                    android:maxLines="1"
+                    android:singleLine="true"
+                    android:textColor="@color/black"
+                    android:textSize="@dimen/text_size_12sp" />
+
+                <Button
+                    android:id="@+id/addressCrossButton"
+                    android:layout_width="@dimen/size_20dp"
+                    android:layout_height="@dimen/size_20dp"
+                    android:layout_marginLeft="@dimen/size_10dp"
+                    android:layout_marginStart="@dimen/size_10dp"
+                    android:background="@drawable/cross" />
+            </LinearLayout>
 
             <TextView
                 android:layout_width="match_parent"
@@ -122,7 +150,6 @@
                         android:layout_height="wrap_content"
                         android:gravity="center"
                         android:hint="@string/houseInfo"
-                        android:imeActionId="@+id/whichFloor"
                         android:imeOptions="actionNext"
                         android:inputType="textPersonName"
                         android:singleLine="true"
@@ -181,7 +208,6 @@
                         android:ems="6"
                         android:gravity="center"
                         android:hint="@string/rent"
-                        android:imeActionId="@+id/emailAddress"
                         android:imeOptions="actionNext"
                         android:inputType="numberDecimal"
                         android:maxLength="6"
@@ -210,7 +236,6 @@
                         android:ems="5"
                         android:gravity="center"
                         android:hint="@string/utility_bill"
-                        android:imeActionId="@+id/emailAddress"
                         android:imeOptions="actionNext"
                         android:inputType="numberDecimal"
                         android:maxLength="5"
@@ -308,7 +333,6 @@
                     android:layout_width="match_parent"
                     android:layout_height="wrap_content"
                     android:hint="@string/emailAddress"
-                    android:imeActionId="@+id/mobileNumber"
                     android:imeOptions="actionNext"
                     android:inputType="textEmailAddress"
                     android:maxLines="1"

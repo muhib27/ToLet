@@ -13,15 +13,24 @@ import java.util.Locale;
 public class DateUtils {
     public static final String TAG = DateUtils.class.getName();
 
-    public static Calendar getCalendar() {
+    private static Calendar getCalendar() {
         return Calendar.getInstance();
     }
 
-    public static Calendar getCalendar(final Date date) {
+    private static Calendar getCalendar(final Date date) {
         final Calendar cal = getCalendar();
         cal.setTime(date);
 
         return cal;
+    }
+
+    public static long todayYearMonthDate() {
+        Calendar calendar = getCalendar();
+        int dayOfMonth = calendar.get(Calendar.DAY_OF_MONTH);
+        int month = calendar.get(Calendar.MONTH);
+        int year = calendar.get(Calendar.YEAR);
+
+        return Long.parseLong(year + AppConstants.twoDigitIntFormatter(month) + AppConstants.twoDigitIntFormatter(dayOfMonth));
     }
 
     public static Date getCurrentDate() {
@@ -101,6 +110,16 @@ public class DateUtils {
         return splittedDate;
     }
 
+    public static int[] splittedDate(String yearMonthDay) {//year=0, month=1, day=2
+        int[] splittedDate = new int[3];
+        if (yearMonthDay.length() == 8) {
+            splittedDate[0] = Integer.parseInt(yearMonthDay.substring(0, 4));
+            splittedDate[1] = Integer.parseInt(yearMonthDay.substring(4, 6));
+            splittedDate[2] = Integer.parseInt(yearMonthDay.substring(6));
+        }
+        return splittedDate;
+    }
+
     public static String getRentDateString(long yearMonthDay) {
         String[] splittedDate = splittedDate(yearMonthDay);
         return getFormattedDateString(getDate(splittedDate, format4), format2);
@@ -114,5 +133,14 @@ public class DateUtils {
         }
 
         return elapsedDays;
+    }
+
+    public static int[] getTodayDateAsArray() {
+        int[] dateArray = new int[0];
+        Calendar calendar = getCalendar();
+        dateArray[0] = calendar.get(Calendar.YEAR);
+        dateArray[1] = calendar.get(Calendar.MONTH);
+        dateArray[2] = calendar.get(Calendar.DAY_OF_MONTH);
+        return dateArray;
     }
 }

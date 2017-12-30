@@ -124,8 +124,12 @@ public class AdDetailsActivity extends BaseActivity implements View.OnClickListe
     private AdInfo adInfo;
 
     private void getData() {
-        adInfo = (AdInfo) getIntent().getExtras().getSerializable(AppConstants.keyAdInfo);
-
+        Bundle bundle = getIntent().getExtras();
+        if (bundle == null) {
+            images = new String[0];
+            return;
+        }
+        adInfo = (AdInfo) bundle.getSerializable(AppConstants.keyAdInfo);
         if (adInfo == null || adInfo.images == null || adInfo.images.isEmpty()) {
             images = new String[0];
         } else {
@@ -138,9 +142,9 @@ public class AdDetailsActivity extends BaseActivity implements View.OnClickListe
 
     private TextView rentDate, totalRent, roomDetails, addressDetails, rentType,
             othersFacility, othersFacilityDetails, reportThis, photoCount, privacyPolicy;
-    private Button callBtn, emailBtn;
-    private LinearLayout showInMapView;
-    private ImageView star;
+    private Button callBtn, emailBtn, editBtn;
+    private LinearLayout showInMapView, reportLay, contactLay;
+    private ImageView noImageView, favAd;
 
     private void init() {
         rentDate = findViewById(R.id.rentDate);
@@ -152,6 +156,7 @@ public class AdDetailsActivity extends BaseActivity implements View.OnClickListe
         othersFacility = findViewById(R.id.othersFacility);
         othersFacilityDetails = findViewById(R.id.othersFacilityDetails);
 
+        reportLay = findViewById(R.id.reportLay);
         privacyPolicy = findViewById(R.id.privacyPolicy);
         privacyPolicy.setText(getString(R.string.privacy_policy_note, getString(R.string.terms_of_use), getString(R.string.privacy_policy)));
         reportThis = findViewById(R.id.reportThis);
@@ -165,23 +170,34 @@ public class AdDetailsActivity extends BaseActivity implements View.OnClickListe
             }
         }
 
-        star = findViewById(R.id.star);
-        star.setSelected(false);
+        favAd = findViewById(R.id.favAd);
+        favAd.setSelected(false);
 
         if (adInfo.favCount > 0) {
             if (adInfo.fav.containsKey(BaseActivity.getUid())) {
-                star.setSelected(true);
+                favAd.setSelected(true);
             }
         }
 
-
-        star.setOnClickListener(this);
+        favAd.setOnClickListener(this);
 
         photoCount = findViewById(R.id.photoCount);
 
         showInMapView = findViewById(R.id.showInMapView);
+
+        contactLay = findViewById(R.id.contactLay);
         callBtn = findViewById(R.id.callBtn);
         emailBtn = findViewById(R.id.emailBtn);
+        editBtn = findViewById(R.id.editBtn);
+
+        if (adInfo.userId.equals(BaseActivity.getUid())) {
+            editBtn.setVisibility(View.VISIBLE);
+            contactLay.setVisibility(View.GONE);
+        }
+
+        if (adInfo.userId.equals(BaseActivity.getUid())) {
+            reportLay.setVisibility(View.GONE);
+        }
 
         if (adInfo != null) {
             String totalRent = "TK " + AppConstants.rentFormatter(adInfo.flatRent);
@@ -204,7 +220,7 @@ public class AdDetailsActivity extends BaseActivity implements View.OnClickListe
             setRentDate(rentDate, elapsedDays);
         }
 
-        ImageView noImageView = findViewById(R.id.noImageView);
+        noImageView = findViewById(R.id.noImageView);
         othersFacilityDetails();
         noImageView.setVisibility(View.GONE);
         if (images != null && images.length > 0) {
@@ -222,7 +238,9 @@ public class AdDetailsActivity extends BaseActivity implements View.OnClickListe
         showInMapView.setOnClickListener(this);
         callBtn.setOnClickListener(this);
         emailBtn.setOnClickListener(this);
+        editBtn.setOnClickListener(this);
         reportThis.setOnClickListener(this);
+        noImageView.setOnClickListener(this);
     }
 
     private void onFavClicked() {
@@ -251,7 +269,7 @@ public class AdDetailsActivity extends BaseActivity implements View.OnClickListe
 
             @Override
             public void onComplete(DatabaseError databaseError, boolean b, DataSnapshot dataSnapshot) {
-                needToRefreshData = true;
+
             }
         });
     }
@@ -419,9 +437,20 @@ public class AdDetailsActivity extends BaseActivity implements View.OnClickListe
             mailTheUser();
         } else if (view == reportThis) {
             showReportAlert();
-        } else if (view == star) {
-            star.setSelected(!star.isSelected());
+        } else if (view == favAd) {
+//            if (adInfo.userId.equals(BaseActivity.getUid())) {
+//                showToast(R.string.this_is_your_own_post);
+//                return;
+//            }
+            needToRefreshData = true;
+            favAd.setSelected(!favAd.isSelected());
             onFavClicked();
+        } else if (view == editBtn) {
+            editAd();
+        } else if (view == noImageView) {
+            if (noImageView.getVisibility() == View.VISIBLE && adInfo.map != null && adInfo.map.downloadUrl != null) {
+                showInMapView.performClick();
+            }
         }
     }
 
@@ -462,7 +491,7 @@ public class AdDetailsActivity extends BaseActivity implements View.OnClickListe
     private void showReportAlert() {
         AlertDialog.Builder builderSingle = new AlertDialog.Builder(this);
         builderSingle.setIcon(R.mipmap.ic_launcher);
-        builderSingle.setTitle("Select one them:");
+        builderSingle.setTitle("Please select anyone");
 
         final ArrayAdapter<String> arrayAdapter = new ArrayAdapter<>(this,
                 android.R.layout.simple_list_item_1,
@@ -473,31 +502,11 @@ public class AdDetailsActivity extends BaseActivity implements View.OnClickListe
             public void onClick(DialogInterface dialog, int which) {
                 String strName = arrayAdapter.getItem(which);
                 onReportClicked(strName);
+                needToRefreshData = true;
             }
         });
         builderSingle.show();
     }
-
-//    private RecyclerView recyclerView;
-//
-//    private void initRecycler() {
-//        recyclerView = findViewById(R.id.recyclerView);
-//
-//        mapIcon.clear();
-//        mapTitle.clear();
-//
-//        mapIcon.add(R.mipmap.ic_launcher);
-//        mapIcon.add(R.mipmap.ic_launcher);
-//
-//        mapTitle.add(getString(R.string.map_view));
-//        mapTitle.add(getString(R.string.near_by));
-//
-//        MapListAdapter mapListAdapter = new MapListAdapter();
-//        recyclerView.setAdapter(mapListAdapter);
-//
-//        LinearLayoutManager categoryLLM = new LinearLayoutManager(this, LinearLayoutManager.HORIZONTAL, false);
-//        recyclerView.setLayoutManager(categoryLLM);
-//    }
 
     private String[] images;
 
@@ -523,52 +532,11 @@ public class AdDetailsActivity extends BaseActivity implements View.OnClickListe
         rentDate.setText(date);
     }
 
-//    private ArrayList<String> mapTitle = new ArrayList<>();
-//    private ArrayList<Integer> mapIcon = new ArrayList<>();
-//
-//    private class MapListAdapter extends RecyclerView.Adapter<MapListAdapter.MyViewHolder> {
-//
-//        private LayoutInflater layoutInflater;
-//
-//        MapListAdapter() {
-//            layoutInflater = LayoutInflater.from(AdDetailsActivity.this);
-//        }
-//
-//        @Override
-//        public MyViewHolder onCreateViewHolder(ViewGroup parent, int viewType) {
-//            View view = layoutInflater.inflate(R.layout.row_item_map, parent, false);
-//            return new MyViewHolder(view);
-//        }
-//
-//        @Override
-//        public void onBindViewHolder(final MyViewHolder holder, int position) {
-//            holder.icon.setImageResource(mapIcon.get(position));
-//            holder.title.setText(mapTitle.get(position));
-//        }
-//
-//        @Override
-//        public int getItemCount() {
-//            return mapIcon.size();
-//        }
-//
-//        class MyViewHolder extends RecyclerView.ViewHolder {
-//            ImageView icon;
-//            TextView title;
-//
-//            MyViewHolder(final View itemView) {
-//                super(itemView);
-//                icon = itemView.findViewById(R.id.icon);
-//                title = itemView.findViewById(R.id.title);
-//
-//                itemView.setOnClickListener(new View.OnClickListener() {
-//                    @Override
-//                    public void onClick(View view) {
-//                        openMapActivity(getLayoutPosition());
-//                    }
-//                });
-//            }
-//        }
-//    }
+    private void editAd() {
+        Intent editIntent = new Intent(this, NewAdActivity2.class);
+        editIntent.putExtra(AppConstants.keyAdInfo, adInfo);
+        startActivity(editIntent);
+    }
 
     private void openMapActivity(int typePosition) {
         if (adInfo == null)
@@ -645,7 +613,6 @@ public class AdDetailsActivity extends BaseActivity implements View.OnClickListe
 
             @Override
             public void onComplete(DatabaseError databaseError, boolean b, DataSnapshot dataSnapshot) {
-                needToRefreshData = true;
                 if (databaseError == null) {
                     reportThis.setEnabled(false);
                 }

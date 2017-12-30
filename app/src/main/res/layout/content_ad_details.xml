@@ -48,7 +48,7 @@
                 </RelativeLayout>
 
                 <ImageView
-                    android:id="@+id/star"
+                    android:id="@+id/favAd"
                     android:layout_width="@dimen/size_50dp"
                     android:layout_height="@dimen/size_50dp"
                     android:layout_alignParentEnd="true"
@@ -173,6 +173,7 @@
                     android:textStyle="normal" />
 
                 <LinearLayout
+                    android:id="@+id/reportLay"
                     android:layout_width="match_parent"
                     android:layout_height="wrap_content"
                     android:background="?android:attr/selectableItemBackground"
@@ -209,31 +210,47 @@
     <LinearLayout
         android:layout_width="match_parent"
         android:layout_height="@dimen/size_50dp"
-        android:orientation="horizontal">
+        android:orientation="vertical">
 
         <Button
-            android:id="@+id/callBtn"
-            android:layout_width="0dp"
+            android:id="@+id/editBtn"
+            android:layout_width="match_parent"
             android:layout_height="match_parent"
-            android:layout_weight="1"
             android:background="@drawable/custom_button_bg"
-            android:text="@string/call"
-            android:textColor="@color/white" />
+            android:text="@string/edit"
+            android:textColor="@color/white"
+            android:visibility="gone" />
 
-        <View
-            android:layout_width="@dimen/size_1dp"
+        <LinearLayout
+            android:id="@+id/contactLay"
+            android:layout_width="match_parent"
             android:layout_height="match_parent"
-            android:layout_marginBottom="@dimen/size_5dp"
-            android:layout_marginTop="@dimen/size_5dp"
-            android:background="@color/white" />
+            android:orientation="horizontal">
 
-        <Button
-            android:id="@+id/emailBtn"
-            android:layout_width="0dp"
-            android:layout_height="match_parent"
-            android:layout_weight="1"
-            android:background="@drawable/custom_button_bg"
-            android:text="@string/email"
-            android:textColor="@color/white" />
+            <Button
+                android:id="@+id/callBtn"
+                android:layout_width="0dp"
+                android:layout_height="match_parent"
+                android:layout_weight="1"
+                android:background="@drawable/custom_button_bg"
+                android:text="@string/call"
+                android:textColor="@color/white" />
+
+            <View
+                android:layout_width="@dimen/size_1dp"
+                android:layout_height="match_parent"
+                android:layout_marginBottom="@dimen/size_5dp"
+                android:layout_marginTop="@dimen/size_5dp"
+                android:background="@color/white" />
+
+            <Button
+                android:id="@+id/emailBtn"
+                android:layout_width="0dp"
+                android:layout_height="match_parent"
+                android:layout_weight="1"
+                android:background="@drawable/custom_button_bg"
+                android:text="@string/email"
+                android:textColor="@color/white" />
+        </LinearLayout>
     </LinearLayout>
 </LinearLayout>

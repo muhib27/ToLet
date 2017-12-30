@@ -2,6 +2,7 @@ package com.to.let.bd.model;
 
 import com.google.firebase.database.Exclude;
 import com.to.let.bd.activities.SplashActivity;
+import com.to.let.bd.utils.AppConstants;
 import com.to.let.bd.utils.DBConstants;
 
 import java.io.Serializable;
@@ -401,8 +402,8 @@ public class AdInfo implements Serializable {
         result.put(DBConstants.startingYear, startingYear);
 
         startingFinalDate = Long.parseLong(startingYear
-                + SplashActivity.formatterTwoDigit.format(startingMonth)
-                + SplashActivity.formatterTwoDigit.format(startingDate));
+                + AppConstants.twoDigitIntFormatter(startingMonth)
+                + AppConstants.twoDigitIntFormatter(startingDate));
 
         result.put(DBConstants.startingFinalDate, startingFinalDate);
 

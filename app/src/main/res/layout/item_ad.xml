@@ -91,7 +91,7 @@
         </LinearLayout>
 
         <ImageView
-            android:id="@+id/star"
+            android:id="@+id/favAd"
             android:layout_width="@dimen/size_40dp"
             android:layout_height="@dimen/size_40dp"
             android:src="@drawable/selector_fav" />

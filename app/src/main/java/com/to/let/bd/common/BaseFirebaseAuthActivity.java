@@ -19,6 +19,7 @@ import com.google.firebase.auth.AuthResult;
 import com.google.firebase.auth.FirebaseAuth;
 import com.google.firebase.auth.FirebaseUser;
 import com.google.firebase.auth.GoogleAuthProvider;
+import com.google.firebase.auth.PhoneAuthCredential;
 import com.google.firebase.auth.UserProfileChangeRequest;
 import com.google.firebase.database.DatabaseReference;
 import com.google.firebase.database.FirebaseDatabase;
@@ -135,7 +136,13 @@ public abstract class BaseFirebaseAuthActivity extends BaseActivity implements
                 .setDisplayName(acct.getDisplayName())
                 .setPhotoUri(acct.getPhotoUrl())
                 .build();
-        firebaseUser.updateProfile(profileUpdates);
+        firebaseUser.updateProfile(profileUpdates)
+                .addOnCompleteListener(new OnCompleteListener<Void>() {
+                    @Override
+                    public void onComplete(@NonNull Task<Void> task) {
+                        showLog();
+                    }
+                });
         writeNewUser();
         setEmailAddress();
     }

@@ -2,6 +2,7 @@ package com.to.let.bd.activities;
 
 import android.graphics.Bitmap;
 import android.os.Build;
+import android.os.Bundle;
 import android.support.annotation.NonNull;
 import android.support.design.widget.BottomNavigationView;
 import android.view.Menu;
@@ -93,7 +94,12 @@ public class MapActivity extends BaseMapActivity implements BottomNavigationView
 
     @Override
     protected void onCreate() {
-        adInfo = (AdInfo) getIntent().getExtras().getSerializable(AppConstants.keyAdInfo);
+        Bundle bundle = getIntent().getExtras();
+        if (bundle == null)
+            return;
+        adInfo = (AdInfo) bundle.getSerializable(AppConstants.keyAdInfo);
+        if (adInfo == null)
+            return;
 
         latitude = adInfo.latitude;
         longitude = adInfo.longitude;
@@ -172,13 +178,13 @@ public class MapActivity extends BaseMapActivity implements BottomNavigationView
     private long flatRent = 15000;
 
     private void addMarkerForSelectedFlat() {
-        int resourceId = R.drawable.marker_purple;
+        int resourceId = R.drawable.marker_purple_others;
         if (flatType.equalsIgnoreCase(getString(R.string.family))) {
-            resourceId = R.drawable.marker_blue;
+            resourceId = R.drawable.marker_blue_family;
         } else if (flatType.equalsIgnoreCase(getString(R.string.mess))) {
-            resourceId = R.drawable.marker_green;
+            resourceId = R.drawable.marker_green_mess;
         } else if (flatType.equalsIgnoreCase(getString(R.string.sublet))) {
-            resourceId = R.drawable.marker_merun;
+            resourceId = R.drawable.marker_merun_sublet;
         }
 
         String markerValue = "৳ " + AppConstants.rentFormatter(flatRent);

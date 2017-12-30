@@ -17,6 +17,7 @@ import com.to.let.bd.activities.NewAdActivity2;
 import com.to.let.bd.common.BaseFragment;
 import com.to.let.bd.model.MessInfo;
 import com.to.let.bd.utils.AppConstants;
+import com.to.let.bd.utils.DBConstants;
 
 public class MessFlatAd extends BaseFragment {
     public static final String TAG = MessFlatAd.class.getSimpleName();
@@ -71,6 +72,7 @@ public class MessFlatAd extends BaseFragment {
             }
         });
         defaultCheck();
+        updateData();
     }
 
     public void defaultCheck() {
@@ -141,4 +143,31 @@ public class MessFlatAd extends BaseFragment {
         return messInfo;
     }
 
+    public void updateData() {
+        Bundle bundle = getArguments();
+        if (bundle == null)
+            return;
+
+        MessInfo messInfo = (MessInfo) bundle.getSerializable(DBConstants.messInfo);
+        if (messInfo == null)
+            return;
+
+        mealFacilityCB.setChecked(messInfo.mealFacility);
+        maidServantCB.setChecked(messInfo.maidServant);
+        twentyFourWaterCB.setChecked(messInfo.twentyFourWater);
+        nonSmokerCB.setChecked(messInfo.nonSmoker);
+        onlyStudentsCB.setChecked(messInfo.onlyStudents);
+        onlyJobHoldersCB.setChecked(messInfo.onlyJobHolders);
+        wifiCB.setChecked(messInfo.wifi);
+        fridgeCB.setChecked(messInfo.fridge);
+
+        if (messInfo.mealRate > 0) mealRate.setText(messInfo.mealRate);
+        else mealRate.setText("");
+
+
+        if (messInfo.messManagementSystem == 1) messManagementSystem.check(R.id.manageByIndividual);
+        else if (messInfo.messManagementSystem == 2)
+            messManagementSystem.check(R.id.manageByOffice);
+        else messManagementSystem.check(R.id.circulateEveryMonth);
+    }
 }

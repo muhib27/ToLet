@@ -7,8 +7,10 @@ import android.view.View;
 import android.widget.ImageView;
 import android.widget.LinearLayout;
 import android.widget.TextView;
+import android.widget.Toast;
 
 import com.bumptech.glide.Glide;
+import com.google.android.gms.ads.AdListener;
 import com.google.android.gms.ads.AdRequest;
 import com.google.android.gms.ads.AdSize;
 import com.google.android.gms.ads.AdView;
@@ -29,7 +31,7 @@ public class AdViewHolder extends RecyclerView.ViewHolder {
     private TextView adDescription;
     private TextView rentDate;
     private TextView address;
-    private ImageView starView;
+    private ImageView favAd;
 
     private View itemView;
     private Context context;
@@ -46,22 +48,41 @@ public class AdViewHolder extends RecyclerView.ViewHolder {
         adDescription = itemView.findViewById(R.id.adDescription);
         rentDate = itemView.findViewById(R.id.rentDate);
         address = itemView.findViewById(R.id.address);
-        starView = itemView.findViewById(R.id.star);
+        favAd = itemView.findViewById(R.id.favAd);
     }
 
     public void bindToAd(final AdInfo adInfo, final int clickedPosition, final AdAdapter.ClickListener clickListener) {
         if (adInfo.adId == null) {
-//            NativeExpressAdView adView = new NativeExpressAdView(context);
-//            adView.setAdSize(new AdSize(400, 100));
-//            adView.setAdUnitId("ca-app-pub-3940256099942544/2793859312");
-            AdView adView = new AdView(context);
-            adView.setAdSize(AdSize.BANNER);
-            adView.setAdUnitId(context.getString(R.string.ad_mob_banner_id));
+            NativeExpressAdView adView = new NativeExpressAdView(context);
+            AdSize adSize = new AdSize(280, 75);
+            adView.setAdSize(adSize);
+            adView.setAdUnitId("ca-app-pub-3940256099942544/1072772517");
+            adView.setAdListener(new AdListener() {
+                @Override
+                public void onAdLoaded() {
+                    super.onAdLoaded();
+                }
+
+                @Override
+                public void onAdFailedToLoad(int errorCode) {
+
+                }
+            });
+
             AdRequest adRequest = new AdRequest
                     .Builder()
                     .addTestDevice(context.getString(R.string.test_device_id1))
                     .build();
+
+            // Load the Native Express ad.
             adView.loadAd(adRequest);
+
+////            adView.setAdSize(new AdSize(400, 100));
+////            adView.setAdUnitId("ca-app-pub-3940256099942544/2793859312");
+//            AdView adView = new AdView(context);
+//            adView.setAdSize(AdSize.BANNER);
+//            adView.setAdUnitId(context.getString(R.string.ad_mob_banner_id));
+//            adView.loadAd(adRequest);
             mainLay.removeAllViews();
             mainLay.addView(adView);
             return;
@@ -106,21 +127,25 @@ public class AdViewHolder extends RecyclerView.ViewHolder {
             }
         });
 
-        starView.setSelected(false);
+        favAd.setSelected(false);
 
         if (adInfo.favCount > 0) {
             if (adInfo.fav.containsKey(BaseActivity.getUid())) {
-                starView.setSelected(true);
+                favAd.setSelected(true);
             }
         }
-        starView.setOnClickListener(new View.OnClickListener() {
+        favAd.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View view) {
-                starView.setSelected(!starView.isSelected());
+                favAd.setSelected(!favAd.isSelected());
 
                 if (clickListener != null)
-                    clickListener.onFavClick(starView, clickedPosition, adInfo);
+                    clickListener.onFavClick(favAd, clickedPosition, adInfo);
             }
         });
+    }
+
+    private void showToast(int resourceId) {
+        Toast.makeText(context, context.getString(resourceId), Toast.LENGTH_SHORT).show();
     }
 }

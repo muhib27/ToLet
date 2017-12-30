@@ -18,6 +18,7 @@ import com.to.let.bd.activities.NewAdActivity2;
 import com.to.let.bd.common.BaseFragment;
 import com.to.let.bd.model.FamilyInfo;
 import com.to.let.bd.utils.AppConstants;
+import com.to.let.bd.utils.DBConstants;
 
 public class FamilyFlatAd extends BaseFragment {
     public static final String TAG = FamilyFlatAd.class.getSimpleName();
@@ -80,6 +81,7 @@ public class FamilyFlatAd extends BaseFragment {
             }
         });
         defaultCheck();
+        updateData();
     }
 
     private void defaultCheck() {
@@ -253,4 +255,15 @@ public class FamilyFlatAd extends BaseFragment {
     private final long bathroomSpace = 60;//space sqrft
     private final long balconySpace = 50;//space sqrft
     private final long drawingDiningSpace = 280;//space sqrft
+
+    public void updateData() {
+        Bundle bundle = getArguments();
+        if (bundle == null)
+            return;
+
+        FamilyInfo familyInfo = (FamilyInfo) bundle.getSerializable(DBConstants.familyInfo);
+        if (familyInfo == null)
+            return;
+
+    }
 }

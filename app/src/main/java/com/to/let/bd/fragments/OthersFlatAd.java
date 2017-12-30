@@ -147,4 +147,8 @@ public class OthersFlatAd extends BaseFragment {
         subletInfo.wellFurnished = wellFurnishedCB.isChecked();
         return subletInfo;
     }
+
+    public void updateData(OthersInfo othersInfo) {
+
+    }
 }

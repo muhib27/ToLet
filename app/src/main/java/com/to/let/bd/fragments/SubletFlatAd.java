@@ -141,4 +141,8 @@ public class SubletFlatAd extends BaseFragment {
 
         return subletInfo;
     }
+
+    public void updateData(SubletInfo subletInfo) {
+
+    }
 }

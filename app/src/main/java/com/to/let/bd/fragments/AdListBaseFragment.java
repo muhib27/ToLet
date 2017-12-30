@@ -32,6 +32,7 @@ import com.to.let.bd.common.BaseFragment;
 import com.to.let.bd.model.AdInfo;
 import com.to.let.bd.utils.AppConstants;
 import com.to.let.bd.utils.DBConstants;
+import com.to.let.bd.utils.DateUtils;
 import com.to.let.bd.utils.MyAnalyticsUtil;
 import com.to.let.bd.utils.NetworkConnection;
 
@@ -187,7 +188,7 @@ public abstract class AdListBaseFragment extends BaseFragment implements AdAdapt
             for (DataSnapshot adSnapshot : dataSnapshot.getChildren()) {
                 AdInfo adInfo = adSnapshot.getValue(AdInfo.class);
 
-                if ((adInfo != null ? adInfo.startingFinalDate : 0) >= SplashActivity.todayYearMonthDate) {
+                if ((adInfo != null ? adInfo.startingFinalDate : 0) >= DateUtils.todayYearMonthDate()) {
                     adList.add(adInfo);
                 }
             }

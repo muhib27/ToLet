@@ -16,7 +16,11 @@
 
 package com.to.let.bd.activities;
 
+import android.app.DatePickerDialog;
+import android.app.Dialog;
 import android.content.Intent;
+import android.graphics.Color;
+import android.graphics.drawable.ColorDrawable;
 import android.support.annotation.NonNull;
 import android.support.design.widget.NavigationView;
 import android.support.design.widget.TabLayout;
@@ -29,10 +33,15 @@ import android.support.v4.widget.DrawerLayout;
 import android.support.v7.app.ActionBar;
 import android.support.v7.app.ActionBarDrawerToggle;
 import android.support.v7.widget.Toolbar;
+import android.view.Gravity;
 import android.view.Menu;
 import android.view.MenuItem;
 import android.view.View;
+import android.view.ViewGroup;
+import android.view.Window;
 import android.widget.Button;
+import android.widget.DatePicker;
+import android.widget.EditText;
 import android.widget.ImageView;
 import android.widget.LinearLayout;
 import android.widget.TextView;
@@ -52,6 +61,8 @@ import com.facebook.accountkit.ui.LoginType;
 import com.google.android.gms.ads.AdListener;
 import com.google.android.gms.ads.AdRequest;
 import com.google.android.gms.ads.InterstitialAd;
+import com.google.firebase.database.DatabaseReference;
+import com.google.firebase.database.FirebaseDatabase;
 import com.to.let.bd.R;
 import com.to.let.bd.common.BaseFirebaseAuthActivity;
 import com.to.let.bd.fragments.FamilyFlatList;
@@ -59,6 +70,11 @@ import com.to.let.bd.fragments.MessFlatList;
 import com.to.let.bd.fragments.OthersFlatList;
 import com.to.let.bd.fragments.SubletFlatList;
 import com.to.let.bd.utils.AppConstants;
+import com.to.let.bd.utils.DBConstants;
+import com.to.let.bd.utils.DateUtils;
+
+import java.util.Calendar;
+import java.util.Locale;
 
 public class AdListActivity2 extends BaseFirebaseAuthActivity implements
         NavigationView.OnNavigationItemSelectedListener {
@@ -69,6 +85,8 @@ public class AdListActivity2 extends BaseFirebaseAuthActivity implements
     protected int getLayoutResourceId() {
         return R.layout.activity_ad_list2;
     }
+
+    private Calendar newDate;
 
     @Override
     protected void onCreate() {
@@ -142,7 +160,7 @@ public class AdListActivity2 extends BaseFirebaseAuthActivity implements
         final Intent intent = new Intent(this, AccountKitActivity.class);
         AccountKitConfiguration.AccountKitConfigurationBuilder configurationBuilder =
                 new AccountKitConfiguration.AccountKitConfigurationBuilder(
-                        LoginType.PHONE, AccountKitActivity.ResponseType.CODE); // or .ResponseType.TOKEN
+                        LoginType.PHONE, AccountKitActivity.ResponseType.TOKEN); // or .ResponseType.TOKEN
         PhoneNumber phoneNumber = new PhoneNumber("+880", selectedPhoneNumber, "BD");
         configurationBuilder.setInitialPhoneNumber(phoneNumber);
         intent.putExtra(AccountKitActivity.ACCOUNT_KIT_ACTIVITY_CONFIGURATION,
@@ -430,5 +448,106 @@ public class AdListActivity2 extends BaseFirebaseAuthActivity implements
                 showLog("Code to be executed when when the interstitial ad is closed.");
             }
         });
+    }
+
+    private Dialog searchDialog;
+
+    private void showSearchWindow() {
+        searchDialog = new Dialog(this);
+        searchDialog.requestWindowFeature(Window.FEATURE_NO_TITLE);
+        searchDialog.setContentView(R.layout.dialog_search_date_price_range);
+        Window window = searchDialog.getWindow();
+        if (window != null) {
+            window.setBackgroundDrawable(new ColorDrawable(Color.TRANSPARENT));
+            window.setLayout(ViewGroup.LayoutParams.MATCH_PARENT, ViewGroup.LayoutParams.WRAP_CONTENT);
+            window.setGravity(Gravity.CENTER_HORIZONTAL | Gravity.TOP);
+        }
+
+        searchDialog.show();
+
+        TextView title = searchDialog.findViewById(R.id.title);
+        title.setText(getString(R.string.search));
+
+        final Button fromMonth, toMonth;
+        fromMonth = searchDialog.findViewById(R.id.fromMonth);
+        toMonth = searchDialog.findViewById(R.id.toMonth);
+
+        final int[] dateAsArray = DateUtils.getTodayDateAsArray();
+        fromMonth.setOnClickListener(new View.OnClickListener() {
+            @Override
+            public void onClick(View view) {
+                if (fromMonth.getText().toString().equalsIgnoreCase(getString(R.string.any))) {
+                    showDatePickerDialog(fromMonth, dateAsArray[0], dateAsArray[1], dateAsArray[2]);
+                } else {
+                    int[] dateAsArray = DateUtils.splittedDate(fromMonth.getText().toString());
+                    showDatePickerDialog(fromMonth, dateAsArray[0], dateAsArray[1], dateAsArray[2]);
+                }
+            }
+        });
+        toMonth.setOnClickListener(new View.OnClickListener() {
+            @Override
+            public void onClick(View view) {
+                if (toMonth.getText().toString().equalsIgnoreCase(getString(R.string.any))) {
+                    showDatePickerDialog(toMonth, dateAsArray[0], dateAsArray[1], dateAsArray[2]);
+                } else {
+                    int[] dateAsArray = DateUtils.splittedDate(toMonth.getText().toString());
+                    showDatePickerDialog(toMonth, dateAsArray[0], dateAsArray[1], dateAsArray[2]);
+                }
+            }
+        });
+
+        final EditText rentMin, rentMax;
+        rentMin = searchDialog.findViewById(R.id.rentMin);
+        rentMax = searchDialog.findViewById(R.id.rentMax);
+
+        searchDialog.findViewById(R.id.okBtn).setOnClickListener(new View.OnClickListener() {
+            @Override
+            public void onClick(View view) {
+                long fromDateLong = 0;
+
+                long toDateLong = 0;
+
+                long rentMinLong = 0;
+                if (!rentMin.getText().toString().trim().isEmpty()) {
+                    rentMinLong = Long.parseLong(rentMin.getText().toString());
+                }
+
+                long rentMaxLong = 0;
+                if (!rentMax.getText().toString().trim().isEmpty()) {
+                    rentMaxLong = Long.parseLong(rentMax.getText().toString());
+                }
+
+                updateSearchedData(fromDateLong, toDateLong, rentMinLong, rentMaxLong);
+                searchDialog.dismiss();
+            }
+        });
+
+        searchDialog.findViewById(R.id.noBtn).setOnClickListener(new View.OnClickListener() {
+            @Override
+            public void onClick(View view) {
+                searchDialog.dismiss();
+            }
+        });
+    }
+
+    private void updateSearchedData(long fromDateLong, long toDateLong, long rentMinLong, long rentMaxLong) {
+        DatabaseReference databaseReference = FirebaseDatabase.getInstance().getReference();
+        databaseReference.child(DBConstants.adList)
+                .orderByChild(DBConstants.startingFinalDate)
+                .startAt(rentMinLong)
+                .endAt(rentMaxLong);
+    }
+
+    private void showDatePickerDialog(final Button view, int year, int month, int dayOfMonth) {
+        DatePickerDialog datePickerDialog = new DatePickerDialog(this, new DatePickerDialog.OnDateSetListener() {
+            @Override
+            public void onDateSet(DatePicker datePicker, int year, int monthOfYear, int dayOfMonth) {
+                view.setText(AppConstants.twoDigitIntFormatter(year)
+                        + AppConstants.twoDigitIntFormatter(monthOfYear + 1) +
+                        AppConstants.twoDigitIntFormatter(dayOfMonth));
+            }
+        }, year, month, dayOfMonth);
+        datePickerDialog.getDatePicker().setMinDate(System.currentTimeMillis());
+        datePickerDialog.show();
     }
 }
