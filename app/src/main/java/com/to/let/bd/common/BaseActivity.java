@@ -1,7 +1,9 @@
 package com.to.let.bd.common;
 
 import android.app.ProgressDialog;
+import android.content.DialogInterface;
 import android.content.Intent;
+import android.support.v7.app.AlertDialog;
 import android.support.v7.app.AppCompatActivity;
 import android.util.Log;
 import android.util.Patterns;
@@ -168,7 +170,7 @@ public class BaseActivity extends AppCompatActivity {
         return user.getUid();
     }
 
-    public  FirebaseUser getCurrentUser() {
+    public FirebaseUser getCurrentUser() {
         return FirebaseAuth.getInstance().getCurrentUser();
     }
 
@@ -224,5 +226,19 @@ public class BaseActivity extends AppCompatActivity {
                 getPackageName());
         sendIntent.setType("text/plain");
         startActivity(sendIntent);
+    }
+
+    public void showSimpleDialog(String message) {
+        AlertDialog alertDialog = new AlertDialog.Builder(this).create();
+        alertDialog.setIcon(R.mipmap.ic_launcher_round);
+        alertDialog.setTitle("Alert");
+        alertDialog.setMessage(message);
+        alertDialog.setButton(AlertDialog.BUTTON_POSITIVE, "OK",
+                new DialogInterface.OnClickListener() {
+                    public void onClick(DialogInterface dialog, int which) {
+                        dialog.dismiss();
+                    }
+                });
+        alertDialog.show();
     }
 }

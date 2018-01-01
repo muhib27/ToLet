@@ -276,4 +276,9 @@
     <string name="please_select_rent_range">Please select rent range</string>
     <string name="please_select_date_range">Please select date range</string>
     <string name="any">Any</string>
+    <string name="please_enter_the_sms_code">Please enter the sms code</string>
+    <string name="sms_code_empty_error">Sms code must be not epmty</string>
+    <string name="unknown_error">Unknown error</string>
+    <string name="you_need_to_verify_your_phone_number">You need to verify your phone number</string>
+    <string name="alert">Alert</string>
 </resources>

@@ -16,7 +16,6 @@ import android.graphics.drawable.ColorDrawable;
 import android.os.Bundle;
 import android.os.Handler;
 import android.support.annotation.NonNull;
-import android.support.annotation.Nullable;
 import android.support.design.widget.TabLayout;
 import android.support.v4.app.ActivityCompat;
 import android.support.v4.app.Fragment;
@@ -25,7 +24,6 @@ import android.support.v7.app.ActionBar;
 import android.support.v7.app.AlertDialog;
 import android.support.v7.widget.PopupMenu;
 import android.text.Editable;
-import android.text.TextUtils;
 import android.text.TextWatcher;
 import android.view.Gravity;
 import android.view.KeyEvent;
@@ -40,6 +38,7 @@ import android.widget.Button;
 import android.widget.DatePicker;
 import android.widget.EditText;
 import android.widget.FrameLayout;
+import android.widget.ImageView;
 import android.widget.LinearLayout;
 import android.widget.ScrollView;
 import android.widget.TextView;
@@ -62,9 +61,12 @@ import com.google.android.gms.maps.model.LatLng;
 import com.google.android.gms.maps.model.Marker;
 import com.google.android.gms.maps.model.MarkerOptions;
 import com.google.android.gms.tasks.OnCompleteListener;
+import com.google.android.gms.tasks.OnFailureListener;
 import com.google.android.gms.tasks.Task;
 import com.google.firebase.FirebaseException;
 import com.google.firebase.auth.FirebaseAuth;
+import com.google.firebase.auth.FirebaseAuthException;
+import com.google.firebase.auth.FirebaseAuthInvalidCredentialsException;
 import com.google.firebase.auth.PhoneAuthCredential;
 import com.google.firebase.auth.PhoneAuthProvider;
 import com.google.firebase.database.DatabaseError;
@@ -80,16 +82,15 @@ import com.to.let.bd.fragments.MessFlatAd;
 import com.to.let.bd.fragments.OthersFlatAd;
 import com.to.let.bd.fragments.SubletFlatAd;
 import com.to.let.bd.model.AdInfo;
-import com.to.let.bd.model.CountryInfo;
 import com.to.let.bd.model.FamilyInfo;
 import com.to.let.bd.model.MessInfo;
 import com.to.let.bd.model.OthersInfo;
-import com.to.let.bd.model.PhoneNumber;
 import com.to.let.bd.model.SubletInfo;
 import com.to.let.bd.utils.ActivityUtils;
 import com.to.let.bd.utils.AppConstants;
 import com.to.let.bd.utils.AppSharedPrefs;
 import com.to.let.bd.utils.DBConstants;
+import com.to.let.bd.utils.FirebaseAuthError;
 import com.to.let.bd.utils.GoogleApiHelper;
 import com.to.let.bd.utils.PhoneNumberUtils;
 import com.to.let.bd.utils.UploadImageService;
@@ -432,8 +433,12 @@ public class NewAdActivity2 extends BaseMapActivity implements View.OnClickListe
     @Override
     public void onFocusChange(View view, boolean hasFocus) {
         if (view == mobileNumber) {
-//            if (hasFocus)
-//                showPhoneAutoCompleteHint();
+            if (hasFocus) {
+                if (emailAddress.length() > 1)
+                    showPhoneAutoCompleteHint();
+                else
+                    googleSignOut();
+            }
         } else if (view == emailAddress) {
             if (hasFocus)
                 googleSignOut();
@@ -527,21 +532,26 @@ public class NewAdActivity2 extends BaseMapActivity implements View.OnClickListe
         public void run() {
             mobileNumber.setError(null);
             if (AppConstants.isMobileNumberValid(NewAdActivity2.this, mobileNumber)) {
-
+                needToVerifyPhoneNumberAlert();
             }
         }
     };
 
-    private void needToVerifyMobileNumber() {
+    private void needToVerifyPhoneNumberAlert() {
         AlertDialog alertDialog = new AlertDialog.Builder(this).create();
-        alertDialog.setTitle("Alert");
-        alertDialog.setMessage("Alert message to be shown");
-        alertDialog.setButton(AlertDialog.BUTTON_NEUTRAL, "OK",
+        alertDialog.setIcon(R.mipmap.ic_launcher_round);
+        alertDialog.setTitle(R.string.alert);
+        alertDialog.setMessage(getString(R.string.you_need_to_verify_your_phone_number));
+        alertDialog.setButton(AlertDialog.BUTTON_POSITIVE, getString(R.string.ok),
                 new DialogInterface.OnClickListener() {
                     public void onClick(DialogInterface dialog, int which) {
                         dialog.dismiss();
+                        sendCode("+88" + AppConstants.formatAsSimplePhoneNumber(mobileNumber.getText().toString()), null);
                     }
                 });
+
+        alertDialog.setCancelable(true);
+        alertDialog.setCanceledOnTouchOutside(false);
         alertDialog.show();
     }
 
@@ -651,8 +661,11 @@ public class NewAdActivity2 extends BaseMapActivity implements View.OnClickListe
         this.googleMap.setInfoWindowAdapter(this);
         this.googleMap.setOnMapLongClickListener(this);
         this.googleMap.setOnMapClickListener(this);
+    }
 
-        addMarker(getDefaultLatLng(), "We find out your location");
+    @Override
+    protected void findLastKnownLocation(LatLng defaultLatLng) {
+        addMarker(defaultLatLng, "We find out your location");
     }
 
     @Override
@@ -1190,31 +1203,17 @@ public class NewAdActivity2 extends BaseMapActivity implements View.OnClickListe
                     final String formattedPhone = PhoneNumberUtils.formatUsingCurrentCountry(unformattedPhone, this);
                     if (formattedPhone == null) {
                         showLog("Unable to normalize phone number from hint selector:" + unformattedPhone);
-                        return;
+                    } else {
+//                      final PhoneNumber phoneNumberObj = PhoneNumberUtils.getPhoneNumber(formattedPhone);
+                        sendCode(formattedPhone, null);
                     }
-//                    final PhoneNumber phoneNumberObj = PhoneNumberUtils.getPhoneNumber(formattedPhone);
-                    sendCode(formattedPhone, null);
                 }
             }
         }
     }
 
-    @Nullable
-    private String getPseudoValidPhoneNumber(PhoneNumber phoneNumberObj) {
-        final CountryInfo countryInfo = PhoneNumberUtils.getCurrentCountryInfo(this);
-        final String everythingElse = phoneNumberObj.getPhoneNumber();
-
-        if (TextUtils.isEmpty(everythingElse)) {
-            return null;
-        }
-
-        return PhoneNumberUtils.format(everythingElse, countryInfo);
-    }
-
     private void sendCode(String phoneNumber, PhoneAuthProvider.ForceResendingToken forceResendingToken) {
-//        mPhoneNumber = phoneNumber;
-//        mVerificationState = VerificationState.VERIFICATION_STARTED;
-
+        showProgressDialog();
         PhoneAuthProvider.getInstance().verifyPhoneNumber(
                 phoneNumber,
                 2,
@@ -1223,30 +1222,39 @@ public class NewAdActivity2 extends BaseMapActivity implements View.OnClickListe
                 new PhoneAuthProvider.OnVerificationStateChangedCallbacks() {
                     @Override
                     public void onVerificationCompleted(@NonNull PhoneAuthCredential phoneAuthCredential) {
-                        if (!mIsDestroyed) {
-                            //AuthenticationActivity.this.onVerificationSuccess(phoneAuthCredential);
-                        }
+                        closeProgressDialog();
+                        updateUserPhoneNumber(phoneAuthCredential);
                     }
 
                     @Override
                     public void onVerificationFailed(FirebaseException ex) {
+                        closeProgressDialog();
                         if (!mIsDestroyed) {
-                            //AuthenticationActivity.this.onVerificationFailed(ex);
+                            if (ex instanceof FirebaseAuthException) {
+                                FirebaseAuthError error = FirebaseAuthError.fromException((FirebaseAuthException) ex);
+                                showSimpleDialog(error.getDescription());
+                            } else {
+                                showSimpleDialog(ex.getLocalizedMessage());
+                            }
                         }
                     }
 
                     @Override
                     public void onCodeSent(@NonNull String verificationId,
                                            @NonNull PhoneAuthProvider.ForceResendingToken forceResendingToken) {
+                        closeProgressDialog();
                         mVerificationId = verificationId;
-                        //mForceResendingToken = forceResendingToken;
+                        mForceResendingToken = forceResendingToken;
                         if (!mIsDestroyed) {
                             //AuthenticationActivity.this.onCodeSent();
-                            addCode();
+                            showSmsAlertDialog();
                         }
                     }
                 }, forceResendingToken);
     }
+
+    private String mVerificationId;
+    private PhoneAuthProvider.ForceResendingToken mForceResendingToken;
 
     private boolean mIsDestroyed = false;
 
@@ -1256,35 +1264,87 @@ public class NewAdActivity2 extends BaseMapActivity implements View.OnClickListe
         super.onDestroy();
     }
 
-    private String mVerificationId;
+    private Dialog smsCodeDialog;
 
-    private void addCode() {
-        AlertDialog alertDialog = new AlertDialog.Builder(this).create();
-        alertDialog.setTitle("Alert");
-        alertDialog.setMessage("Alert message to be shown");
-        final EditText input = new EditText(this);
-        LinearLayout.LayoutParams lp = new LinearLayout.LayoutParams(
-                LinearLayout.LayoutParams.MATCH_PARENT,
-                LinearLayout.LayoutParams.MATCH_PARENT);
-        input.setLayoutParams(lp);
-        alertDialog.setView(input);
-        alertDialog.setButton(AlertDialog.BUTTON_NEUTRAL, "OK",
-                new DialogInterface.OnClickListener() {
-                    public void onClick(DialogInterface dialog, int which) {
-                        updatePhoneNumber(input.getText().toString());
-                    }
-                });
-        alertDialog.show();
+    private void showSmsAlertDialog() {
+        smsCodeDialog = new Dialog(this);
+        smsCodeDialog.requestWindowFeature(Window.FEATURE_NO_TITLE);
+        smsCodeDialog.setContentView(R.layout.dialog_sms_code);
+        Window window = smsCodeDialog.getWindow();
+        if (window != null) {
+            window.setBackgroundDrawable(new ColorDrawable(Color.TRANSPARENT));
+            window.setLayout(ViewGroup.LayoutParams.MATCH_PARENT, ViewGroup.LayoutParams.WRAP_CONTENT);
+            window.setGravity(Gravity.CENTER_HORIZONTAL | Gravity.CENTER_VERTICAL);
+        }
+
+        smsCodeDialog.setCanceledOnTouchOutside(false);
+        smsCodeDialog.setCancelable(false);
+        smsCodeDialog.show();
+
+        final EditText smsCode = smsCodeDialog.findViewById(R.id.smsCode);
+
+        final ImageView okBtn, noBtn;
+        okBtn = smsCodeDialog.findViewById(R.id.okBtn);
+        noBtn = smsCodeDialog.findViewById(R.id.noBtn);
+
+        okBtn.setOnClickListener(new View.OnClickListener() {
+            @Override
+            public void onClick(View v) {
+                String smsCodeString = smsCode.getText().toString();
+
+                if (smsCodeString.length() != 6) {
+                    smsCode.setError(getString(R.string.sms_code_empty_error));
+                    return;
+                }
+
+                PhoneAuthCredential phoneAuthCredential = PhoneAuthProvider.getCredential(mVerificationId, smsCodeString);
+                updateUserPhoneNumber(phoneAuthCredential);
+            }
+        });
+
+        noBtn.setOnClickListener(new View.OnClickListener() {
+            @Override
+            public void onClick(View v) {
+                smsCodeDialog.dismiss();
+            }
+        });
     }
 
-    private void updatePhoneNumber(String smsCode) {
-        PhoneAuthCredential phoneAuthCredential = new PhoneAuthCredential(mVerificationId, smsCode);
-        firebaseUser.updatePhoneNumber(phoneAuthCredential)
-                .addOnCompleteListener(new OnCompleteListener<Void>() {
-                    @Override
-                    public void onComplete(@NonNull Task<Void> task) {
-                        showLog();
+    private void updateUserPhoneNumber(PhoneAuthCredential phoneAuthCredential) {
+        showProgressDialog();
+        firebaseUser.updatePhoneNumber(phoneAuthCredential).addOnCompleteListener(new OnCompleteListener<Void>() {
+            @Override
+            public void onComplete(@NonNull Task<Void> task) {
+                closeProgressDialog();
+                if (task.isSuccessful()) {
+                    mobileNumber.addTextChangedListener(null);
+                    mobileNumber.setText(firebaseUser.getPhoneNumber());
+                    mobileNumber.setEnabled(false);
+                } else {
+                    FirebaseException firebaseException = (FirebaseException) task.getException();
+                    if (firebaseException != null) {
+                        if (firebaseException instanceof FirebaseAuthException) {
+                            FirebaseAuthError error = FirebaseAuthError.fromException((FirebaseAuthException) firebaseException);
+                            showSimpleDialog(error.getDescription());
+                        } else {
+                            showSimpleDialog(firebaseException.getLocalizedMessage());
+                        }
+                    } else {
+                        showSimpleDialog(getString(R.string.unknown_error));
                     }
-                });
+                }
+            }
+        }).addOnFailureListener(new OnFailureListener() {
+            @Override
+            public void onFailure(@NonNull Exception e) {
+                closeProgressDialog();
+                if (e instanceof FirebaseAuthInvalidCredentialsException) {
+                    FirebaseAuthError error = FirebaseAuthError.fromException((FirebaseAuthInvalidCredentialsException) e);
+                    showSimpleDialog(error.getDescription());
+                } else {
+                    showSimpleDialog(e.getLocalizedMessage());
+                }
+            }
+        });
     }
 }

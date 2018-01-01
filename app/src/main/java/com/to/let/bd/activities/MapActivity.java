@@ -124,6 +124,11 @@ public class MapActivity extends BaseMapActivity implements BottomNavigationView
         bottomNavigationView.setSelectedItemId(R.id.actionSchool);
     }
 
+    @Override
+    protected void findLastKnownLocation(LatLng defaultLatLng) {
+
+    }
+
     private BottomNavigationView bottomNavigationView;
 
     private void initBottomNavigation() {
@@ -187,15 +192,15 @@ public class MapActivity extends BaseMapActivity implements BottomNavigationView
             resourceId = R.drawable.marker_merun_sublet;
         }
 
-        String markerValue = "৳ " + AppConstants.rentFormatter(flatRent);
+//        String markerValue = "৳ " + AppConstants.rentFormatter(flatRent);
 //        if ((flatRent / 1000) > 0) {
 //            markerValue = "৳ " + (flatRent / 1000) + "K";
 //        }
-        Bitmap bitmap = AppConstants.writeOnDrawable(this, resourceId, markerValue);
+//        Bitmap bitmap = AppConstants.writeOnDrawable(this, resourceId, markerValue);
 
         googleMap.addMarker(new MarkerOptions()
                 .position(selectedLocation)
-                .icon(BitmapDescriptorFactory.fromBitmap(bitmap)));
+                .icon(BitmapDescriptorFactory.fromResource(resourceId)));
     }
 
     private void addPlaceMarker(GooglePlace googlePlace, int requestType) {

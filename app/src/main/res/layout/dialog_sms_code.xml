@@ -1,0 +1,49 @@
+<?xml version="1.0" encoding="utf-8"?>
+<LinearLayout xmlns:android="http://schemas.android.com/apk/res/android"
+    android:layout_width="match_parent"
+    android:layout_height="wrap_content"
+    android:layout_margin="10dp"
+    android:background="@color/white"
+    android:orientation="vertical">
+
+    <include layout="@layout/alert_title_bar" />
+
+    <TextView
+        android:id="@+id/description"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:layout_margin="10dp"
+        android:singleLine="false"
+        android:text="@string/app_name"
+        android:textColor="@color/black"
+        android:textSize="@dimen/text_size_12sp"
+        android:textStyle="normal" />
+
+    <!-- Password Label -->
+    <android.support.design.widget.TextInputLayout
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:layout_margin="10dp">
+
+        <EditText
+            android:id="@+id/smsCode"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:hint="@string/please_enter_the_sms_code"
+            android:inputType="number"
+            android:maxLength="6"
+            android:maxLines="1"
+            android:singleLine="true"
+            android:textSize="14sp" />
+    </android.support.design.widget.TextInputLayout>
+
+    <include
+        layout="@layout/alert_buttons"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:layout_gravity="end|right"
+        android:layout_marginBottom="10dp"
+        android:layout_marginEnd="10dp"
+        android:layout_marginRight="10dp"
+        android:layout_marginTop="10dp" />
+</LinearLayout>

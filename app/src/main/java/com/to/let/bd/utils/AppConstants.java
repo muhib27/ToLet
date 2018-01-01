@@ -32,6 +32,7 @@ public class AppConstants {
     public static final int adMapImageType = 1004;
     public static final int placeAutoComplete = 1005;
     public static final int phoneHint = 1006;
+    public static final int REQUEST_CHECK_SETTINGS = 1007;
 
     public static final double defaultLatitude = 23.8103d;
     public static final double defaultLongitude = 90.4125d;
@@ -100,10 +101,28 @@ public class AppConstants {
         if (mobileNumber.startsWith("88")) {
             mobileNumber = mobileNumber.replace("88", "");
         }
+        if (mobileNumber.startsWith("088")) {
+            mobileNumber = mobileNumber.replace("088", "");
+        }
 
         return mobileNumber.length() == 11 && (mobileNumber.startsWith("016") ||
                 mobileNumber.startsWith("017") || mobileNumber.startsWith("018") ||
                 mobileNumber.startsWith("019"));
+    }
+
+    // format phone number as simple
+    // like "+8801670688688" to "01670688688"
+    public static String formatAsSimplePhoneNumber(String phoneNumber) {
+        if (phoneNumber.startsWith("+88")) {
+            phoneNumber = phoneNumber.replace("+88", "");
+        }
+        if (phoneNumber.startsWith("088")) {
+            phoneNumber = phoneNumber.replace("088", "");
+        }
+        if (phoneNumber.startsWith("88")) {
+            phoneNumber = phoneNumber.replace("88", "");
+        }
+        return phoneNumber;
     }
 
     public static boolean isMobileNumberValid(Context context, EditText mobileNumber) {
