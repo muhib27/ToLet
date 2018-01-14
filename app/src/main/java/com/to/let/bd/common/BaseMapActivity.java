@@ -407,25 +407,15 @@ public abstract class BaseMapActivity extends BaseActivity implements OnMapReady
         gotoDeviceLocation();
     }
 
-    private final int maxAddressResult = 2;
-    protected double rentLatitude, rentLongitude;
-    private String countryName;
-    private String division;
-
     protected List<Address> findSelectedLocationDetails(double latitude, double longitude) {
         Geocoder geocoder;
         List<Address> addressList = new ArrayList<>();
         addressList.clear();
 
-        geocoder = new Geocoder(this, Locale.ENGLISH);
-        rentLatitude = latitude;
-        rentLongitude = longitude;
+        geocoder = new Geocoder(this, Locale.getDefault());
 
         try {
-            // Here 1 represent max location result to returned, by documents it recommended 1 to 5
-            addressList = geocoder.getFromLocation(latitude, longitude, maxAddressResult);
-            //countryName = addressList.g
-
+            addressList = geocoder.getFromLocation(latitude, longitude, 1);
         } catch (IOException e) {
             e.printStackTrace();
         }
@@ -433,34 +423,32 @@ public abstract class BaseMapActivity extends BaseActivity implements OnMapReady
         return addressList;
     }
 
-    protected String getLocationBestApproximateResult(List<Address> addressList, LatLng latLng) {
+    protected String getLocationBestApproximateResult(List<Address> addressList) {
         if (addressList == null || addressList.isEmpty()) {
             return null;
         }
 
         String result = "";
         for (Address address : addressList) {
-            // If any additional address line present than only, check with max available address lines by getMaxAddressLineIndex()
-            if (address.getAddressLine(0) != null) {
-                result = address.getAddressLine(0);
-            }
-            if (address.getLocality() != null && !result.contains(address.getLocality())) {
-                result = result + "," + address.getLocality();
-                division = address.getLocality();
+            if (address == null)
+                break;
+
+            String featureName = "";
+            if (address.getFeatureName() != null && !address.getFeatureName().isEmpty()) {
+                featureName = address.getFeatureName();
             }
 
-            if (address.getCountryName() != null && !result.contains(address.getCountryName())) {
-                result = result + "," + address.getCountryName();
-                countryName = address.getCountryName();
+            String addressLine = "";
+            try {
+                addressLine = address.getAddressLine(0);
+            } catch (IndexOutOfBoundsException e) {
+                e.printStackTrace();
             }
 
-            if (address.getAdminArea() != null && !result.contains(address.getAdminArea())) {
-                result = result + "," + address.getAdminArea();
-            }
-
-            if (address.getFeatureName() != null && !result.contains(address.getFeatureName())) {
-                result = result + "," + address.getAdminArea();
-            }
+            if (addressLine.length() > featureName.length())
+                result = addressLine;
+            else
+                result = featureName;
         }
 
         return result;
@@ -471,20 +459,17 @@ public abstract class BaseMapActivity extends BaseActivity implements OnMapReady
         finish();
     }
 
-    @Override
-    public boolean onCreateOptionsMenu(Menu menu) {
-        getMenuInflater().inflate(R.menu.search, menu);
-        return true;
-    }
+//    @Override
+//    public boolean onCreateOptionsMenu(Menu menu) {
+//        getMenuInflater().inflate(R.menu.search, menu);
+//        return true;
+//    }
 
     @Override
     public boolean onOptionsItemSelected(MenuItem item) {
         switch (item.getItemId()) {
             case android.R.id.home:
                 finish();
-                return true;
-            case R.id.searchAction:
-                shareAction();
                 return true;
             default:
                 return super.onOptionsItemSelected(item);

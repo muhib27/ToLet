@@ -25,6 +25,7 @@ import com.google.firebase.database.DatabaseReference;
 import com.google.firebase.database.FirebaseDatabase;
 import com.google.firebase.iid.FirebaseInstanceId;
 import com.to.let.bd.R;
+import com.to.let.bd.fcm.DeleteTokenService;
 import com.to.let.bd.utils.AppConstants;
 import com.to.let.bd.utils.DBConstants;
 
@@ -188,6 +189,7 @@ public abstract class BaseFirebaseAuthActivity extends BaseActivity implements
     }
 
     protected void logoutAndAnonymousLogin() {
+        startService(new Intent(this, DeleteTokenService.class));
         if (firebaseUser != null) {
             if (firebaseUser.isAnonymous()) {
                 finish();

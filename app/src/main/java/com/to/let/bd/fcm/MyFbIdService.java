@@ -18,6 +18,8 @@ package com.to.let.bd.fcm;
 
 import android.util.Log;
 
+import com.google.firebase.auth.FirebaseAuth;
+import com.google.firebase.auth.FirebaseUser;
 import com.google.firebase.database.DatabaseReference;
 import com.google.firebase.database.FirebaseDatabase;
 import com.google.firebase.iid.FirebaseInstanceId;
@@ -59,18 +61,23 @@ public class MyFbIdService extends FirebaseInstanceIdService {
      * @param token The new token.
      */
     private void sendRegistrationToServer(String token) {
-        String userId = BaseActivity.getUid();
-        if (token != null && userId != null) {
-            writeNewUser(token, userId);
+        FirebaseUser firebaseUser = FirebaseAuth.getInstance().getCurrentUser();
+        if (token != null && firebaseUser != null) {
+            writeNewUser(token, firebaseUser);
         }
     }
 
-    private void writeNewUser(String fcmToken, String userId) {
+    private void writeNewUser(String fcmToken, FirebaseUser firebaseUser) {
         DatabaseReference databaseReference = FirebaseDatabase.getInstance().getReference();
         HashMap<String, Object> userValues = new HashMap<>();
         userValues.put(DBConstants.fcmToken, fcmToken);
+
         HashMap<String, Object> childUpdates = new HashMap<>();
-        childUpdates.put("/" + DBConstants.users + "/" + DBConstants.anonymousUsers + "/" + userId, userValues);
+        if (firebaseUser.isAnonymous())
+            childUpdates.put("/" + DBConstants.users + "/" + DBConstants.anonymousUsers + "/" + firebaseUser.getUid(), userValues);
+        else
+            childUpdates.put("/" + DBConstants.users + "/" + DBConstants.registeredUsers + "/" + firebaseUser.getUid(), userValues);
+
         databaseReference.updateChildren(childUpdates);
     }
 }

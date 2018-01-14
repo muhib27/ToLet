@@ -44,6 +44,16 @@
                 android:textStyle="bold" />
         </android.support.design.widget.TextInputLayout>
 
+        <TextView
+            android:id="@+id/resendTxt"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:layout_gravity="center_horizontal"
+            android:layout_margin="@dimen/size_5dp"
+            android:gravity="center"
+            android:text="@string/do_not_get_sms_code_resend"
+            android:textColor="@color/selector_resend" />
+
         <include
             layout="@layout/alert_buttons"
             android:layout_width="wrap_content"

@@ -87,6 +87,7 @@
     <string name="flat_info">Flat information:</string>
     <string name="dummy_full_address">Dummy full address</string>
     <string name="full_address">Full address:</string>
+    <string name="full_address_hint">Full address</string>
     <string name="security_guard">Security guard</string>
     <string name="please_select_rent_date">Please select rent date:</string>
     <string name="facing">Facing</string>
@@ -286,9 +287,10 @@
     <string name="please_select_date_range">Please select date range</string>
     <string name="any">Any</string>
     <string name="please_enter_the_sms_code">Please enter the sms code</string>
-    <string name="sms_code_empty_error">Sms code must be not epmty</string>
+    <string name="sms_code_empty_error">Sms code must be not empty</string>
     <string name="unknown_error">Unknown error</string>
     <string name="you_need_to_verify_your_phone_number">You need to verify your phone number</string>
+    <string name="phone_verification_message" formatted="false">We send a verification code to \"%s\", please insert the correct code to verify your phone number.</string>
     <string name="alert">Alert</string>
     <string name="delete">Delete</string>
     <string name="only_female">Only Female</string>
@@ -300,4 +302,6 @@
     <string name="please_report_a_bug">Please report a bug from the report menu.</string>
     <string name="please_type_here_for_where_you_want_to_search">Please type here for where you want to search</string>
     <string name="please_type_here_for_search">Please type here for search</string>
+    <string name="resend">Resend</string>
+    <string name="do_not_get_sms_code_resend">Don\'t get sms code, tap here for resend sms</string>
 </resources>

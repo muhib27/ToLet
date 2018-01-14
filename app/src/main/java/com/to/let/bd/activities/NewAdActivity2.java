@@ -1,6 +1,5 @@
 package com.to.let.bd.activities;
 
-import android.Manifest;
 import android.app.DatePickerDialog;
 import android.app.Dialog;
 import android.app.PendingIntent;
@@ -9,15 +8,14 @@ import android.content.Context;
 import android.content.DialogInterface;
 import android.content.Intent;
 import android.content.IntentSender;
-import android.content.pm.PackageManager;
 import android.graphics.Bitmap;
 import android.graphics.Color;
 import android.graphics.drawable.ColorDrawable;
 import android.os.Bundle;
+import android.os.CountDownTimer;
 import android.os.Handler;
 import android.support.annotation.NonNull;
 import android.support.design.widget.TabLayout;
-import android.support.v4.app.ActivityCompat;
 import android.support.v4.app.Fragment;
 import android.support.v4.content.LocalBroadcastManager;
 import android.support.v7.app.ActionBar;
@@ -28,7 +26,6 @@ import android.text.TextWatcher;
 import android.view.Gravity;
 import android.view.KeyEvent;
 import android.view.LayoutInflater;
-import android.view.Menu;
 import android.view.MenuItem;
 import android.view.MotionEvent;
 import android.view.View;
@@ -37,9 +34,9 @@ import android.view.Window;
 import android.widget.Button;
 import android.widget.DatePicker;
 import android.widget.EditText;
-import android.widget.FrameLayout;
 import android.widget.ImageView;
 import android.widget.LinearLayout;
+import android.widget.ProgressBar;
 import android.widget.ScrollView;
 import android.widget.TextView;
 
@@ -50,29 +47,20 @@ import com.google.android.gms.auth.api.credentials.Credential;
 import com.google.android.gms.auth.api.credentials.CredentialPickerConfig;
 import com.google.android.gms.auth.api.credentials.HintRequest;
 import com.google.android.gms.common.ConnectionResult;
-import com.google.android.gms.common.GooglePlayServicesNotAvailableException;
-import com.google.android.gms.common.GooglePlayServicesRepairableException;
 import com.google.android.gms.common.api.GoogleApiClient;
 import com.google.android.gms.common.api.Status;
 import com.google.android.gms.location.places.AutocompleteFilter;
 import com.google.android.gms.location.places.Place;
-import com.google.android.gms.location.places.ui.PlaceAutocomplete;
 import com.google.android.gms.location.places.ui.PlaceAutocompleteFragment;
 import com.google.android.gms.location.places.ui.PlaceSelectionListener;
 import com.google.android.gms.maps.CameraUpdateFactory;
 import com.google.android.gms.maps.GoogleMap;
-import com.google.android.gms.maps.model.BitmapDescriptorFactory;
-import com.google.android.gms.maps.model.CameraPosition;
 import com.google.android.gms.maps.model.LatLng;
-import com.google.android.gms.maps.model.Marker;
-import com.google.android.gms.maps.model.MarkerOptions;
 import com.google.android.gms.tasks.OnCompleteListener;
-import com.google.android.gms.tasks.OnFailureListener;
 import com.google.android.gms.tasks.Task;
 import com.google.firebase.FirebaseException;
 import com.google.firebase.auth.FirebaseAuth;
 import com.google.firebase.auth.FirebaseAuthException;
-import com.google.firebase.auth.FirebaseAuthInvalidCredentialsException;
 import com.google.firebase.auth.PhoneAuthCredential;
 import com.google.firebase.auth.PhoneAuthProvider;
 import com.google.firebase.database.DatabaseError;
@@ -111,7 +99,7 @@ import java.util.HashMap;
 import java.util.Locale;
 import java.util.concurrent.TimeUnit;
 
-public class NewAdActivity2 extends BaseMapActivity implements View.OnClickListener, View.OnFocusChangeListener, GoogleMap.InfoWindowAdapter, GoogleMap.OnMapLongClickListener, GoogleMap.OnMapClickListener {
+public class NewAdActivity2 extends BaseMapActivity implements View.OnClickListener, View.OnFocusChangeListener {
 
     private static final String TAG = NewAdActivity2.class.getSimpleName();
 
@@ -149,18 +137,23 @@ public class NewAdActivity2 extends BaseMapActivity implements View.OnClickListe
         initPlace();
     }
 
+    private PlaceAutocompleteFragment placeAutocomplete;
+    private boolean onPlaceSelected = false;
+
     private void initPlace() {
-        PlaceAutocompleteFragment autocompleteFragment = (PlaceAutocompleteFragment)
+        placeAutocomplete = (PlaceAutocompleteFragment)
                 getFragmentManager().findFragmentById(R.id.placeAutocomplete);
-        autocompleteFragment.setHint(getString(R.string.please_type_here_for_search));
+        placeAutocomplete.setHint(getString(R.string.please_type_here_for_search));
         AutocompleteFilter typeFilter = new AutocompleteFilter.Builder()
                 .setCountry("BD")
                 .build();
-        autocompleteFragment.setFilter(typeFilter);
-        autocompleteFragment.setOnPlaceSelectedListener(new PlaceSelectionListener() {
+        placeAutocomplete.setFilter(typeFilter);
+        placeAutocomplete.setOnPlaceSelectedListener(new PlaceSelectionListener() {
             @Override
             public void onPlaceSelected(Place place) {
-                showLog("Place: " + place.getName());
+                onPlaceSelected = true;
+                addressDetails.setText(place.getAddress());
+                googleMap.moveCamera(CameraUpdateFactory.newLatLngZoom(place.getLatLng(), DEFAULT_ZOOM));
             }
 
             @Override
@@ -387,6 +380,8 @@ public class NewAdActivity2 extends BaseMapActivity implements View.OnClickListe
     private EditText emailAddress, mobileNumber;
     private LinearLayout flatAdditionalInfoLay;
     private EditText houseInfo, whichFloor, description, totalRent, totalUtility;
+    private ImageView fixedMarker;
+    private ProgressBar locationLoaderProgressBar;
 
     private void updateTitle(String title) {
         ActionBar actionBar = getSupportActionBar();
@@ -448,7 +443,7 @@ public class NewAdActivity2 extends BaseMapActivity implements View.OnClickListe
             public boolean onEditorAction(TextView textView, int id, KeyEvent keyEvent) {
                 if (!(emailAddress.getText() == null || emailAddress.getText().toString().isEmpty()
                         || emailAddress.getText().toString().trim().isEmpty())) {
-                    mobileNumber.requestFocus();
+                    description.requestFocus();
                     return true;
                 }
                 return false;
@@ -459,6 +454,9 @@ public class NewAdActivity2 extends BaseMapActivity implements View.OnClickListe
         rentDate.setOnClickListener(this);
 
         remainingTime = findViewById(R.id.remainingTime);
+        fixedMarker = findViewById(R.id.fixedMarker);
+        locationLoaderProgressBar = findViewById(R.id.locationLoaderProgressBar);
+        locationLoaderProgressBar.getIndeterminateDrawable().setColorFilter(0xFFFFFFFF, android.graphics.PorterDuff.Mode.MULTIPLY);
     }
 
     private TextWatcher textWatcher = new TextWatcher() {
@@ -600,7 +598,7 @@ public class NewAdActivity2 extends BaseMapActivity implements View.OnClickListe
                 new DialogInterface.OnClickListener() {
                     public void onClick(DialogInterface dialog, int which) {
                         dialog.dismiss();
-                        sendCode("+88" + AppConstants.formatAsSimplePhoneNumber(mobileNumber.getText().toString()), null);
+                        sendCode("+88" + AppConstants.formatAsSimplePhoneNumber(mobileNumber.getText().toString()));
                     }
                 });
 
@@ -713,34 +711,41 @@ public class NewAdActivity2 extends BaseMapActivity implements View.OnClickListe
                         mapScrollView.requestDisallowInterceptTouchEvent(true);
                     }
                 });
-
-//        this.googleMap.setInfoWindowAdapter(this);
-//        this.googleMap.setOnMapLongClickListener(this);
-//        this.googleMap.setOnMapClickListener(this);
-//        this.googleMap.getUiSettings().setMyLocationButtonEnabled(false);
-//
         this.googleMap.setOnCameraIdleListener(new GoogleMap.OnCameraIdleListener() {
             @Override
             public void onCameraIdle() {
-                LatLng center = NewAdActivity2.this.googleMap.getCameraPosition().target;
-                showLog();
+                selectedCenterLatLng = NewAdActivity2.this.googleMap.getCameraPosition().target;
+                if (!onPlaceSelected) {
+                    locationLoaderProgressBar.setVisibility(View.VISIBLE);
+                    handler.removeCallbacks(addressLoader);
+                    handler.postDelayed(addressLoader, 500);
+                } else {
+                    if (locationLoaderProgressBar.getVisibility() == View.VISIBLE)
+                        locationLoaderProgressBar.setVisibility(View.GONE);
+                }
+                onPlaceSelected = false;
+            }
+        });
+
+        this.googleMap.setOnCameraMoveStartedListener(new GoogleMap.OnCameraMoveStartedListener() {
+            @Override
+            public void onCameraMoveStarted(int i) {
+                locationLoaderProgressBar.setVisibility(View.VISIBLE);
             }
         });
     }
 
-    @Override
-    public void onMapLongClick(LatLng latLng) {
-        addMarker(latLng, "You tap here!");
-    }
+    private LatLng selectedCenterLatLng;
 
-    @Override
-    public void onMapClick(LatLng latLng) {
-        googleMap.clear();
-        previouslyPointLocation();
-        selectedMarker = null;
-        this.fullAddress = "";
-        addressDetails.setText(fullAddress);
-    }
+    private Runnable addressLoader = new Runnable() {
+        @Override
+        public void run() {
+            String findOutFullAddress = getLocationBestApproximateResult(findSelectedLocationDetails(selectedCenterLatLng.latitude, selectedCenterLatLng.longitude));
+            placeAutocomplete.setText(findOutFullAddress);
+            addressDetails.setText(findOutFullAddress);
+            locationLoaderProgressBar.setVisibility(View.GONE);
+        }
+    };
 
     @Override
     protected void findLastKnownLocation(LatLng defaultLatLng) {
@@ -750,53 +755,16 @@ public class NewAdActivity2 extends BaseMapActivity implements View.OnClickListe
 //            addMarker(new LatLng(adInfo.latitude, adInfo.longitude), getString(R.string.your_previously_selected_location));
     }
 
-    private void previouslyPointLocation() {
-        if (adInfo != null) {
-            addMarker(new LatLng(adInfo.latitude, adInfo.longitude), getString(R.string.your_previously_selected_location));
-        }
-    }
-
-    private Marker selectedMarker;
-
-    private void addMarker(LatLng latLng, String title) {
-        String fullAddress = getLocationBestApproximateResult(findSelectedLocationDetails(latLng.latitude, latLng.longitude), latLng);
-        onLoadLocationDetails(fullAddress);
-        googleMap.clear();
-        selectedMarker = googleMap.addMarker(new MarkerOptions()
-                .position(latLng)
-                .snippet(fullAddress)
-                .title(title)
-//                .icon(BitmapDescriptorFactory.fromBitmap(getMarkerIcon())));
-                .icon(BitmapDescriptorFactory.fromResource(getMarkerResource())));
-        selectedMarker.setTag(0);
-    }
-
-    @Override
-    public View getInfoWindow(Marker marker) {
-        return null;
-    }
-
-    @Override
-    public View getInfoContents(Marker marker) {
-        // Inflate the layouts for the info window, roomFaceTitle and snippet.
-        View infoWindow = getLayoutInflater().inflate(R.layout.custom_info_contents,
-                (FrameLayout) findViewById(R.id.map), false);
-
-        TextView title = infoWindow.findViewById(R.id.title);
-        title.setText(marker.getTitle());
-
-        TextView snippet = infoWindow.findViewById(R.id.snippet);
-        snippet.setText(marker.getSnippet());
-
-        return infoWindow;
-    }
-
-    private String fullAddress = "";
+//    private void previouslyPointLocation() {
+//        if (adInfo != null) {
+//            addMarker(new LatLng(adInfo.latitude, adInfo.longitude), getString(R.string.your_previously_selected_location));
+//        }
+//    }
 
     @Override
     protected void onLoadLocationDetails(String fullAddress) {
-        this.fullAddress = fullAddress;
-        addressDetails.setText(fullAddress);
+//        this.fullAddress = fullAddress;
+//        addressDetails.setText(fullAddress);
     }
 
     @Override
@@ -818,9 +786,16 @@ public class NewAdActivity2 extends BaseMapActivity implements View.OnClickListe
     }
 
     private void validateInputtedData() {
-        if (selectedMarker == null) {
-            mapScrollView.smoothScrollTo(0, 0);
-            showToast(getString(R.string.please_pick_a_location_into_the_map));
+        if (firebaseUser == null || firebaseUser.isAnonymous()) {
+            googleSignOut();
+            return;
+        }
+
+        if (firebaseUser.getPhoneNumber() == null || firebaseUser.getPhoneNumber().isEmpty()) {
+            if (!AppConstants.isMobileNumberValid(this, mobileNumber)) {
+                return;
+            }
+            needToVerifyPhoneNumberAlert();
             return;
         }
 
@@ -834,15 +809,6 @@ public class NewAdActivity2 extends BaseMapActivity implements View.OnClickListe
         } else if (totalRent.getText().length() == 0) {
             totalRent.setError(getString(R.string.error_field_required));
             totalRent.requestFocus();
-            return;
-        }
-
-        if (firebaseUser == null || firebaseUser.isAnonymous()) {
-            googleSignOut();
-            return;
-        }
-
-        if (!AppConstants.isMobileNumberValid(this, mobileNumber)) {
             return;
         }
 
@@ -954,14 +920,16 @@ public class NewAdActivity2 extends BaseMapActivity implements View.OnClickListe
     private void writeNewPost() {
         showProgressDialog();
 
-        final String adId = databaseReference.child(DBConstants.adList).push().getKey();
+        final String adId;
+        if (adInfo == null) {
+            adId = databaseReference.child(DBConstants.adList).push().getKey();
+        } else {
+            adId = adInfo.adId;
+        }
 
         int startingDate = date[0];
         int startingMonth = date[1] + 1;
         int startingYear = date[2];
-
-        final double latitude = rentLatitude;
-        final double longitude = rentLongitude;
 
         String fullAddress = addressDetails.getText().toString();
         String country = "";
@@ -1000,7 +968,7 @@ public class NewAdActivity2 extends BaseMapActivity implements View.OnClickListe
         String emailAddress = this.emailAddress.getText().toString();
 
         final AdInfo adInfo = new AdInfo(adId, startingMonth, startingDate, startingYear,
-                latitude, longitude,
+                selectedCenterLatLng.latitude, selectedCenterLatLng.longitude,
                 fullAddress, country, division, district, subDistrict, knownAsArea,
                 flatSpace, flatRent, othersFee,
                 houseInfo.getText().toString(),
@@ -1032,57 +1000,24 @@ public class NewAdActivity2 extends BaseMapActivity implements View.OnClickListe
             @Override
             public void onComplete(DatabaseError databaseError, DatabaseReference databaseReference) {
                 if (databaseError == null) {
-                    if (selectedMarker != null) {
-                        googleMap.moveCamera(CameraUpdateFactory.newLatLngZoom(selectedMarker.getPosition(), DEFAULT_ZOOM));
-                        if (selectedMarker.isInfoWindowShown()) {
-                            selectedMarker.hideInfoWindow();
-                        }
-                    }
-                    if (googleMap.isMyLocationEnabled()) {
-                        if (!(ActivityCompat.checkSelfPermission(NewAdActivity2.this, Manifest.permission.ACCESS_FINE_LOCATION) != PackageManager.PERMISSION_GRANTED && ActivityCompat.checkSelfPermission(NewAdActivity2.this, Manifest.permission.ACCESS_COARSE_LOCATION) != PackageManager.PERMISSION_GRANTED)) {
-                            googleMap.setMyLocationEnabled(false);
-                        }
-                    }
-                    googleMap.setOnMapLoadedCallback(new GoogleMap.OnMapLoadedCallback() {
+                    googleMap.snapshot(new GoogleMap.SnapshotReadyCallback() {
                         @Override
-                        public void onMapLoaded() {
-                            googleMap.snapshot(new GoogleMap.SnapshotReadyCallback() {
-                                @Override
-                                public void onSnapshotReady(Bitmap bitmap) {
-                                    ByteArrayOutputStream stream = new ByteArrayOutputStream();
-                                    bitmap.compress(Bitmap.CompressFormat.PNG, 50, stream);
-                                    byte[] byteArray = stream.toByteArray();
-                                    uploadImage(AppConstants.adMapImageType, adId, byteArray);
-                                }
-                            });
+                        public void onSnapshotReady(Bitmap bitmap) {
+                            ByteArrayOutputStream stream = new ByteArrayOutputStream();
+                            bitmap.compress(Bitmap.CompressFormat.PNG, 50, stream);
+                            byte[] byteArray = stream.toByteArray();
+                            uploadImage(AppConstants.adMapImageType, adId, byteArray);
                         }
                     });
-
                     DatabaseReference ref = FirebaseDatabase.getInstance().getReference(DBConstants.geoFire);
                     GeoFire geoFire = new GeoFire(ref);
-                    geoFire.setLocation(adId, new GeoLocation(latitude, longitude));
+                    geoFire.setLocation(adId, new GeoLocation(selectedCenterLatLng.latitude, selectedCenterLatLng.longitude));
                 } else {
-                    showToast(databaseError.getMessage());
+                    showSimpleDialog(databaseError.getMessage());
                     closeProgressDialog();
                 }
             }
         });
-    }
-
-    private void updateUserMobileNumber(String mobileNumber) {
-        if (databaseReference == null)
-            databaseReference = FirebaseDatabase.getInstance().getReference();
-
-        firebaseUser = FirebaseAuth.getInstance().getCurrentUser();
-        HashMap<String, Object> userValues = new HashMap<>();
-        userValues.put(DBConstants.userId, getUid());
-
-        HashMap<String, Object> childUpdates = new HashMap<>();
-        childUpdates.put(DBConstants.mobileNumber, mobileNumber);
-        childUpdates.put(DBConstants.mobileNumberVerified, false);
-
-        childUpdates.put("/" + DBConstants.users + "/" + DBConstants.registeredUsers + "/" + getUid(), userValues);
-        databaseReference.updateChildren(childUpdates);
     }
 
     protected void uploadImage(int type, String adId, byte[] imageByte) {
@@ -1104,18 +1039,26 @@ public class NewAdActivity2 extends BaseMapActivity implements View.OnClickListe
             firebaseUser = FirebaseAuth.getInstance().getCurrentUser();
         }
 
+        String fcmToken = FirebaseInstanceId.getInstance().getToken();
+
         HashMap<String, Object> userValues = new HashMap<>();
         userValues.put(DBConstants.userId, firebaseUser.getUid());
         userValues.put(DBConstants.userEmail, firebaseUser.getEmail());
         userValues.put(DBConstants.userDisplayName, firebaseUser.getDisplayName());
 
-        String fcmToken = FirebaseInstanceId.getInstance().getToken();
+        if (firebaseUser.getPhoneNumber() != null && firebaseUser.getPhoneNumber().isEmpty())
+            userValues.put(DBConstants.userPhoneNumber, firebaseUser.getPhoneNumber());
+
+        if (firebaseUser.getPhotoUrl() != null)
+            userValues.put(DBConstants.userProfilePic, firebaseUser.getPhotoUrl().toString());
+
         userValues.put(DBConstants.fcmToken, fcmToken);
 
-        HashMap<String, Object> childUpdates = new HashMap<>();
-        childUpdates.put("/" + DBConstants.users + "/" + DBConstants.registeredUsers + "/" + getUid(), userValues);
-
-        databaseReference.updateChildren(childUpdates);
+        databaseReference
+                .child(DBConstants.users)
+                .child(DBConstants.registeredUsers)
+                .child(firebaseUser.getUid())
+                .updateChildren(userValues);
     }
 
     private void showDatePickerDialog() {
@@ -1203,60 +1146,8 @@ public class NewAdActivity2 extends BaseMapActivity implements View.OnClickListe
         return resourceId;
     }
 
-//    private Bitmap getMarkerIcon() {
-//        String smallText = "O";
-//        int resourceId = R.drawable.marker_purple_others;
-//        TabLayout.Tab tab = tabLayout.getTabAt(tabLayout.getSelectedTabPosition());
-//        if (tab != null)
-//            if (String.valueOf(tab.getText()).equalsIgnoreCase(getString(R.string.family))) {
-//                resourceId = R.drawable.marker_blue_family;
-//                smallText = "F";
-//            } else if (String.valueOf(tab.getText()).equalsIgnoreCase(getString(R.string.mess_member))) {
-//                resourceId = R.drawable.marker_green_mess;
-//                smallText = "M";
-//            } else if (String.valueOf(tab.getText()).equalsIgnoreCase(getString(R.string.sublet))) {
-//                resourceId = R.drawable.marker_merun_sublet;
-//                smallText = "S";
-//            }
-//
-//        return AppConstants.writeOnDrawable(this, resourceId, smallText);
-//    }
-
-//    private Bitmap getMarkerIcon() {
-//        String smallText = getString(R.string.others);
-//        int resourceId = R.drawable.marker_purple_others;
-//        TabLayout.Tab tab = tabLayout.getTabAt(tabLayout.getSelectedTabPosition());
-//        if (tab != null)
-//            if (String.valueOf(tab.getText()).equalsIgnoreCase(getString(R.string.family))) {
-//                resourceId = R.drawable.marker_blue_family;
-//                smallText = getString(R.string.family);
-//            } else if (String.valueOf(tab.getText()).equalsIgnoreCase(getString(R.string.mess_member))) {
-//                resourceId = R.drawable.marker_green_mess;
-//                smallText = getString(R.string.mess);
-//            } else if (String.valueOf(tab.getText()).equalsIgnoreCase(getString(R.string.sublet))) {
-//                resourceId = R.drawable.marker_merun_sublet;
-//                smallText = getString(R.string.sublet);
-//            }
-//
-//        return AppConstants.writeOnDrawable(this, resourceId, smallText);
-//    }
-
     private void updateMarkerIcon() {
-        if (selectedMarker == null && googleMap == null)
-            return;
-        googleMap.clear();
-        selectedMarker = googleMap.addMarker(new MarkerOptions()
-                .position(selectedMarker.getPosition())
-                .snippet(fullAddress)
-                .title(selectedMarker.getTitle())
-                .icon(BitmapDescriptorFactory.fromResource(getMarkerResource())));
-        selectedMarker.setTag(0);
-    }
-
-    @Override
-    public boolean onCreateOptionsMenu(Menu menu) {
-        getMenuInflater().inflate(R.menu.search, menu);
-        return true;
+        fixedMarker.setImageResource(getMarkerResource());
     }
 
     @Override
@@ -1265,36 +1156,15 @@ public class NewAdActivity2 extends BaseMapActivity implements View.OnClickListe
             case android.R.id.home:
                 finish();
                 return true;
-            case R.id.searchAction:
-                gotoPlaceActivity();
-                return true;
             default:
                 return super.onOptionsItemSelected(item);
-        }
-    }
-
-    private void gotoPlaceActivity() {
-        try {
-            Intent intent = new PlaceAutocomplete.IntentBuilder(PlaceAutocomplete.MODE_FULLSCREEN).build(this);
-            startActivityForResult(intent, AppConstants.placeAutoComplete);
-        } catch (GooglePlayServicesRepairableException | GooglePlayServicesNotAvailableException e) {
-            e.printStackTrace();
         }
     }
 
     @Override
     public void onActivityResult(int requestCode, int resultCode, Intent data) {
         super.onActivityResult(requestCode, resultCode, data);
-
-        if (requestCode == AppConstants.placeAutoComplete) {
-            if (resultCode == RESULT_OK) {
-                Place place = PlaceAutocomplete.getPlace(this, data);
-                showLog("Place: " + place.getName());
-            } else if (resultCode == PlaceAutocomplete.RESULT_ERROR) {
-                Status status = PlaceAutocomplete.getStatus(this, data);
-                showLog(status.getStatusMessage());
-            }
-        } else if (requestCode == AppConstants.phoneHint) {
+        if (requestCode == AppConstants.phoneHint) {
             if (data != null) {
                 Credential cred = data.getParcelableExtra(Credential.EXTRA_KEY);
                 if (cred != null) {
@@ -1306,19 +1176,20 @@ public class NewAdActivity2 extends BaseMapActivity implements View.OnClickListe
                         showLog("Unable to normalize phone number from hint selector:" + unformattedPhone);
                     } else {
 //                      final PhoneNumber phoneNumberObj = PhoneNumberUtils.getPhoneNumber(formattedPhone);
-                        sendCode(formattedPhone, null);
+                        sendCode(formattedPhone);
                     }
                 }
             }
         }
     }
 
-    private void sendCode(String phoneNumber, PhoneAuthProvider.ForceResendingToken forceResendingToken) {
+    private void sendCode(final String phoneNumber) {
         showProgressDialog();
+        final long time = 60000; // one minute
         PhoneAuthProvider.getInstance().verifyPhoneNumber(
                 phoneNumber,
-                2,
-                TimeUnit.MINUTES,
+                time,
+                TimeUnit.MILLISECONDS,
                 this,
                 new PhoneAuthProvider.OnVerificationStateChangedCallbacks() {
                     @Override
@@ -1348,10 +1219,10 @@ public class NewAdActivity2 extends BaseMapActivity implements View.OnClickListe
                         mForceResendingToken = forceResendingToken;
                         if (!mIsDestroyed) {
                             //AuthenticationActivity.this.onCodeSent();
-                            showSmsAlertDialog();
+                            showSmsAlertDialog(phoneNumber, time);
                         }
                     }
-                }, forceResendingToken);
+                }, mForceResendingToken);
     }
 
     private String mVerificationId;
@@ -1367,22 +1238,54 @@ public class NewAdActivity2 extends BaseMapActivity implements View.OnClickListe
 
     private Dialog smsCodeDialog;
 
-    private void showSmsAlertDialog() {
-        smsCodeDialog = new Dialog(this);
-        smsCodeDialog.requestWindowFeature(Window.FEATURE_NO_TITLE);
-        smsCodeDialog.setContentView(R.layout.dialog_sms_code);
-        Window window = smsCodeDialog.getWindow();
-        if (window != null) {
-            window.setBackgroundDrawable(new ColorDrawable(Color.TRANSPARENT));
-            window.setLayout(ViewGroup.LayoutParams.MATCH_PARENT, ViewGroup.LayoutParams.WRAP_CONTENT);
-            window.setGravity(Gravity.CENTER_HORIZONTAL | Gravity.CENTER_VERTICAL);
+    private void showSmsAlertDialog(final String phoneNumber, long time) {
+
+        if (smsCodeDialog == null) {
+            smsCodeDialog = new Dialog(this);
+            smsCodeDialog.requestWindowFeature(Window.FEATURE_NO_TITLE);
+            smsCodeDialog.setContentView(R.layout.dialog_sms_code);
+            Window window = smsCodeDialog.getWindow();
+            if (window != null) {
+                window.setBackgroundDrawable(new ColorDrawable(Color.TRANSPARENT));
+                window.setLayout(ViewGroup.LayoutParams.MATCH_PARENT, ViewGroup.LayoutParams.WRAP_CONTENT);
+                window.setGravity(Gravity.CENTER_HORIZONTAL | Gravity.CENTER_VERTICAL);
+            }
+
+            smsCodeDialog.setCanceledOnTouchOutside(false);
+            smsCodeDialog.setCancelable(false);
         }
 
-        smsCodeDialog.setCanceledOnTouchOutside(false);
-        smsCodeDialog.setCancelable(false);
-        smsCodeDialog.show();
+        if (!smsCodeDialog.isShowing())
+            smsCodeDialog.show();
 
         final EditText smsCode = smsCodeDialog.findViewById(R.id.smsCode);
+        final TextView description = smsCodeDialog.findViewById(R.id.description);
+        description.setText(getString(R.string.phone_verification_message, phoneNumber));
+
+        final TextView resendTxt = smsCodeDialog.findViewById(R.id.resendTxt);
+        resendTxt.setOnClickListener(new View.OnClickListener() {
+            @Override
+            public void onClick(View v) {
+                sendCode(phoneNumber);
+            }
+        });
+        resendTxt.setEnabled(false);
+
+        new CountDownTimer(time, 1000) {
+
+            @Override
+            public void onTick(long millisUntilFinished) {
+                resendTxt.setText(getString(R.string.do_not_get_sms_code_resend) + "\nplease wait: " + millisUntilFinished / 1000);
+            }
+
+            @Override
+            public void onFinish() {
+                if (smsCodeDialog != null && smsCodeDialog.isShowing()) {
+                    resendTxt.setText(R.string.do_not_get_sms_code_resend);
+                    resendTxt.setEnabled(true);
+                }
+            }
+        }.start();
 
         final ImageView okBtn, cancelBtn;
         okBtn = smsCodeDialog.findViewById(R.id.okBtn);
@@ -1406,6 +1309,7 @@ public class NewAdActivity2 extends BaseMapActivity implements View.OnClickListe
         cancelBtn.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View v) {
+                mobileNumber.setText("");
                 smsCodeDialog.dismiss();
             }
         });
@@ -1418,9 +1322,11 @@ public class NewAdActivity2 extends BaseMapActivity implements View.OnClickListe
             public void onComplete(@NonNull Task<Void> task) {
                 closeProgressDialog();
                 if (task.isSuccessful()) {
+                    if (smsCodeDialog != null && smsCodeDialog.isShowing()) smsCodeDialog.dismiss();
                     mobileNumber.removeTextChangedListener(textWatcher);
                     mobileNumber.setText(firebaseUser.getPhoneNumber());
                     mobileNumber.setEnabled(false);
+                    updateUserInfo();
                 } else {
                     FirebaseException firebaseException = (FirebaseException) task.getException();
                     if (firebaseException != null) {
@@ -1433,17 +1339,6 @@ public class NewAdActivity2 extends BaseMapActivity implements View.OnClickListe
                     } else {
                         showSimpleDialog(getString(R.string.unknown_error));
                     }
-                }
-            }
-        }).addOnFailureListener(new OnFailureListener() {
-            @Override
-            public void onFailure(@NonNull Exception e) {
-                closeProgressDialog();
-                if (e instanceof FirebaseAuthInvalidCredentialsException) {
-                    FirebaseAuthError error = FirebaseAuthError.fromException((FirebaseAuthInvalidCredentialsException) e);
-                    showSimpleDialog(error.getDescription());
-                } else {
-                    showSimpleDialog(e.getLocalizedMessage());
                 }
             }
         });
