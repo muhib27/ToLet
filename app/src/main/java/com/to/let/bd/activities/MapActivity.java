@@ -8,10 +8,19 @@ import android.support.design.widget.BottomNavigationView;
 import android.view.Menu;
 import android.view.MenuItem;
 
+import com.firebase.geofire.GeoFire;
+import com.firebase.geofire.GeoLocation;
+import com.firebase.geofire.GeoQuery;
+import com.firebase.geofire.GeoQueryDataEventListener;
+import com.firebase.geofire.GeoQueryEventListener;
 import com.google.android.gms.maps.GoogleMap;
 import com.google.android.gms.maps.model.BitmapDescriptorFactory;
 import com.google.android.gms.maps.model.LatLng;
 import com.google.android.gms.maps.model.MarkerOptions;
+import com.google.firebase.database.DataSnapshot;
+import com.google.firebase.database.DatabaseError;
+import com.google.firebase.database.DatabaseReference;
+import com.google.firebase.database.FirebaseDatabase;
 import com.google.gson.JsonObject;
 import com.to.let.bd.R;
 import com.to.let.bd.common.BaseMapActivity;
@@ -108,6 +117,80 @@ public class MapActivity extends BaseMapActivity implements BottomNavigationView
 
         selectedLocation = new LatLng(latitude, longitude);
         initBottomNavigation();
+
+        DatabaseReference ref = FirebaseDatabase.getInstance().getReference("path/to/geofire");
+        GeoFire geoFire = new GeoFire(ref);
+
+        geoFire.setLocation("firebase-hq", new GeoLocation(37.7853889, -122.4056973), new GeoFire.CompletionListener() {
+
+            @Override
+            public void onComplete(String key, DatabaseError error) {
+                if (error != null) {
+                    showLog("There was an error saving the location to GeoFire: " + error);
+                } else {
+                    showLog("Location saved on server successfully!");
+                }
+            }
+        });
+
+        GeoQuery geoQuery = geoFire.queryAtLocation(new GeoLocation(37.7832, -122.4056), 0.6);
+        geoQuery.addGeoQueryDataEventListener(new GeoQueryDataEventListener() {
+            @Override
+            public void onDataEntered(DataSnapshot dataSnapshot, GeoLocation geoLocation) {
+
+            }
+
+            @Override
+            public void onDataExited(DataSnapshot dataSnapshot) {
+
+            }
+
+            @Override
+            public void onDataMoved(DataSnapshot dataSnapshot, GeoLocation geoLocation) {
+
+            }
+
+            @Override
+            public void onDataChanged(DataSnapshot dataSnapshot, GeoLocation geoLocation) {
+
+            }
+
+            @Override
+            public void onGeoQueryReady() {
+
+            }
+
+            @Override
+            public void onGeoQueryError(DatabaseError databaseError) {
+
+            }
+        });
+        geoQuery.addGeoQueryEventListener(new GeoQueryEventListener() {
+            @Override
+            public void onKeyEntered(String s, GeoLocation geoLocation) {
+
+            }
+
+            @Override
+            public void onKeyExited(String s) {
+
+            }
+
+            @Override
+            public void onKeyMoved(String s, GeoLocation geoLocation) {
+
+            }
+
+            @Override
+            public void onGeoQueryReady() {
+
+            }
+
+            @Override
+            public void onGeoQueryError(DatabaseError databaseError) {
+
+            }
+        });
     }
 
     @Override
@@ -122,6 +205,14 @@ public class MapActivity extends BaseMapActivity implements BottomNavigationView
         this.googleMap = googleMap;
 //        onNavigationItemSelected(bottomNavigationView.getMenu().findItem(R.id.actionSchool));
         bottomNavigationView.setSelectedItemId(R.id.actionSchool);
+
+        this.googleMap.setOnMapLoadedCallback(new GoogleMap.OnMapLoadedCallback() {
+            @Override
+            public void onMapLoaded() {
+                LatLng center = MapActivity.this.googleMap.getCameraPosition().target;
+                showLog();
+            }
+        });
     }
 
     @Override

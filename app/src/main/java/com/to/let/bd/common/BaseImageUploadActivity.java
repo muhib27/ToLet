@@ -99,6 +99,8 @@ public abstract class BaseImageUploadActivity extends BaseActivity {
         mBroadcastReceiver = new BroadcastReceiver() {
             @Override
             public void onReceive(Context context, Intent intent) {
+                if (intent == null || intent.getAction() == null)
+                    return;
                 switch (intent.getAction()) {
                     case AppConstants.uploadError:
 
@@ -148,7 +150,7 @@ public abstract class BaseImageUploadActivity extends BaseActivity {
         int finalProgress = (perImageMax * (count - imageIndex - 1)) + (int) (perImageMax * f);
         progressBar.setProgress(finalProgress);
 
-        TextView progressStatus = (TextView) progressDialog.findViewById(R.id.progressStatus);
+        TextView progressStatus = progressDialog.findViewById(R.id.progressStatus);
 
         String imageUploadStatus = getString(R.string.image_upload_status, finalProgress + "%.");
         progressStatus.setText(imageUploadStatus);

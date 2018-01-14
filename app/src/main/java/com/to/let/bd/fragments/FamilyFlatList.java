@@ -7,6 +7,7 @@ import com.google.firebase.database.DatabaseReference;
 import com.google.firebase.database.Query;
 import com.to.let.bd.R;
 import com.to.let.bd.utils.DBConstants;
+import com.to.let.bd.utils.DateUtils;
 
 public class FamilyFlatList extends AdListBaseFragment {
 
@@ -15,8 +16,9 @@ public class FamilyFlatList extends AdListBaseFragment {
         // All family type ad
         return databaseReference
                 .child(DBConstants.adList)
-                .orderByChild(DBConstants.flatType)
-                .equalTo(getString(R.string.family));
+                .child(DBConstants.keyFamily)
+                .orderByChild(DBConstants.startingFinalDate)
+                .startAt(DateUtils.todayYearMonthDate());
     }
 
     @Override

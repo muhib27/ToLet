@@ -30,7 +30,7 @@ public class DateUtils {
         int month = calendar.get(Calendar.MONTH);
         int year = calendar.get(Calendar.YEAR);
 
-        return Long.parseLong(year + AppConstants.twoDigitIntFormatter(month) + AppConstants.twoDigitIntFormatter(dayOfMonth));
+        return Long.parseLong(year + AppConstants.twoDigitIntFormatter(month + 1) + AppConstants.twoDigitIntFormatter(dayOfMonth));
     }
 
     public static Date getCurrentDate() {

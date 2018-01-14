@@ -924,7 +924,7 @@ public class NewAdActivity extends BaseImageUploadActivity
         TextView title = summaryDialog.findViewById(R.id.title);
         title.setText(getString(R.string.is_everything_ok));
 
-        TextView roomDetails = summaryDialog.findViewById(R.id.roomDetails);
+        TextView roomDetails = summaryDialog.findViewById(R.id.roomSummary);
         TextView address = summaryDialog.findViewById(R.id.address);
         TextView totalRent = summaryDialog.findViewById(R.id.totalRent);
 
@@ -949,7 +949,7 @@ public class NewAdActivity extends BaseImageUploadActivity
             }
         });
 
-        summaryDialog.findViewById(R.id.noBtn).setOnClickListener(new View.OnClickListener() {
+        summaryDialog.findViewById(R.id.cancelBtn).setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View view) {
                 summaryDialog.dismiss();
@@ -1238,9 +1238,9 @@ public class NewAdActivity extends BaseImageUploadActivity
 
     private void mediaAlertDialog() {
         AlertDialog.Builder builder = new AlertDialog.Builder(this);
-        builder.setTitle(R.string.ad_posted_successfully);
+        builder.setTitle(R.string.ad_published_successfully);
         builder.setIcon(R.mipmap.ic_launcher);
-        builder.setMessage(R.string.your_ad_posted_successfully_would_u_like);
+        builder.setMessage(R.string.your_ad_published_successfully_would_u_like);
         builder.setPositiveButton(getString(R.string.yes), new DialogInterface.OnClickListener() {
             @Override
             public void onClick(DialogInterface dialogInterface, int i) {

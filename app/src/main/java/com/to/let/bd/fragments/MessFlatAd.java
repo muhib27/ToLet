@@ -8,6 +8,7 @@ import android.view.ViewGroup;
 import android.widget.CheckBox;
 import android.widget.EditText;
 import android.widget.LinearLayout;
+import android.widget.RadioButton;
 import android.widget.RadioGroup;
 
 import com.google.android.gms.ads.AdRequest;
@@ -85,6 +86,8 @@ public class MessFlatAd extends BaseFragment {
 
     private LinearLayout roomNumberLay;
     private RadioGroup messMemberType, messManagementSystem;
+    private RadioButton messMemberMale, messMemberFemale,
+            circulateEveryMonth, manageByIndividual, manageByOffice;
     private CheckBox mealFacilityCB, maidServantCB, twentyFourWaterCB,
             nonSmokerCB, onlyStudentsCB, onlyJobHoldersCB, wifiCB, fridgeCB;
     private EditText mealRate;
@@ -92,7 +95,13 @@ public class MessFlatAd extends BaseFragment {
     private void init() {
         roomNumberLay = rootView.findViewById(R.id.roomNumberLay);
         messMemberType = rootView.findViewById(R.id.messMemberType);
+        messMemberMale = rootView.findViewById(R.id.messMemberMale);
+        messMemberFemale = rootView.findViewById(R.id.messMemberFemale);
+
         messManagementSystem = rootView.findViewById(R.id.messManagementSystem);
+        circulateEveryMonth = rootView.findViewById(R.id.circulateEveryMonth);
+        manageByIndividual = rootView.findViewById(R.id.manageByIndividual);
+        manageByOffice = rootView.findViewById(R.id.manageByOffice);
 
         mealFacilityCB = rootView.findViewById(R.id.mealFacilityCB);
         maidServantCB = rootView.findViewById(R.id.maidServantCB);
@@ -109,8 +118,56 @@ public class MessFlatAd extends BaseFragment {
         mealRate = rootView.findViewById(R.id.mealRate);
     }
 
-    public String getRoomDetails() {
+    public String getRoomSummary() {
         return messInfoArray[0] + " seat with " + messInfoArray[1] + " room, " + messInfoArray[2] + " total mess member.";
+    }
+
+    public String getRoomOthersFacility() {
+        StringBuilder stringBuilder = new StringBuilder();
+
+        String rentType = getString(R.string.mess);
+        if (messMemberType.getCheckedRadioButtonId() == R.id.messMemberFemale) {
+            rentType += ", " + getString(R.string.only_female);
+        } else {
+            rentType += ", " + getString(R.string.only_male);
+        }
+
+        stringBuilder.append(rentType);
+        stringBuilder.append("\n");
+
+        if (mealFacilityCB.isChecked()) {
+            stringBuilder.append(getString(R.string.meal_facility));
+            stringBuilder.append("\n");
+
+            if (!mealRate.getText().toString().trim().isEmpty()) {
+                stringBuilder.append(getString(R.string.approximate_meal_rate));
+                stringBuilder.append(" ");
+                stringBuilder.append(mealRate.getText().toString());
+                stringBuilder.append("\n");
+            }
+        }
+        if (maidServantCB.isChecked()) {
+            stringBuilder.append(getString(R.string.maid_servant));
+            stringBuilder.append("\n");
+        }
+        if (twentyFourWaterCB.isChecked()) {
+            stringBuilder.append(getString(R.string.twenty_four_water_facility));
+            stringBuilder.append("\n");
+        }
+        if (nonSmokerCB.isChecked()) {
+            stringBuilder.append(getString(R.string.only_non_smoker));
+            stringBuilder.append("\n");
+        }
+        if (fridgeCB.isChecked()) {
+            stringBuilder.append(getString(R.string.have_fridge_facility));
+            stringBuilder.append("\n");
+        }
+        if (wifiCB.isChecked()) {
+            stringBuilder.append(getString(R.string.have_wifi_facility));
+            stringBuilder.append("\n");
+        }
+
+        return stringBuilder.toString();
     }
 
     public MessInfo getMessInfo() {
@@ -161,13 +218,30 @@ public class MessFlatAd extends BaseFragment {
         wifiCB.setChecked(messInfo.wifi);
         fridgeCB.setChecked(messInfo.fridge);
 
-        if (messInfo.mealRate > 0) mealRate.setText(messInfo.mealRate);
+        if (messInfo.mealRate > 0) mealRate.setText(String.valueOf(messInfo.mealRate));
         else mealRate.setText("");
 
+        if (messInfo.memberType == 1) messMemberFemale.setChecked(true);
+        else messMemberMale.setChecked(true);
 
-        if (messInfo.messManagementSystem == 1) messManagementSystem.check(R.id.manageByIndividual);
-        else if (messInfo.messManagementSystem == 2)
-            messManagementSystem.check(R.id.manageByOffice);
-        else messManagementSystem.check(R.id.circulateEveryMonth);
+        if (messInfo.messManagementSystem == 1) manageByIndividual.setChecked(true);
+        else if (messInfo.messManagementSystem == 2) manageByOffice.setChecked(true);
+        else circulateEveryMonth.setChecked(true);
+
+        for (int i = 0; i < roomNumberLay.getChildCount(); i++) {
+            if (roomNumberLay.getChildAt(i).getTag() instanceof String) {
+                String title = roomNumberLay.getChildAt(i).getTag().toString();
+                String subTitle = "";
+                if (roomNumberLay.getChildAt(i).getTag().toString().equalsIgnoreCase(messTypes[0])) {
+                    subTitle = messInfo.numberOfSeat + " " + title + (messInfo.numberOfSeat > 1 ? "'s" : "");
+                } else if (roomNumberLay.getChildAt(i).getTag().toString().equalsIgnoreCase(messTypes[1])) {
+                    subTitle = messInfo.numberOfRoom + " " + title + (messInfo.numberOfRoom > 1 ? "'s" : "");
+                } else if (roomNumberLay.getChildAt(i).getTag().toString().equalsIgnoreCase(messTypes[2])) {
+                    subTitle = messInfo.totalMember + " " + title + (messInfo.totalMember > 1 ? "'s" : "");
+                }
+
+                AppConstants.updatePickerView(roomNumberLay.getChildAt(i), title, subTitle);
+            }
+        }
     }
 }

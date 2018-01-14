@@ -9,6 +9,7 @@ import android.view.ViewGroup;
 import android.widget.CheckBox;
 import android.widget.EditText;
 import android.widget.LinearLayout;
+import android.widget.RadioButton;
 import android.widget.RadioGroup;
 
 import com.google.android.gms.ads.AdRequest;
@@ -103,6 +104,7 @@ public class FamilyFlatAd extends BaseFragment {
     private LinearLayout roomNumberLay, isItDuplexLay;
     private EditText totalSpace;
     private RadioGroup drawingDining, isItDuplex;
+    private RadioButton drawingDiningYes, drawingDiningNo, isItDuplexYes, isItDuplexNo;
     private CheckBox twentyFourWaterCB, gasSupplyCB, wellFurnishedCB,
             securityGuardCB, liftCB, generatorCB, parkingGarageCB, kitchenCabinetCB;
 
@@ -110,8 +112,14 @@ public class FamilyFlatAd extends BaseFragment {
         roomNumberLay = rootView.findViewById(R.id.roomNumberLay);
         isItDuplexLay = rootView.findViewById(R.id.isItDuplexLay);
         totalSpace = rootView.findViewById(R.id.totalSpace);
+
         drawingDining = rootView.findViewById(R.id.drawingDining);
+        drawingDiningYes = rootView.findViewById(R.id.drawingDiningYes);
+        drawingDiningNo = rootView.findViewById(R.id.drawingDiningNo);
+
         isItDuplex = rootView.findViewById(R.id.isItDuplex);
+        isItDuplexYes = rootView.findViewById(R.id.isItDuplexYes);
+        isItDuplexNo = rootView.findViewById(R.id.isItDuplexNo);
 
         twentyFourWaterCB = rootView.findViewById(R.id.twentyFourWaterCB);
         gasSupplyCB = rootView.findViewById(R.id.gasSupplyCB);
@@ -122,88 +130,6 @@ public class FamilyFlatAd extends BaseFragment {
         parkingGarageCB = rootView.findViewById(R.id.parkingGarageCB);
         kitchenCabinetCB = rootView.findViewById(R.id.kitchenCabinetCB);
     }
-
-    //    private final int[] roomArray = {0, 1, 2, 3, 4, 5};
-//
-//    public void addParticularView() {
-//        LayoutInflater inflater = LayoutInflater.from(activity);
-//        for (int i = 0; i < roomTypes.length; i++) {
-//            final View inflatedView = inflater.inflate(R.layout.single_room_number_lay, roomNumberLay, false);
-//            LinearLayout.LayoutParams layoutParams = new LinearLayout.LayoutParams(0, ViewGroup.LayoutParams.WRAP_CONTENT);
-//            layoutParams.weight = 1;
-//            inflatedView.setLayoutParams(layoutParams);
-//            final int pos = i;
-//            inflatedView.setOnClickListener(new View.OnClickListener() {
-//                @Override
-//                public void onClick(View view) {
-//                    showRoomNumberPopupMenu(inflatedView, roomTypes[pos]);
-//                }
-//            });
-//            int defaultSelection;
-//            if (i == 2) {
-//                defaultSelection = 1;
-//                activity.updatePickerView(inflatedView, roomTypes[i], (roomArray[1] + " " + roomTypes[i]));
-//            } else {
-//                defaultSelection = 2;
-//                activity.updatePickerView(inflatedView, roomTypes[i], (roomArray[defaultSelection] + " " + roomTypes[i] + "'s"));
-//            }
-//
-//            familyRoom[i] = defaultSelection;
-//            roomNumberLay.addView(inflatedView);
-//        }
-//    }
-//
-//    private void showRoomNumberPopupMenu(final View view, final String roomType) {
-//        PopupMenu popup = new PopupMenu(activity, view);
-//
-//        for (int room : roomArray) {
-//            String s;
-//            if (room <= 1) {
-//                if (room == 0 && roomType.equals(roomTypes[2])) {
-//                    s = "No " + roomType;
-//                } else {
-//                    if (room == 0) {
-//                        continue;
-//                    }
-//                    s = room + " " + roomType;
-//                }
-//            } else {
-//                s = room + " " + roomType + "'s";
-//            }
-//            popup.getMenu().add(s);
-//        }
-//
-//        //popup.getMenuInflater().inflate(R.menu.poupup_menu, popup.getMenu());
-//        //registering popup with OnMenuItemClickListener
-//        popup.setOnMenuItemClickListener(new PopupMenu.OnMenuItemClickListener() {
-//            public boolean onMenuItemClick(MenuItem item) {
-//                String subtitle = String.valueOf(item.getTitle());
-//                String title = (subtitle.split(" "))[1].replace("'s", "");
-//
-//                int roomNumber;
-//                if ((subtitle.split(" "))[0].equalsIgnoreCase("no")) {
-//                    roomNumber = 0;
-//                } else {
-//                    roomNumber = Integer.parseInt((subtitle.split(" "))[0]);
-//                }
-//
-//                if (title.equalsIgnoreCase(roomTypes[0])) {
-//                    familyRoom[0] = roomNumber;
-//                } else if (title.equalsIgnoreCase(roomTypes[1])) {
-//                    familyRoom[1] = roomNumber;
-//                } else if (title.equalsIgnoreCase(roomTypes[2])) {
-//                    familyRoom[2] = roomNumber;
-//                }
-//                activity.updatePickerView(view, title, subtitle);
-//                calculateRentSpace();
-//                return true;
-//            }
-//        });
-//        popup.show(); //showing popup menu
-//    }
-//
-//    //
-////    private int[] date = new int[3];//0=dayOfMonth, 1=monthOfYear, 2=year
 
     private void calculateRentSpace() {
         long calculatedRent = (familyRoom[0] * singleBedRoomRent) + (familyRoom[1] * bathroomRent) + (familyRoom[2] * balconyRent);
@@ -222,8 +148,47 @@ public class FamilyFlatAd extends BaseFragment {
         return totalSpace.getText().toString();
     }
 
-    public String getRoomDetails() {
+    public String getRoomSummary() {
         return familyRoom[0] + " bedroom, " + familyRoom[1] + " bathroom, " + familyRoom[2] + " balcony.";
+    }
+
+    public String getRoomOthersFacility() {
+        StringBuilder stringBuilder = new StringBuilder();
+        if (twentyFourWaterCB.isChecked()) {
+            stringBuilder.append(getString(R.string.twenty_four_water_facility));
+            stringBuilder.append("\n");
+        }
+        if (gasSupplyCB.isChecked()) {
+            stringBuilder.append(getString(R.string.supply_gas_facility));
+            stringBuilder.append("\n");
+        }
+        if (securityGuardCB.isChecked()) {
+            stringBuilder.append(getString(R.string.always_security_guard));
+            stringBuilder.append("\n");
+        }
+
+        if (parkingGarageCB.isChecked()) {
+            stringBuilder.append(getString(R.string.parking_garage_facility));
+            stringBuilder.append("\n");
+        }
+        if (liftCB.isChecked()) {
+            stringBuilder.append(getString(R.string.lift_facility));
+            stringBuilder.append("\n");
+        }
+        if (generatorCB.isChecked()) {
+            stringBuilder.append(getString(R.string.generator_facility));
+            stringBuilder.append("\n");
+        }
+        if (wellFurnishedCB.isChecked()) {
+            stringBuilder.append(getString(R.string.fully_furnished));
+            stringBuilder.append("\n");
+        }
+        if (kitchenCabinetCB.isChecked()) {
+            stringBuilder.append(getString(R.string.have_a_kitchen_cabinet));
+            stringBuilder.append("\n");
+        }
+
+        return stringBuilder.toString();
     }
 
     public FamilyInfo getFamilyInfo() {
@@ -265,5 +230,42 @@ public class FamilyFlatAd extends BaseFragment {
         if (familyInfo == null)
             return;
 
+        twentyFourWaterCB.setChecked(familyInfo.twentyFourWater);
+        gasSupplyCB.setChecked(familyInfo.gasSupply);
+        wellFurnishedCB.setChecked(familyInfo.wellFurnished);
+        securityGuardCB.setChecked(familyInfo.securityGuard);
+        liftCB.setChecked(familyInfo.lift);
+        generatorCB.setChecked(familyInfo.generator);
+        parkingGarageCB.setChecked(familyInfo.parkingGarage);
+        kitchenCabinetCB.setChecked(familyInfo.kitchenCabinet);
+
+        if (bundle.getLong(DBConstants.flatSpace) > 0)
+            totalSpace.setText(String.valueOf(bundle.getLong(DBConstants.flatSpace)));
+
+        if (familyInfo.hasDrawingDining) drawingDiningYes.setChecked(true);
+        else drawingDiningNo.setChecked(true);
+
+        if (familyInfo.isItDuplex) {
+            isItDuplexLay.setVisibility(View.VISIBLE);
+            isItDuplexYes.setChecked(true);
+        } else {
+            isItDuplexLay.setVisibility(View.GONE);
+        }
+
+        for (int i = 0; i < roomNumberLay.getChildCount(); i++) {
+            if (roomNumberLay.getChildAt(i).getTag() instanceof String) {
+                String title = roomNumberLay.getChildAt(i).getTag().toString();
+                String subTitle = "";
+                if (roomNumberLay.getChildAt(i).getTag().toString().equalsIgnoreCase(roomTypes[0])) {
+                    subTitle = familyInfo.bedRoom + " " + title + (familyInfo.bedRoom > 1 ? "'s" : "");
+                } else if (roomNumberLay.getChildAt(i).getTag().toString().equalsIgnoreCase(roomTypes[1])) {
+                    subTitle = familyInfo.bathroom + " " + title + (familyInfo.bathroom > 1 ? "'s" : "");
+                } else if (roomNumberLay.getChildAt(i).getTag().toString().equalsIgnoreCase(roomTypes[2])) {
+                    subTitle = (familyInfo.balcony == 0 ? "No" : familyInfo.balcony) + " " + title + (familyInfo.balcony > 1 ? "'s" : "");
+                }
+
+                AppConstants.updatePickerView(roomNumberLay.getChildAt(i), title, subTitle);
+            }
+        }
     }
 }

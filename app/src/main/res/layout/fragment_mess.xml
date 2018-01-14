@@ -238,7 +238,6 @@
             android:layout_marginStart="@dimen/size_20dp"
             android:ems="3"
             android:hint="@string/approximate_meal_rate_value"
-            android:imeActionId="@+id/whichFloor"
             android:imeOptions="actionNext"
             android:inputType="numberDecimal"
             android:maxLength="3"

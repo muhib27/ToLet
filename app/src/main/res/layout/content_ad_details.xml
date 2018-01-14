@@ -20,7 +20,7 @@
 
             <RelativeLayout
                 android:layout_width="match_parent"
-                android:layout_height="@dimen/new_post_map_height"
+                android:layout_height="@dimen/ad_details_image_height"
                 android:visibility="visible">
 
                 <android.support.v4.view.ViewPager
@@ -32,19 +32,50 @@
                     android:id="@+id/noImageView"
                     android:layout_width="match_parent"
                     android:layout_height="match_parent"
-                    android:scaleType="centerInside"
+                    android:scaleType="centerCrop"
                     android:src="@drawable/no_image_available" />
 
-
                 <RelativeLayout
-                    android:layout_width="wrap_content"
+                    android:id="@+id/imageCountLay"
+                    android:layout_width="match_parent"
                     android:layout_height="wrap_content"
                     android:layout_alignParentBottom="true"
-                    android:layout_alignParentEnd="true"
-                    android:layout_alignParentRight="true"
+                    android:gravity="center_vertical"
+                    android:orientation="horizontal"
                     android:padding="@dimen/size_10dp">
 
-                    <include layout="@layout/photo_count_lay" />
+                    <include
+                        android:id="@+id/photoCountLay"
+                        layout="@layout/photo_count_lay"
+                        android:layout_width="wrap_content"
+                        android:layout_height="wrap_content"
+                        android:layout_alignParentEnd="true"
+                        android:layout_alignParentRight="true" />
+
+                    <TextView
+                        android:id="@+id/imageAddOrEdit"
+                        android:layout_width="match_parent"
+                        android:layout_height="wrap_content"
+                        android:layout_alignBottom="@+id/photoCountLay"
+                        android:layout_alignTop="@+id/photoCountLay"
+                        android:layout_toLeftOf="@+id/photoCountLay"
+                        android:layout_toStartOf="@+id/photoCountLay"
+                        android:background="@color/black_overlay"
+                        android:ellipsize="marquee"
+                        android:focusable="true"
+                        android:focusableInTouchMode="true"
+                        android:gravity="center"
+                        android:marqueeRepeatLimit="marquee_forever"
+                        android:paddingEnd="@dimen/size_10dp"
+                        android:paddingLeft="@dimen/size_10dp"
+                        android:paddingRight="@dimen/size_10dp"
+                        android:paddingStart="@dimen/size_10dp"
+                        android:singleLine="true"
+                        android:text="@string/photo_edit_or_add"
+                        android:textColor="@color/white"
+                        android:textSize="@dimen/text_size_10sp"
+                        android:textStyle="bold"
+                        android:visibility="visible" />
                 </RelativeLayout>
 
                 <ImageView
@@ -62,6 +93,7 @@
                 android:layout_height="wrap_content"
                 android:background="@drawable/custom_button_bg"
                 android:clickable="true"
+                android:focusable="true"
                 android:gravity="center"
                 android:orientation="horizontal"
                 android:padding="@dimen/size_5dp">
@@ -131,7 +163,7 @@
                     android:textStyle="normal" />
 
                 <TextView
-                    android:id="@+id/roomDetails"
+                    android:id="@+id/roomSummary"
                     android:layout_width="match_parent"
                     android:layout_height="wrap_content"
                     android:layout_marginTop="@dimen/size_10dp"
@@ -178,6 +210,7 @@
                     android:layout_height="wrap_content"
                     android:background="?android:attr/selectableItemBackground"
                     android:clickable="true"
+                    android:focusable="true"
                     android:orientation="vertical"
                     android:padding="@dimen/size_10dp">
 

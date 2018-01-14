@@ -48,16 +48,6 @@ import android.widget.TextView;
 
 import com.bumptech.glide.Glide;
 import com.bumptech.glide.request.RequestOptions;
-import com.facebook.accountkit.AccessToken;
-import com.facebook.accountkit.Account;
-import com.facebook.accountkit.AccountKit;
-import com.facebook.accountkit.AccountKitCallback;
-import com.facebook.accountkit.AccountKitError;
-import com.facebook.accountkit.AccountKitLoginResult;
-import com.facebook.accountkit.PhoneNumber;
-import com.facebook.accountkit.ui.AccountKitActivity;
-import com.facebook.accountkit.ui.AccountKitConfiguration;
-import com.facebook.accountkit.ui.LoginType;
 import com.google.android.gms.ads.AdListener;
 import com.google.android.gms.ads.AdRequest;
 import com.google.android.gms.ads.InterstitialAd;
@@ -74,7 +64,6 @@ import com.to.let.bd.utils.DBConstants;
 import com.to.let.bd.utils.DateUtils;
 
 import java.util.Calendar;
-import java.util.Locale;
 
 public class AdListActivity2 extends BaseFirebaseAuthActivity implements
         NavigationView.OnNavigationItemSelectedListener {
@@ -146,103 +135,103 @@ public class AdListActivity2 extends BaseFirebaseAuthActivity implements
         updateNavHeader();
     }
 
-    private void facebookAccountKit() {
-        AccessToken accessToken = AccountKit.getCurrentAccessToken();
-
-        if (accessToken != null) {
-            //Handle Returning User
-        } else {
-            //Handle new or logged out userCopy Code
-        }
-    }
-
-    public void phoneNumberVerification(String selectedPhoneNumber) {
-        final Intent intent = new Intent(this, AccountKitActivity.class);
-        AccountKitConfiguration.AccountKitConfigurationBuilder configurationBuilder =
-                new AccountKitConfiguration.AccountKitConfigurationBuilder(
-                        LoginType.PHONE, AccountKitActivity.ResponseType.TOKEN); // or .ResponseType.TOKEN
-        PhoneNumber phoneNumber = new PhoneNumber("+880", selectedPhoneNumber, "BD");
-        configurationBuilder.setInitialPhoneNumber(phoneNumber);
-        intent.putExtra(AccountKitActivity.ACCOUNT_KIT_ACTIVITY_CONFIGURATION,
-                configurationBuilder.build());
-        startActivityForResult(intent, SMS_REQUEST_CODE);
-    }
-
-    @Override
-    public void onActivityResult(int requestCode, int resultCode, Intent data) {
-        super.onActivityResult(requestCode, resultCode, data);
-        if (requestCode == SMS_REQUEST_CODE) { // confirm that this response matches your request
-            AccountKitLoginResult loginResult = data.getParcelableExtra(AccountKitLoginResult.RESULT_KEY);
-            String toastMessage;
-            getCurrentAccount();
-            if (loginResult.getError() != null) {
-                toastMessage = loginResult.getError().getErrorType().getMessage();
-            } else if (loginResult.wasCancelled()) {
-                toastMessage = "Cancelled";
-            } else {
-                if (loginResult.getAccessToken() != null) {
-                    toastMessage = "Success:" + loginResult.getAccessToken().getAccountId();
-                } else {
-                    toastMessage = String.format("Success:%s...", loginResult.getAuthorizationCode().substring(0, 10));
-                }
-                // Success! Start your next activity...
-//                loginResult.getAuthorizationCode()
-
-                AccountKit.getCurrentAccount(new AccountKitCallback<Account>() {
-                    @Override
-                    public void onSuccess(final Account account) {
-                        String accountKitId = account.getId();
-                        PhoneNumber phoneNumber = account.getPhoneNumber();
-                        String phoneNumberString = phoneNumber.toString();
-                    }
-
-                    @Override
-                    public void onError(final AccountKitError error) {
-                        // Handle Error
-                    }
-                });
-                return;
-            }
-            showToast(toastMessage);
-        }
-    }
-
-    private void getCurrentAccount() {
-        AccessToken accessToken = AccountKit.getCurrentAccessToken();
-        if (accessToken != null) {
-            //Handle Returning User
-            AccountKit.getCurrentAccount(new AccountKitCallback<Account>() {
-                @Override
-                public void onSuccess(final Account account) {
-                    // Get Account Kit ID
-                    String accountKitId = account.getId();
-                    showLog("Account Kit Id " + accountKitId);
-
-                    if (account.getPhoneNumber() != null) {
-                        showLog("CountryCode" + "" + account.getPhoneNumber().getCountryCode());
-                        showLog("PhoneNumber" + "" + account.getPhoneNumber().getPhoneNumber());
-
-                        // Get phone number
-                        PhoneNumber phoneNumber = account.getPhoneNumber();
-                        String phoneNumberString = phoneNumber.toString();
-                        showLog("NumberString" + phoneNumberString);
-                    }
-
-                    if (account.getEmail() != null)
-                        showLog("Email" + account.getEmail());
-                }
-
-                @Override
-                public void onError(final AccountKitError error) {
-                    // Handle Error
-                    showLog(TAG + error.toString());
-                }
-            });
-        } else {
-            //Handle new or logged out user
-            showLog(TAG + "Logged Out");
-        }
-    }
+//    private void facebookAccountKit() {
+//        AccessToken accessToken = AccountKit.getCurrentAccessToken();
+//
+//        if (accessToken != null) {
+//            //Handle Returning User
+//        } else {
+//            //Handle new or logged out userCopy Code
+//        }
+//    }
+//
+//    public void phoneNumberVerification(String selectedPhoneNumber) {
+//        final Intent intent = new Intent(this, AccountKitActivity.class);
+//        AccountKitConfiguration.AccountKitConfigurationBuilder configurationBuilder =
+//                new AccountKitConfiguration.AccountKitConfigurationBuilder(
+//                        LoginType.PHONE, AccountKitActivity.ResponseType.TOKEN); // or .ResponseType.TOKEN
+//        PhoneNumber phoneNumber = new PhoneNumber("+880", selectedPhoneNumber, "BD");
+//        configurationBuilder.setInitialPhoneNumber(phoneNumber);
+//        intent.putExtra(AccountKitActivity.ACCOUNT_KIT_ACTIVITY_CONFIGURATION,
+//                configurationBuilder.build());
+//        startActivityForResult(intent, SMS_REQUEST_CODE);
+//    }
+//
+//    @Override
+//    public void onActivityResult(int requestCode, int resultCode, Intent data) {
+//        super.onActivityResult(requestCode, resultCode, data);
+//        if (requestCode == SMS_REQUEST_CODE) { // confirm that this response matches your request
+//            AccountKitLoginResult loginResult = data.getParcelableExtra(AccountKitLoginResult.RESULT_KEY);
+//            String toastMessage;
+//            getCurrentAccount();
+//            if (loginResult.getError() != null) {
+//                toastMessage = loginResult.getError().getErrorType().getMessage();
+//            } else if (loginResult.wasCancelled()) {
+//                toastMessage = "Cancelled";
+//            } else {
+//                if (loginResult.getAccessToken() != null) {
+//                    toastMessage = "Success:" + loginResult.getAccessToken().getAccountId();
+//                } else {
+//                    toastMessage = String.format("Success:%s...", loginResult.getAuthorizationCode().substring(0, 10));
+//                }
+//                // Success! Start your next activity...
+////                loginResult.getAuthorizationCode()
+//
+//                AccountKit.getCurrentAccount(new AccountKitCallback<Account>() {
+//                    @Override
+//                    public void onSuccess(final Account account) {
+//                        String accountKitId = account.getId();
+//                        PhoneNumber phoneNumber = account.getPhoneNumber();
+//                        String phoneNumberString = phoneNumber.toString();
+//                    }
+//
+//                    @Override
+//                    public void onError(final AccountKitError error) {
+//                        // Handle Error
+//                    }
+//                });
+//                return;
+//            }
+//            showToast(toastMessage);
+//        }
+//    }
+//
+//    private void getCurrentAccount() {
+//        AccessToken accessToken = AccountKit.getCurrentAccessToken();
+//        if (accessToken != null) {
+//            //Handle Returning User
+//            AccountKit.getCurrentAccount(new AccountKitCallback<Account>() {
+//                @Override
+//                public void onSuccess(final Account account) {
+//                    // Get Account Kit ID
+//                    String accountKitId = account.getId();
+//                    showLog("Account Kit Id " + accountKitId);
+//
+//                    if (account.getPhoneNumber() != null) {
+//                        showLog("CountryCode" + "" + account.getPhoneNumber().getCountryCode());
+//                        showLog("PhoneNumber" + "" + account.getPhoneNumber().getPhoneNumber());
+//
+//                        // Get phone number
+//                        PhoneNumber phoneNumber = account.getPhoneNumber();
+//                        String phoneNumberString = phoneNumber.toString();
+//                        showLog("NumberString" + phoneNumberString);
+//                    }
+//
+//                    if (account.getEmail() != null)
+//                        showLog("Email" + account.getEmail());
+//                }
+//
+//                @Override
+//                public void onError(final AccountKitError error) {
+//                    // Handle Error
+//                    showLog(TAG + error.toString());
+//                }
+//            });
+//        } else {
+//            //Handle new or logged out user
+//            showLog(TAG + "Logged Out");
+//        }
+//    }
 
     private final int SMS_REQUEST_CODE = 99;
 
@@ -522,7 +511,7 @@ public class AdListActivity2 extends BaseFirebaseAuthActivity implements
             }
         });
 
-        searchDialog.findViewById(R.id.noBtn).setOnClickListener(new View.OnClickListener() {
+        searchDialog.findViewById(R.id.cancelBtn).setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View view) {
                 searchDialog.dismiss();

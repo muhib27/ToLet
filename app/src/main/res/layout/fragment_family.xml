@@ -80,7 +80,6 @@
             android:layout_weight="1"
             android:ems="4"
             android:hint="@string/total_space"
-            android:imeActionId="@+id/totalRent"
             android:imeOptions="actionNext"
             android:inputType="numberDecimal"
             android:maxLength="4"

@@ -558,7 +558,7 @@ public class AdListActivity extends BaseActivity implements NavigationView.OnNav
             }
         });
 
-        searchDialog.findViewById(R.id.noBtn).setOnClickListener(new View.OnClickListener() {
+        searchDialog.findViewById(R.id.cancelBtn).setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View view) {
                 searchDialog.dismiss();

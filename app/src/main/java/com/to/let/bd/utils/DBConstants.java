@@ -65,4 +65,13 @@ public class DBConstants {
     public static final String othersInfo = "othersInfo";
 
     public static final String fcmToken = "fcmToken";
+    public static final String geoFire = "geoFire";
+
+    public static final String keyFamily = "family";
+    public static final String keyMess = "mess";
+    public static final String keySublet = "sublet";
+    public static final String keyOthers = "others";
+
+    public static final String deleteReason = "deleteReason";
+    public static final String isActive = "isActive";
 }

@@ -7,13 +7,18 @@ import com.google.firebase.database.DatabaseReference;
 import com.google.firebase.database.Query;
 import com.to.let.bd.R;
 import com.to.let.bd.utils.DBConstants;
+import com.to.let.bd.utils.DateUtils;
 
 public class SubletFlatList extends AdListBaseFragment {
 
     @Override
     public Query getQuery(DatabaseReference databaseReference) {
         // All sublet type ad
-        return databaseReference.child(DBConstants.adList).orderByChild(DBConstants.flatType).equalTo(getString(R.string.sublet));
+        return databaseReference
+                .child(DBConstants.adList)
+                .child(DBConstants.keySublet)
+                .orderByChild(DBConstants.startingFinalDate)
+                .startAt(DateUtils.todayYearMonthDate());
     }
 
     @Override

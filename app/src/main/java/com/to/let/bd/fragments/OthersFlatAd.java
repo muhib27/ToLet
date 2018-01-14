@@ -19,6 +19,7 @@ import com.to.let.bd.activities.NewAdActivity2;
 import com.to.let.bd.common.BaseFragment;
 import com.to.let.bd.model.OthersInfo;
 import com.to.let.bd.utils.AppConstants;
+import com.to.let.bd.utils.DBConstants;
 
 import java.util.ArrayList;
 import java.util.Arrays;
@@ -58,6 +59,7 @@ public class OthersFlatAd extends BaseFragment {
     public void onActivityCreated(@Nullable Bundle savedInstanceState) {
         super.onActivityCreated(savedInstanceState);
         init();
+        updateData();
     }
 
     private NewAdActivity2 activity;
@@ -126,13 +128,44 @@ public class OthersFlatAd extends BaseFragment {
         }
     }
 
-    public String getRoomDetails() {
+    public String getRoomSummary() {
         if (getTotalSpace() == null || getTotalSpace().trim().isEmpty()) {
             totalSpace.setError(getString(R.string.error_field_required));
             totalSpace.requestFocus();
             return null;
         }
-        return rentType.get(selectedPosition)+" with "+getTotalSpace()+" sqrft";
+        return rentType.get(selectedPosition) + " with " + getTotalSpace() + " sqrft";
+    }
+
+    public String getRoomOthersFacility() {
+        StringBuilder stringBuilder = new StringBuilder();
+
+        if (liftCB.isChecked()) {
+            stringBuilder.append(getString(R.string.lift_facility));
+            stringBuilder.append("\n");
+        }
+        if (generatorCB.isChecked()) {
+            stringBuilder.append(getString(R.string.generator_facility));
+            stringBuilder.append("\n");
+        }
+        if (securityGuardCB.isChecked()) {
+            stringBuilder.append(getString(R.string.always_security_guard));
+            stringBuilder.append("\n");
+        }
+        if (parkingGarageCB.isChecked()) {
+            stringBuilder.append(getString(R.string.parking_garage_facility));
+            stringBuilder.append("\n");
+        }
+        if (fullyDecoratedCB.isChecked()) {
+            stringBuilder.append(getString(R.string.interior_fully_decorated));
+            stringBuilder.append("\n");
+        }
+        if (wellFurnishedCB.isChecked()) {
+            stringBuilder.append(getString(R.string.fully_furnished));
+            stringBuilder.append("\n");
+        }
+
+        return stringBuilder.toString();
     }
 
     public OthersInfo getOthersInfo() {
@@ -141,14 +174,31 @@ public class OthersFlatAd extends BaseFragment {
 
         subletInfo.lift = liftCB.isChecked();
         subletInfo.generator = generatorCB.isChecked();
-        subletInfo.securityGuard=securityGuardCB.isChecked();
+        subletInfo.securityGuard = securityGuardCB.isChecked();
         subletInfo.parkingGarage = parkingGarageCB.isChecked();
         subletInfo.fullyDecorated = fullyDecoratedCB.isChecked();
         subletInfo.wellFurnished = wellFurnishedCB.isChecked();
         return subletInfo;
     }
 
-    public void updateData(OthersInfo othersInfo) {
+    public void updateData() {
+        Bundle bundle = getArguments();
+        if (bundle == null)
+            return;
 
+        OthersInfo othersInfo = (OthersInfo) bundle.getSerializable(DBConstants.othersInfo);
+        if (othersInfo == null)
+            return;
+
+        updatePickerView(othersInfo.rentType);
+
+        totalSpace.setText(String.valueOf(bundle.getLong(DBConstants.flatSpace)));
+
+        liftCB.setChecked(othersInfo.lift);
+        generatorCB.setChecked(othersInfo.generator);
+        securityGuardCB.setChecked(othersInfo.securityGuard);
+        parkingGarageCB.setChecked(othersInfo.parkingGarage);
+        fullyDecoratedCB.setChecked(othersInfo.fullyDecorated);
+        wellFurnishedCB.setChecked(othersInfo.wellFurnished);
     }
 }

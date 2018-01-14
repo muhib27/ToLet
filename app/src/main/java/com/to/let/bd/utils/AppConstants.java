@@ -42,12 +42,16 @@ public class AppConstants {
     public static final String mediaExtra = "mediaExtra";
     public static final String keyType = "keyType";
     public static final String keySubAdListType = "keySubAdListType";
+    public static final String keyImageList = "keyImageList";
 
     public static final int subQueryFav = 0;
     public static final int subQueryMy = 1;
     public static final int subQueryNearest = 2;
     public static final int subQuerySmart = 3;
     public static final int subQueryAll = 100;
+
+    // maximum image you can upload for single ad
+    public static final int maximumImage = 3;
 
     public static final String actionUpload = "actionUpload";
     public static final String fileUri = "fileUri";
@@ -59,7 +63,6 @@ public class AppConstants {
     public static final String imageContents = "imageContents";
     public static final String downloadUrl = "downloadUrl";
     public static final String imageIndex = "imageIndex";
-    public static final String storageCommonFolderName = "-KpcxfSHO2AOT3yCKgqd";
     public static final String imageName = "imageName";
     public static final String imagePath = "imagePath";
     public static final String progress = "progress";
@@ -176,6 +179,7 @@ public class AppConstants {
             });
 
             int count = (startPositions[i] + defaultPositions[i]);
+            inflatedView.setTag(viewTypes[i]);
             updatePickerView(inflatedView, viewTypes[i], (count + " " + viewTypes[i] + (count > 1 ? "'s" : "")));
             parentLay.addView(inflatedView);
         }

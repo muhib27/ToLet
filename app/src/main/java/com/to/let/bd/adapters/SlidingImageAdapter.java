@@ -42,14 +42,16 @@ public class SlidingImageAdapter extends PagerAdapter {
         View imageLayout = inflater.inflate(R.layout.slider_item, view, false);
         assert imageLayout != null;
 
-
-        ImageView imageView = (ImageView) imageLayout.findViewById(R.id.imageView);
-        ProgressBar progressBar = (ProgressBar) imageLayout.findViewById(R.id.progressBar);
+        ImageView imageView = imageLayout.findViewById(R.id.imageView);
+        ProgressBar progressBar = imageLayout.findViewById(R.id.progressBar);
 
         progressBar.setVisibility(View.VISIBLE);
-        Glide.with(context)
-                .load(Uri.parse(images[position]))
-                .into(imageView);
+        if (images[position] != null)
+            Glide.with(context)
+                    .load(Uri.parse(images[position]))
+                    .into(imageView);
+        else
+            imageView.setImageResource(R.drawable.dummy_flat_image);
 
         imageView.setOnClickListener(new View.OnClickListener() {
             @Override

@@ -50,9 +50,6 @@ public class UploadImageService extends BaseTaskService {
         if (AppConstants.actionUpload.equals(intent.getAction())) {
             int type = intent.getIntExtra(AppConstants.keyType, -1);
             String adId = intent.getStringExtra(DBConstants.adId);
-            if (adId == null || adId.isEmpty()) {
-                adId = AppConstants.storageCommonFolderName;
-            }
             int imageIndex = intent.getIntExtra(AppConstants.imageIndex, -1);
             uploadFromUri(intent, type, adId, imageIndex);
         }

@@ -188,7 +188,7 @@ public abstract class AdListBaseFragment extends BaseFragment implements AdAdapt
             for (DataSnapshot adSnapshot : dataSnapshot.getChildren()) {
                 AdInfo adInfo = adSnapshot.getValue(AdInfo.class);
 
-                if ((adInfo != null ? adInfo.startingFinalDate : 0) >= DateUtils.todayYearMonthDate()) {
+                if (adInfo != null && adInfo.isActive) {
                     adList.add(adInfo);
                 }
             }

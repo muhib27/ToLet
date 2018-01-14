@@ -72,6 +72,7 @@
     <string name="pick_photo_size">(%1$s)</string>
     <string name="pick_photo_size_limit">Max size %1$s </string>
     <string name="please_select_photo">Please select any photo to publish.</string>
+    <string name="there_has_no_new_photo_to_publish">There has no new photo to publish.</string>
     <string name="tk">TK</string>
     <string name="sq_ft">sq ft</string>
     <string name="rent_from">Rent From</string>
@@ -99,7 +100,7 @@
     <string name="title_bar_icon">Title bar icon</string>
 
     <string name="image_upload_title">Image uploading started</string>
-    <string name="image_upload_message">Your selected image(\'s), you can\'t stop it right now, but you can change it later.</string>
+    <string name="image_upload_message">Your selected image(\'s) uploading…\nYou can\'t stop it right now, but you can change it later.</string>
     <string name="image_upload_status" formatted="false">Your uploading image progress %s.</string>
     <string name="image_upload_starting">Your image uploading is going to start.</string>
 
@@ -108,8 +109,10 @@
     <string name="is_everything_ok">Is Everything OK?</string>
     <string name="summary">Summary</string>
     <string name="please_pick_a_location_into_the_map">Please pick a location into the map.</string>
-    <string name="ad_posted_successfully">Ad published successfully</string>
-    <string name="your_ad_posted_successfully_would_u_like">Your ad posted successfully, would you like to add some picture/image, that represent your flat type?</string>
+    <string name="ad_published_successfully">Ad published successfully</string>
+    <string name="ad_updated_successfully">Ad updated successfully</string>
+    <string name="your_ad_published_successfully_would_u_like">Your ad published successfully, would you like to add some picture/image, that represent your flat type?</string>
+    <string name="your_ad_updated_successfully_would_u_like">Your ad updated successfully, would you like to change your previously set picture/image?</string>
     <string name="dummy_photo_count">0 Photo</string>
     <string name="ad_details">Ad Details</string>
     <string name="call">Call</string>
@@ -226,6 +229,12 @@
 
     <string name="already_reported">Already reported</string>
 
+
+    <string name="delete_already_rented">Already rented</string>
+    <string name="delete_not_interested_now">Not interested now</string>
+    <string name="delete_hide_now_only">Hide now only</string>
+    <string name="delete_just_delete">Just delete</string>
+
     <string name="near_by">Near By</string>
     <string name="share">Share</string>
     <string name="title_stores">Stores</string>
@@ -281,4 +290,14 @@
     <string name="unknown_error">Unknown error</string>
     <string name="you_need_to_verify_your_phone_number">You need to verify your phone number</string>
     <string name="alert">Alert</string>
+    <string name="delete">Delete</string>
+    <string name="only_female">Only Female</string>
+    <string name="only_male">Only Male</string>
+    <string name="nothing_to_show">Nothing to show</string>
+    <string name="we_find_out_your_location">We find out your location</string>
+    <string name="your_previously_selected_location">Your previously selected location</string>
+    <string name="photo_edit_or_add">If you want to add or update images, please tap here.</string>
+    <string name="please_report_a_bug">Please report a bug from the report menu.</string>
+    <string name="please_type_here_for_where_you_want_to_search">Please type here for where you want to search</string>
+    <string name="please_type_here_for_search">Please type here for search</string>
 </resources>

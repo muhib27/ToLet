@@ -394,15 +394,15 @@ public abstract class BaseMapActivity extends BaseActivity implements OnMapReady
             return;
         }
 
-        if (ActivityCompat.checkSelfPermission(this, Manifest.permission.ACCESS_FINE_LOCATION) != PackageManager.PERMISSION_GRANTED &&
-                ActivityCompat.checkSelfPermission(this, Manifest.permission.ACCESS_COARSE_LOCATION) != PackageManager.PERMISSION_GRANTED) {
-            googleMap.setMyLocationEnabled(false);
-            googleMap.getUiSettings().setMyLocationButtonEnabled(false);
-            lastKnownLocation = null;
-        } else {
-            googleMap.setMyLocationEnabled(true);
-            googleMap.getUiSettings().setMyLocationButtonEnabled(true);
-        }
+//        if (ActivityCompat.checkSelfPermission(this, Manifest.permission.ACCESS_FINE_LOCATION) != PackageManager.PERMISSION_GRANTED &&
+//                ActivityCompat.checkSelfPermission(this, Manifest.permission.ACCESS_COARSE_LOCATION) != PackageManager.PERMISSION_GRANTED) {
+//            googleMap.setMyLocationEnabled(false);
+//            googleMap.getUiSettings().setMyLocationButtonEnabled(false);
+//            lastKnownLocation = null;
+//        } else {
+//            googleMap.setMyLocationEnabled(true);
+//            googleMap.getUiSettings().setMyLocationButtonEnabled(true);
+//        }
 
         gotoDeviceLocation();
     }

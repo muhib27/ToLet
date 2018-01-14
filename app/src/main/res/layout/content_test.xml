@@ -5,8 +5,8 @@
     android:layout_width="match_parent"
     android:layout_height="match_parent"
     app:layout_behavior="@string/appbar_scrolling_view_behavior"
-    tools:context="com.to.let.bd.activities.NewAdActivity2"
-    tools:showIn="@layout/activity_new_post2">
+    tools:context="com.to.let.bd.activities.TestActivity"
+    tools:showIn="@layout/activity_test">
 
     <LinearLayout
         android:layout_width="match_parent"

@@ -21,6 +21,8 @@ import android.widget.ArrayAdapter;
 import android.widget.Button;
 import android.widget.ImageView;
 import android.widget.LinearLayout;
+import android.widget.RadioGroup;
+import android.widget.RelativeLayout;
 import android.widget.TextView;
 
 import com.bumptech.glide.Glide;
@@ -32,6 +34,7 @@ import com.google.firebase.database.DatabaseError;
 import com.google.firebase.database.DatabaseReference;
 import com.google.firebase.database.FirebaseDatabase;
 import com.google.firebase.database.MutableData;
+import com.google.firebase.database.ServerValue;
 import com.google.firebase.database.Transaction;
 import com.to.let.bd.R;
 import com.to.let.bd.adapters.SlidingImageAdapter;
@@ -39,6 +42,7 @@ import com.to.let.bd.common.BaseActivity;
 import com.to.let.bd.components.ImageViewZoomT;
 import com.to.let.bd.model.AdInfo;
 import com.to.let.bd.model.FamilyInfo;
+import com.to.let.bd.model.ImageInfo;
 import com.to.let.bd.model.MessInfo;
 import com.to.let.bd.model.OthersInfo;
 import com.to.let.bd.model.SubletInfo;
@@ -48,6 +52,7 @@ import com.to.let.bd.utils.DateUtils;
 import com.to.let.bd.utils.MyAnalyticsUtil;
 
 import java.util.Date;
+import java.util.HashMap;
 
 public class AdDetailsActivity extends BaseActivity implements View.OnClickListener {
 
@@ -122,6 +127,7 @@ public class AdDetailsActivity extends BaseActivity implements View.OnClickListe
     private MyAnalyticsUtil myAnalyticsUtil;
 
     private AdInfo adInfo;
+    private String flatType = null;
 
     private void getData() {
         Bundle bundle = getIntent().getExtras();
@@ -135,13 +141,28 @@ public class AdDetailsActivity extends BaseActivity implements View.OnClickListe
         } else {
             images = new String[adInfo.images.size()];
             for (int i = 0; i < adInfo.images.size(); i++) {
-                images[i] = adInfo.images.get(i).downloadUrl;
+                ImageInfo imageInfo = adInfo.images.get(i);
+                if (imageInfo != null) {
+                    images[i] = adInfo.images.get(i).downloadUrl;
+                }
             }
+        }
+
+        flatType = null;
+        if (adInfo.familyInfo != null) {
+            flatType = DBConstants.keyFamily;
+        } else if (adInfo.messInfo != null) {
+            flatType = DBConstants.keyMess;
+        } else if (adInfo.subletInfo != null) {
+            flatType = DBConstants.keySublet;
+        } else if (adInfo.othersInfo != null) {
+            flatType = DBConstants.keyOthers;
         }
     }
 
     private TextView rentDate, totalRent, roomDetails, addressDetails, rentType,
-            othersFacility, othersFacilityDetails, reportThis, photoCount, privacyPolicy;
+            othersFacility, othersFacilityDetails, reportThis, photoCount,
+            privacyPolicy, imageAddOrEdit;
     private Button callBtn, emailBtn, editBtn;
     private LinearLayout showInMapView, reportLay, contactLay;
     private ImageView noImageView, favAd;
@@ -149,7 +170,7 @@ public class AdDetailsActivity extends BaseActivity implements View.OnClickListe
     private void init() {
         rentDate = findViewById(R.id.rentDate);
         totalRent = findViewById(R.id.totalRent);
-        roomDetails = findViewById(R.id.roomDetails);
+        roomDetails = findViewById(R.id.roomSummary);
         addressDetails = findViewById(R.id.addressDetails);
 
         rentType = findViewById(R.id.rentType);
@@ -182,9 +203,9 @@ public class AdDetailsActivity extends BaseActivity implements View.OnClickListe
         favAd.setOnClickListener(this);
 
         photoCount = findViewById(R.id.photoCount);
+        imageAddOrEdit = findViewById(R.id.imageAddOrEdit);
 
         showInMapView = findViewById(R.id.showInMapView);
-
         contactLay = findViewById(R.id.contactLay);
         callBtn = findViewById(R.id.callBtn);
         emailBtn = findViewById(R.id.emailBtn);
@@ -193,11 +214,14 @@ public class AdDetailsActivity extends BaseActivity implements View.OnClickListe
         if (adInfo.userId.equals(BaseActivity.getUid())) {
             editBtn.setVisibility(View.VISIBLE);
             contactLay.setVisibility(View.GONE);
+            imageAddOrEdit.setVisibility(View.VISIBLE);
         }
 
         if (adInfo.userId.equals(BaseActivity.getUid())) {
             reportLay.setVisibility(View.GONE);
         }
+
+        imageAddOrEdit.setOnClickListener(this);
 
         if (adInfo != null) {
             String totalRent = "TK " + AppConstants.rentFormatter(adInfo.flatRent);
@@ -320,9 +344,9 @@ public class AdDetailsActivity extends BaseActivity implements View.OnClickListe
             rentType = getString(R.string.mess);
 
             if (messInfo.memberType == 1) {
-                rentType += ", Only Female";
+                rentType += ", " + getString(R.string.only_female);
             } else {
-                rentType += ", Only Male";
+                rentType += ", " + getString(R.string.only_male);
             }
 
             if (messInfo.mealFacility) {
@@ -451,7 +475,26 @@ public class AdDetailsActivity extends BaseActivity implements View.OnClickListe
             if (noImageView.getVisibility() == View.VISIBLE && adInfo.map != null && adInfo.map.downloadUrl != null) {
                 showInMapView.performClick();
             }
+        } else if (view == imageAddOrEdit) {
+            startMediaActivity();
         }
+    }
+
+    private void startMediaActivity() {
+        if (adInfo == null)
+            return;
+
+        Intent intent = new Intent(this, MediaActivity.class);
+        if (adInfo.images != null && adInfo.images.size() > 0) {
+            Bundle bundle = new Bundle();
+            bundle.putSerializable(AppConstants.keyImageList, adInfo.images);
+            intent.putExtras(bundle);
+        }
+
+        intent.putExtra(DBConstants.adId, adInfo.adId);
+        intent.putExtra(DBConstants.flatType, flatType);
+        intent.addFlags(Intent.FLAG_ACTIVITY_CLEAR_TASK);
+        startActivity(intent);
     }
 
     private void callTheUser() {
@@ -565,15 +608,27 @@ public class AdDetailsActivity extends BaseActivity implements View.OnClickListe
         if (!imageDialog.isShowing())
             imageDialog.show();
 
+        final ImageView crossButton = imageDialog.findViewById(R.id.crossButton);
+        crossButton.setOnClickListener(new View.OnClickListener() {
+            @Override
+            public void onClick(View v) {
+                imageDialog.dismiss();
+            }
+        });
+
         final ImageViewZoomT zoomableImageView = imageDialog.findViewById(R.id.zoomableImageView);
-        Glide.with(this)
-                .load(Uri.parse(images[imagePosition]))
-                .into(zoomableImageView);
+
+        if (images[imagePosition] != null)
+            Glide.with(this)
+                    .load(Uri.parse(images[imagePosition]))
+                    .into(zoomableImageView);
+        else
+            zoomableImageView.setImageResource(R.drawable.dummy_flat_image);
     }
 
     @Override
     public boolean onCreateOptionsMenu(Menu menu) {
-        getMenuInflater().inflate(R.menu.share, menu);
+        getMenuInflater().inflate(R.menu.ad_details_activity, menu);
         return true;
     }
 
@@ -586,9 +641,98 @@ public class AdDetailsActivity extends BaseActivity implements View.OnClickListe
             case R.id.shareAction:
                 shareAction();
                 return true;
+            case R.id.deleteAction:
+                if (adInfo.userId.equals(BaseActivity.getUid()))
+                    showDeleteAdDialog();
+                return true;
             default:
                 return super.onOptionsItemSelected(item);
         }
+    }
+
+    @Override
+    public boolean onPrepareOptionsMenu(Menu menu) {
+        MenuItem deleteMenuItem = menu.findItem(R.id.deleteAction);
+        if (deleteMenuItem != null) {
+            deleteMenuItem.setVisible(false);
+            if (adInfo.userId.equals(BaseActivity.getUid()))
+                deleteMenuItem.setVisible(true);
+        }
+        return super.onPrepareOptionsMenu(menu);
+    }
+
+    private Dialog deleteAdDialog;
+
+    private void showDeleteAdDialog() {
+        deleteAdDialog = new Dialog(this);
+        deleteAdDialog.requestWindowFeature(Window.FEATURE_NO_TITLE);
+        deleteAdDialog.setContentView(R.layout.dialog_delete_ad);
+        Window window = deleteAdDialog.getWindow();
+        if (window != null) {
+            window.setBackgroundDrawable(new ColorDrawable(Color.TRANSPARENT));
+            window.setLayout(ViewGroup.LayoutParams.MATCH_PARENT, ViewGroup.LayoutParams.WRAP_CONTENT);
+            window.setGravity(Gravity.CENTER_HORIZONTAL | Gravity.CENTER_VERTICAL);
+        }
+
+        deleteAdDialog.setCanceledOnTouchOutside(true);
+        deleteAdDialog.setCancelable(true);
+        deleteAdDialog.show();
+
+        final RadioGroup deleteReason = deleteAdDialog.findViewById(R.id.deleteReason);
+
+        final ImageView okBtn, cancelBtn;
+        okBtn = deleteAdDialog.findViewById(R.id.okBtn);
+        cancelBtn = deleteAdDialog.findViewById(R.id.cancelBtn);
+
+        okBtn.setOnClickListener(new View.OnClickListener() {
+            @Override
+            public void onClick(View v) {
+                int deleteReasonValue = 0;
+                if (deleteReason.getCheckedRadioButtonId() == R.id.notInterestedNow) {
+                    deleteReasonValue = 1;
+                } else if (deleteReason.getCheckedRadioButtonId() == R.id.hideNowOnly) {
+                    deleteReasonValue = 2;
+                } else if (deleteReason.getCheckedRadioButtonId() == R.id.justDelete) {
+                    deleteReasonValue = 3;
+                }
+
+                deleteAd(deleteReasonValue);
+                deleteAdDialog.dismiss();
+            }
+        });
+
+        cancelBtn.setOnClickListener(new View.OnClickListener() {
+            @Override
+            public void onClick(View v) {
+                deleteAdDialog.dismiss();
+            }
+        });
+
+    }
+
+    private void deleteAd(int deleteReasonValue) {
+        showProgressDialog();
+
+        if (flatType == null || adInfo.adId == null) {
+            closeProgressDialog();
+            return;
+        }
+
+        HashMap<String, Object> adValues = new HashMap<>();
+        adValues.put(DBConstants.deleteReason, deleteReasonValue);
+        adValues.put(DBConstants.isActive, false);
+        adValues.put(DBConstants.modifiedTime, ServerValue.TIMESTAMP);
+
+        databaseReference
+                .child(DBConstants.adList)
+                .child(flatType)
+                .child(adInfo.adId)
+                .updateChildren(adValues, new DatabaseReference.CompletionListener() {
+                    @Override
+                    public void onComplete(DatabaseError databaseError, DatabaseReference databaseReference) {
+                        closeProgressDialog();
+                    }
+                });
     }
 
     // [START ad_stars_transaction]

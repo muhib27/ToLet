@@ -19,6 +19,7 @@ import com.to.let.bd.R;
 import com.to.let.bd.adapters.AdAdapter;
 import com.to.let.bd.common.BaseActivity;
 import com.to.let.bd.model.AdInfo;
+import com.to.let.bd.model.ImageInfo;
 import com.to.let.bd.utils.AppConstants;
 import com.to.let.bd.utils.DateUtils;
 
@@ -52,39 +53,42 @@ public class AdViewHolder extends RecyclerView.ViewHolder {
     }
 
     public void bindToAd(final AdInfo adInfo, final int clickedPosition, final AdAdapter.ClickListener clickListener) {
+        if (adInfo == null)
+            return;
+
         if (adInfo.adId == null) {
-            NativeExpressAdView adView = new NativeExpressAdView(context);
-            AdSize adSize = new AdSize(280, 75);
-            adView.setAdSize(adSize);
-            adView.setAdUnitId("ca-app-pub-3940256099942544/1072772517");
-            adView.setAdListener(new AdListener() {
-                @Override
-                public void onAdLoaded() {
-                    super.onAdLoaded();
-                }
-
-                @Override
-                public void onAdFailedToLoad(int errorCode) {
-
-                }
-            });
-
-            AdRequest adRequest = new AdRequest
-                    .Builder()
-                    .addTestDevice(context.getString(R.string.test_device_id1))
-                    .build();
-
-            // Load the Native Express ad.
-            adView.loadAd(adRequest);
-
-////            adView.setAdSize(new AdSize(400, 100));
-////            adView.setAdUnitId("ca-app-pub-3940256099942544/2793859312");
-//            AdView adView = new AdView(context);
-//            adView.setAdSize(AdSize.BANNER);
-//            adView.setAdUnitId(context.getString(R.string.ad_mob_banner_id));
+//            NativeExpressAdView adView = new NativeExpressAdView(context);
+//            AdSize adSize = new AdSize(280, 75);
+//            adView.setAdSize(adSize);
+//            adView.setAdUnitId("ca-app-pub-3940256099942544/1072772517");
+//            adView.setAdListener(new AdListener() {
+//                @Override
+//                public void onAdLoaded() {
+//                    super.onAdLoaded();
+//                }
+//
+//                @Override
+//                public void onAdFailedToLoad(int errorCode) {
+//
+//                }
+//            });
+//
+//            AdRequest adRequest = new AdRequest
+//                    .Builder()
+//                    .addTestDevice(context.getString(R.string.test_device_id1))
+//                    .build();
+//
+//            // Load the Native Express ad.
 //            adView.loadAd(adRequest);
-            mainLay.removeAllViews();
-            mainLay.addView(adView);
+//
+//////            adView.setAdSize(new AdSize(400, 100));
+//////            adView.setAdUnitId("ca-app-pub-3940256099942544/2793859312");
+////            AdView adView = new AdView(context);
+////            adView.setAdSize(AdSize.BANNER);
+////            adView.setAdUnitId(context.getString(R.string.ad_mob_banner_id));
+////            adView.loadAd(adRequest);
+//            mainLay.removeAllViews();
+//            mainLay.addView(adView);
             return;
         }
         String adRent = "Rent per month: TK " + AppConstants.rentFormatter(adInfo.flatRent);
@@ -106,7 +110,15 @@ public class AdViewHolder extends RecyclerView.ViewHolder {
             }
         } else {
             imageCount = adInfo.images.size();
-            imagePath = adInfo.images.get(0).downloadUrl;
+
+            ImageInfo imageInfo;
+            for (int i = 0; i < adInfo.images.size(); i++) {
+                imageInfo = adInfo.images.get(i);
+                if (imageInfo != null) {
+                    imagePath = imageInfo.downloadUrl;
+                    break;
+                }
+            }
         }
 
         if (imagePath != null)

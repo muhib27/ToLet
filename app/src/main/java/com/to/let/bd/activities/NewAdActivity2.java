@@ -43,6 +43,8 @@ import android.widget.LinearLayout;
 import android.widget.ScrollView;
 import android.widget.TextView;
 
+import com.firebase.geofire.GeoFire;
+import com.firebase.geofire.GeoLocation;
 import com.google.android.gms.auth.api.Auth;
 import com.google.android.gms.auth.api.credentials.Credential;
 import com.google.android.gms.auth.api.credentials.CredentialPickerConfig;
@@ -52,11 +54,15 @@ import com.google.android.gms.common.GooglePlayServicesNotAvailableException;
 import com.google.android.gms.common.GooglePlayServicesRepairableException;
 import com.google.android.gms.common.api.GoogleApiClient;
 import com.google.android.gms.common.api.Status;
+import com.google.android.gms.location.places.AutocompleteFilter;
 import com.google.android.gms.location.places.Place;
 import com.google.android.gms.location.places.ui.PlaceAutocomplete;
+import com.google.android.gms.location.places.ui.PlaceAutocompleteFragment;
+import com.google.android.gms.location.places.ui.PlaceSelectionListener;
 import com.google.android.gms.maps.CameraUpdateFactory;
 import com.google.android.gms.maps.GoogleMap;
 import com.google.android.gms.maps.model.BitmapDescriptorFactory;
+import com.google.android.gms.maps.model.CameraPosition;
 import com.google.android.gms.maps.model.LatLng;
 import com.google.android.gms.maps.model.Marker;
 import com.google.android.gms.maps.model.MarkerOptions;
@@ -115,11 +121,6 @@ public class NewAdActivity2 extends BaseMapActivity implements View.OnClickListe
     }
 
     @Override
-    protected void onCreate(Bundle savedInstanceState) {
-        super.onCreate(savedInstanceState);
-    }
-
-    @Override
     protected String getActivityTitle() {
         return getString(R.string.post_your_ad);
     }
@@ -149,20 +150,24 @@ public class NewAdActivity2 extends BaseMapActivity implements View.OnClickListe
     }
 
     private void initPlace() {
-//        PlaceAutocompleteFragment autocompleteFragment = (PlaceAutocompleteFragment)
-//                getFragmentManager().findFragmentById(R.id.placeAutocomplete);
-//
-//        autocompleteFragment.setOnPlaceSelectedListener(new PlaceSelectionListener() {
-//            @Override
-//            public void onPlaceSelected(Place place) {
-//                showLog("Place: " + place.getName());
-//            }
-//
-//            @Override
-//            public void onError(Status status) {
-//                showLog("An error occurred: " + status);
-//            }
-//        });
+        PlaceAutocompleteFragment autocompleteFragment = (PlaceAutocompleteFragment)
+                getFragmentManager().findFragmentById(R.id.placeAutocomplete);
+        autocompleteFragment.setHint(getString(R.string.please_type_here_for_search));
+        AutocompleteFilter typeFilter = new AutocompleteFilter.Builder()
+                .setCountry("BD")
+                .build();
+        autocompleteFragment.setFilter(typeFilter);
+        autocompleteFragment.setOnPlaceSelectedListener(new PlaceSelectionListener() {
+            @Override
+            public void onPlaceSelected(Place place) {
+                showLog("Place: " + place.getName());
+            }
+
+            @Override
+            public void onError(Status status) {
+                showLog("An error occurred: " + status);
+            }
+        });
     }
 
     private AdInfo adInfo;
@@ -179,6 +184,7 @@ public class NewAdActivity2 extends BaseMapActivity implements View.OnClickListe
             return;
 
         totalRent.setText(String.valueOf(adInfo.flatRent));
+        totalUtility.setText(adInfo.othersFee > 0 ? String.valueOf(adInfo.othersFee) : "");
         addressDetails.setText(adInfo.fullAddress);
         submitBtn.setText(R.string.update);
 
@@ -192,19 +198,18 @@ public class NewAdActivity2 extends BaseMapActivity implements View.OnClickListe
         String selectedDate = date[0] + "-" + (date[1] + 1) + "-" + date[2];
         setRentDate(selectedDate);
 
-
-        int tabIndex = 0;
-        if (adInfo.messInfo != null) {
-            tabIndex = 1;
-        } else if (adInfo.subletInfo != null) {
-            tabIndex = 2;
-        } else if (adInfo.othersInfo != null) {
-            tabIndex = 3;
-        }
-
-        if (tabIndex > tabLayout.getTabCount() - 1) {
-            return;
-        }
+//        int tabIndex = 0;
+//        if (adInfo.messInfo != null) {
+//            tabIndex = 1;
+//        } else if (adInfo.subletInfo != null) {
+//            tabIndex = 2;
+//        } else if (adInfo.othersInfo != null) {
+//            tabIndex = 3;
+//        }
+//
+//        if (tabIndex > tabLayout.getTabCount() - 1) {
+//            return;
+//        }
 
 //        TabLayout.Tab tab = tabLayout.getTabAt(tabIndex);
 //        assert tab != null;
@@ -224,7 +229,10 @@ public class NewAdActivity2 extends BaseMapActivity implements View.OnClickListe
 //            othersFlatAd.updateData(adInfo.othersInfo);
 //        }
 
-        LinearLayout tabStrip = ((LinearLayout) tabLayout.getChildAt(tabIndex));
+        LinearLayout tabStrip = ((LinearLayout) tabLayout.getChildAt(0));
+
+        if (tabStrip == null)
+            return;
         for (int i = 0; i < tabStrip.getChildCount(); i++) {
             tabStrip.getChildAt(i).setOnTouchListener(new View.OnTouchListener() {
                 @Override
@@ -234,14 +242,104 @@ public class NewAdActivity2 extends BaseMapActivity implements View.OnClickListe
                 }
             });
         }
-//        addMarker();
+
+        houseInfo.setText(adInfo.houseNameOrNumber);
+        whichFloor.setText(adInfo.floorNumber > -1 ? String.valueOf(adInfo.floorNumber) : "");
+        description.setText(adInfo.flatDescription);
     }
+
+    private void completeSingleImageUpload(int type, String adId, String[] imageContents) {
+        updateDatabaseForImage(type, adId, imageContents);
+    }
+
+    private void updateDatabaseForImage(final int type, final String adId, final String[] imageContents) {
+        HashMap<String, Object> mapImageValue = new HashMap<>();
+        if (type == AppConstants.adMapImageType) {
+            mapImageValue.put(AppConstants.downloadUrl, imageContents[0]);
+            mapImageValue.put(AppConstants.imageName, imageContents[1]);
+            mapImageValue.put(AppConstants.imagePath, imageContents[2]);
+        }
+
+        HashMap<String, Object> adValues = new HashMap<>();
+        adValues.put(DBConstants.modifiedTime, ServerValue.TIMESTAMP);
+        adValues.put(DBConstants.map, mapImageValue);
+
+        databaseReference
+                .child(DBConstants.adList)
+                .child(flatType)
+                .child(adId)
+                .updateChildren(adValues, new DatabaseReference.CompletionListener() {
+                    @Override
+                    public void onComplete(DatabaseError databaseError, DatabaseReference databaseReference) {
+                        if (databaseError == null) {
+                            mediaAlertDialog(adId);
+                        } else {
+                            updateDatabaseForImage(type, adId, imageContents);
+                        }
+                        closeProgressDialog();
+                    }
+                });
+    }
+
+    private void mediaAlertDialog(final String adId) {
+        AlertDialog.Builder builder = new AlertDialog.Builder(this);
+
+        if (adInfo == null) builder.setTitle(R.string.ad_published_successfully);
+        else builder.setTitle(R.string.ad_published_successfully);
+
+        builder.setIcon(R.mipmap.ic_launcher);
+        if (adInfo == null) {
+            builder.setMessage(R.string.your_ad_published_successfully_would_u_like);
+        } else {
+            if (adInfo.images != null && adInfo.images.size() > 0) {
+                builder.setMessage(R.string.your_ad_updated_successfully_would_u_like);
+            } else {
+                builder.setMessage(R.string.your_ad_published_successfully_would_u_like);
+            }
+        }
+
+        builder.setPositiveButton(getString(R.string.yes), new DialogInterface.OnClickListener() {
+            @Override
+            public void onClick(DialogInterface dialogInterface, int i) {
+                startMediaActivity(adId);
+            }
+        });
+
+        builder.setNegativeButton(getString(R.string.no), new DialogInterface.OnClickListener() {
+            @Override
+            public void onClick(DialogInterface dialogInterface, int i) {
+                finish();
+            }
+        });
+        final AlertDialog dialog = builder.create();
+        dialog.show();
+    }
+
+    private void startMediaActivity(String adId) {
+        Intent intent = new Intent(this, MediaActivity.class);
+        if (adInfo != null && adInfo.images != null && adInfo.images.size() > 0) {
+            Bundle bundle = new Bundle();
+            bundle.putSerializable(AppConstants.keyImageList, adInfo.images);
+            intent.putExtras(bundle);
+        }
+
+        intent.putExtra(DBConstants.adId, adId);
+        intent.putExtra(DBConstants.flatType, flatType);
+        intent.addFlags(Intent.FLAG_ACTIVITY_CLEAR_TASK);
+        startActivity(intent);
+        finish();
+    }
+
+    protected BroadcastReceiver mBroadcastReceiver;
 
     private void initBroadcast() {
         // Local broadcast receiver
         mBroadcastReceiver = new BroadcastReceiver() {
             @Override
             public void onReceive(Context context, Intent intent) {
+                if (intent == null || intent.getAction() == null)
+                    return;
+
                 switch (intent.getAction()) {
                     case AppConstants.uploadError:
                         closeProgressDialog();
@@ -268,32 +366,6 @@ public class NewAdActivity2 extends BaseMapActivity implements View.OnClickListe
             }
         };
     }
-
-    private void completeSingleImageUpload(int type, String adId, String[] imageContents) {
-        updateDatabase(type, adId, imageContents);
-    }
-
-    private void updateDatabase(int type, String adId, String[] imageContents) {
-        HashMap<String, Object> adValues = new HashMap<>();
-        adValues.put(AppConstants.downloadUrl, imageContents[0]);
-        adValues.put(AppConstants.imageName, imageContents[1]);
-        adValues.put(AppConstants.imagePath, imageContents[2]);
-
-        HashMap<String, Object> childUpdates = new HashMap<>();
-        if (type == AppConstants.adMapImageType) {
-            childUpdates.put("/" + DBConstants.adList + "/" + adId + "/" + DBConstants.map, adValues);
-            childUpdates.put("/" + DBConstants.adList + "/" + adId + "/" + DBConstants.modifiedTime, ServerValue.TIMESTAMP);
-        }
-        mDatabase.updateChildren(childUpdates, new DatabaseReference.CompletionListener() {
-            @Override
-            public void onComplete(DatabaseError databaseError, DatabaseReference databaseReference) {
-                closeProgressDialog();
-            }
-        });
-    }
-
-
-    protected BroadcastReceiver mBroadcastReceiver;
 
     @Override
     public void onStart() {
@@ -330,26 +402,6 @@ public class NewAdActivity2 extends BaseMapActivity implements View.OnClickListe
         submitBtn.setOnClickListener(this);
 
         addressDetails = findViewById(R.id.addressDetails);
-//        addressDetails.setOnTouchListener(new View.OnTouchListener() {
-//            @Override
-//            public boolean onTouch(View v, MotionEvent event) {
-//                final int DRAWABLE_RIGHT = 2;
-//
-//                if (event.getAction() == MotionEvent.ACTION_UP) {
-//                    if (event.getRawX() >= (addressDetails.getRight() - addressDetails.getCompoundDrawables()[DRAWABLE_RIGHT].getBounds().width())) {
-//                        if (addressDetails.getText().toString().isEmpty()) {
-//                            addressDetails.setText(fullAddress);
-//                            addressDetails.setCompoundDrawablesWithIntrinsicBounds(0, 0, R.drawable.cross, 0);
-//                        } else {
-//                            addressDetails.setText("");
-//                            addressDetails.setCompoundDrawablesWithIntrinsicBounds(0, 0, R.drawable.undo, 0);
-//                        }
-//                        return true;
-//                    }
-//                }
-//                return false;
-//            }
-//        });
 
         initEmail();
         mobileNumber = findViewById(R.id.mobileNumber);
@@ -368,23 +420,7 @@ public class NewAdActivity2 extends BaseMapActivity implements View.OnClickListe
             }
         }
 
-        mobileNumber.addTextChangedListener(new TextWatcher() {
-            @Override
-            public void beforeTextChanged(CharSequence charSequence, int i, int i1, int i2) {
-
-            }
-
-            @Override
-            public void onTextChanged(CharSequence charSequence, int i, int i1, int i2) {
-
-            }
-
-            @Override
-            public void afterTextChanged(Editable editable) {
-                handler.removeCallbacks(mobileNumberValidation);
-                handler.postDelayed(mobileNumberValidation, AppConstants.textWatcherDelay);
-            }
-        });
+        mobileNumber.addTextChangedListener(textWatcher);
 
         if (firebaseUser != null) {
             if (firebaseUser.isAnonymous()) {
@@ -424,6 +460,24 @@ public class NewAdActivity2 extends BaseMapActivity implements View.OnClickListe
 
         remainingTime = findViewById(R.id.remainingTime);
     }
+
+    private TextWatcher textWatcher = new TextWatcher() {
+        @Override
+        public void beforeTextChanged(CharSequence charSequence, int i, int i1, int i2) {
+
+        }
+
+        @Override
+        public void onTextChanged(CharSequence charSequence, int i, int i1, int i2) {
+
+        }
+
+        @Override
+        public void afterTextChanged(Editable editable) {
+            handler.removeCallbacks(mobileNumberValidation);
+            handler.postDelayed(mobileNumberValidation, AppConstants.textWatcherDelay);
+        }
+    };
 
     private void initEmail() {
         if (emailAddress == null)
@@ -557,21 +611,21 @@ public class NewAdActivity2 extends BaseMapActivity implements View.OnClickListe
 
     private TextView rentDate, remainingTime;
     private TabLayout tabLayout;
-    private ArrayList<String> flatTypes = new ArrayList<>();
+    private ArrayList<String> flatTypesArray = new ArrayList<>();
 
     private void initTabLayout() {
         tabLayout = findViewById(R.id.tabLayout);
 
-        flatTypes.clear();
-        flatTypes.add(getString(R.string.family));
-        flatTypes.add(getString(R.string.mess_member));
-        flatTypes.add(getString(R.string.sublet));
-        flatTypes.add(getString(R.string.others));
+        flatTypesArray.clear();
+        flatTypesArray.add(getString(R.string.family));
+        flatTypesArray.add(getString(R.string.mess_member));
+        flatTypesArray.add(getString(R.string.sublet));
+        flatTypesArray.add(getString(R.string.others));
 
-        tabLayout.addTab(tabLayout.newTab().setText(flatTypes.get(0)), false);
-        tabLayout.addTab(tabLayout.newTab().setText(flatTypes.get(1)), false);
-        tabLayout.addTab(tabLayout.newTab().setText(flatTypes.get(2)), false);
-        tabLayout.addTab(tabLayout.newTab().setText(flatTypes.get(3)), false);
+        tabLayout.addTab(tabLayout.newTab().setText(flatTypesArray.get(0)), false);
+        tabLayout.addTab(tabLayout.newTab().setText(flatTypesArray.get(1)), false);
+        tabLayout.addTab(tabLayout.newTab().setText(flatTypesArray.get(2)), false);
+        tabLayout.addTab(tabLayout.newTab().setText(flatTypesArray.get(3)), false);
 
         int tabIndex = 0;
         if (adInfo != null) {
@@ -596,6 +650,7 @@ public class NewAdActivity2 extends BaseMapActivity implements View.OnClickListe
                     fragment = FamilyFlatAd.newInstance();
                     if (adInfo != null && adInfo.familyInfo != null) {
                         bundle.putSerializable(DBConstants.familyInfo, adInfo.familyInfo);
+                        bundle.putLong(DBConstants.flatSpace, adInfo.flatSpace);
                     }
                     tag = FamilyFlatAd.TAG;
                 } else if (tab.getPosition() == 1) {
@@ -614,6 +669,7 @@ public class NewAdActivity2 extends BaseMapActivity implements View.OnClickListe
                     fragment = OthersFlatAd.newInstance();
                     if (adInfo != null && adInfo.othersInfo != null) {
                         bundle.putSerializable(DBConstants.othersInfo, adInfo.othersInfo);
+                        bundle.putLong(DBConstants.flatSpace, adInfo.flatSpace);
                     }
                     tag = OthersFlatAd.TAG;
                 }
@@ -658,14 +714,61 @@ public class NewAdActivity2 extends BaseMapActivity implements View.OnClickListe
                     }
                 });
 
-        this.googleMap.setInfoWindowAdapter(this);
-        this.googleMap.setOnMapLongClickListener(this);
-        this.googleMap.setOnMapClickListener(this);
+//        this.googleMap.setInfoWindowAdapter(this);
+//        this.googleMap.setOnMapLongClickListener(this);
+//        this.googleMap.setOnMapClickListener(this);
+//        this.googleMap.getUiSettings().setMyLocationButtonEnabled(false);
+//
+        this.googleMap.setOnCameraIdleListener(new GoogleMap.OnCameraIdleListener() {
+            @Override
+            public void onCameraIdle() {
+                LatLng center = NewAdActivity2.this.googleMap.getCameraPosition().target;
+                showLog();
+            }
+        });
+    }
+
+    @Override
+    public void onMapLongClick(LatLng latLng) {
+        addMarker(latLng, "You tap here!");
+    }
+
+    @Override
+    public void onMapClick(LatLng latLng) {
+        googleMap.clear();
+        previouslyPointLocation();
+        selectedMarker = null;
+        this.fullAddress = "";
+        addressDetails.setText(fullAddress);
     }
 
     @Override
     protected void findLastKnownLocation(LatLng defaultLatLng) {
-        addMarker(defaultLatLng, "We find out your location");
+//        if (adInfo == null)
+//            addMarker(defaultLatLng, getString(R.string.we_find_out_your_location));
+//        else
+//            addMarker(new LatLng(adInfo.latitude, adInfo.longitude), getString(R.string.your_previously_selected_location));
+    }
+
+    private void previouslyPointLocation() {
+        if (adInfo != null) {
+            addMarker(new LatLng(adInfo.latitude, adInfo.longitude), getString(R.string.your_previously_selected_location));
+        }
+    }
+
+    private Marker selectedMarker;
+
+    private void addMarker(LatLng latLng, String title) {
+        String fullAddress = getLocationBestApproximateResult(findSelectedLocationDetails(latLng.latitude, latLng.longitude), latLng);
+        onLoadLocationDetails(fullAddress);
+        googleMap.clear();
+        selectedMarker = googleMap.addMarker(new MarkerOptions()
+                .position(latLng)
+                .snippet(fullAddress)
+                .title(title)
+//                .icon(BitmapDescriptorFactory.fromBitmap(getMarkerIcon())));
+                .icon(BitmapDescriptorFactory.fromResource(getMarkerResource())));
+        selectedMarker.setTag(0);
     }
 
     @Override
@@ -688,17 +791,6 @@ public class NewAdActivity2 extends BaseMapActivity implements View.OnClickListe
         return infoWindow;
     }
 
-    @Override
-    public void onMapLongClick(LatLng latLng) {
-        addMarker(latLng, "You tap here!");
-    }
-
-    @Override
-    public void onMapClick(LatLng latLng) {
-        googleMap.clear();
-        selectedMarker = null;
-    }
-
     private String fullAddress = "";
 
     @Override
@@ -716,11 +808,11 @@ public class NewAdActivity2 extends BaseMapActivity implements View.OnClickListe
         }
     }
 
-    private DatabaseReference mDatabase;
+    private DatabaseReference databaseReference;
 
     private void submitAd() {
-        if (mDatabase == null)
-            mDatabase = FirebaseDatabase.getInstance().getReference();
+        if (databaseReference == null)
+            databaseReference = FirebaseDatabase.getInstance().getReference();
 
         validateInputtedData();
     }
@@ -753,32 +845,42 @@ public class NewAdActivity2 extends BaseMapActivity implements View.OnClickListe
         if (!AppConstants.isMobileNumberValid(this, mobileNumber)) {
             return;
         }
-        String summary = getRoomDetails();
-        if (summary == null) {
+
+        summary = null;
+        othersFacility = null;
+
+        getRoomDetails();
+
+        if (summary == null || othersFacility == null) {
             return;
         }
 
         AppSharedPrefs.setMobileNumber(mobileNumber.getText().toString());
-        viewSummaryDialog(summary);
+        viewSummaryDialog();
     }
 
-    private String getRoomDetails() {
+    private String summary, othersFacility;
+
+    private void getRoomDetails() {
         Fragment fragment = getSupportFragmentManager().findFragmentById(R.id.fragmentContainer);
         if (fragment != null) {
             if (fragment instanceof FamilyFlatAd && fragment.isVisible()) {
-                return ((FamilyFlatAd) fragment).getRoomDetails();
+                summary = ((FamilyFlatAd) fragment).getRoomSummary();
+                othersFacility = ((FamilyFlatAd) fragment).getRoomOthersFacility();
             } else if (fragment instanceof MessFlatAd && fragment.isVisible()) {
-                return ((MessFlatAd) fragment).getRoomDetails();
+                summary = ((MessFlatAd) fragment).getRoomSummary();
+                othersFacility = ((MessFlatAd) fragment).getRoomOthersFacility();
             } else if (fragment instanceof SubletFlatAd && fragment.isVisible()) {
-                return ((SubletFlatAd) fragment).getRoomDetails();
+                summary = ((SubletFlatAd) fragment).getRoomSummary();
+                othersFacility = ((SubletFlatAd) fragment).getRoomOthersFacility();
             } else if (fragment instanceof OthersFlatAd && fragment.isVisible()) {
-                return ((OthersFlatAd) fragment).getRoomDetails();
+                summary = ((OthersFlatAd) fragment).getRoomSummary();
+                othersFacility = ((OthersFlatAd) fragment).getRoomOthersFacility();
             }
         }
-        return null;
     }
 
-    private void viewSummaryDialog(String summary) {
+    private void viewSummaryDialog() {
         final Dialog summaryDialog = new Dialog(this);
         summaryDialog.requestWindowFeature(Window.FEATURE_NO_TITLE);
         summaryDialog.setContentView(R.layout.dialog_summary);
@@ -794,19 +896,20 @@ public class NewAdActivity2 extends BaseMapActivity implements View.OnClickListe
         TextView title = summaryDialog.findViewById(R.id.title);
         title.setText(getString(R.string.summary));
 
-        TextView roomDetails = summaryDialog.findViewById(R.id.roomDetails);
+        TextView roomSummary = summaryDialog.findViewById(R.id.roomSummary);
         TextView address = summaryDialog.findViewById(R.id.address);
         TextView totalRent = summaryDialog.findViewById(R.id.totalRent);
+        TextView roomOthersFacility = summaryDialog.findViewById(R.id.othersFacility);
 
-        roomDetails.setText(summary);
+        roomSummary.setText(summary);
+        roomOthersFacility.setText(othersFacility);
 
         address.setText(addressDetails.getText());
 
         long totalR = Long.parseLong(this.totalRent.getText().toString());
+        String tr = "Total Rent: " + String.valueOf(totalR);
         long totalU = totalUtility.getText().length() > 0 ? Long.parseLong(totalUtility.getText().toString()) : 0;
-        totalR = totalR + totalU;
-        String tr = "Total Rent: " + String.valueOf(totalR) + " (include utility bill)";
-
+        if (totalU > 0) tr += "\nOthers utility bill: " + totalU;
         totalRent.setText(tr);
 
         summaryDialog.findViewById(R.id.okBtn).setOnClickListener(new View.OnClickListener() {
@@ -817,7 +920,7 @@ public class NewAdActivity2 extends BaseMapActivity implements View.OnClickListe
             }
         });
 
-        summaryDialog.findViewById(R.id.noBtn).setOnClickListener(new View.OnClickListener() {
+        summaryDialog.findViewById(R.id.cancelBtn).setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View view) {
                 summaryDialog.dismiss();
@@ -828,8 +931,6 @@ public class NewAdActivity2 extends BaseMapActivity implements View.OnClickListe
     @Override
     protected void onResume() {
         super.onResume();
-
-        adId = null;
     }
 
     private long getTotalSpace() {
@@ -848,18 +949,19 @@ public class NewAdActivity2 extends BaseMapActivity implements View.OnClickListe
         return Long.parseLong(totalSpace);
     }
 
-    private String adId = null;
+    private String flatType;
 
     private void writeNewPost() {
         showProgressDialog();
-        adId = mDatabase.child(DBConstants.adList).push().getKey();
 
-        int startingMonth = date[0];
-        int startingDate = date[1] + 1;
+        final String adId = databaseReference.child(DBConstants.adList).push().getKey();
+
+        int startingDate = date[0];
+        int startingMonth = date[1] + 1;
         int startingYear = date[2];
 
-        double latitude = rentLatitude;
-        double longitude = rentLongitude;
+        final double latitude = rentLatitude;
+        final double longitude = rentLongitude;
 
         String fullAddress = addressDetails.getText().toString();
         String country = "";
@@ -880,12 +982,18 @@ public class NewAdActivity2 extends BaseMapActivity implements View.OnClickListe
         Fragment fragment = getSupportFragmentManager().findFragmentById(R.id.fragmentContainer);
         if (fragment != null && fragment instanceof FamilyFlatAd && fragment.isVisible()) {
             familyInfo = ((FamilyFlatAd) fragment).getFamilyInfo();
+            flatType = DBConstants.keyFamily;
         } else if (fragment != null && fragment instanceof MessFlatAd && fragment.isVisible()) {
             messInfo = ((MessFlatAd) fragment).getMessInfo();
+            flatType = DBConstants.keyMess;
         } else if (fragment != null && fragment instanceof SubletFlatAd && fragment.isVisible()) {
             subletInfo = ((SubletFlatAd) fragment).getSubletInfo();
+            flatType = DBConstants.keySublet;
         } else if (fragment != null && fragment instanceof OthersFlatAd && fragment.isVisible()) {
             othersInfo = ((OthersFlatAd) fragment).getOthersInfo();
+            flatType = DBConstants.keyOthers;
+        } else {
+            flatType = DBConstants.keyOthers;
         }
 
         String mobileNumber = this.mobileNumber.getText().toString();
@@ -898,7 +1006,7 @@ public class NewAdActivity2 extends BaseMapActivity implements View.OnClickListe
                 houseInfo.getText().toString(),
                 whichFloor.getText().toString().trim().isEmpty() ? -1 : Integer.parseInt(whichFloor.getText().toString()),
                 roomFaceArray[flatFaceSelection], description.getText().toString(),
-                flatTypes.get(tabLayout.getSelectedTabPosition()),
+                flatTypesArray.get(tabLayout.getSelectedTabPosition()),
                 familyInfo, messInfo, subletInfo, othersInfo,
                 getUid(), mobileNumber, emailAddress);
 
@@ -910,13 +1018,17 @@ public class NewAdActivity2 extends BaseMapActivity implements View.OnClickListe
         HashMap<String, Object> userValues = new HashMap<>();
         userValues.put(DBConstants.userId, getUid());
         userValues.put(DBConstants.mobileNumber, mobileNumber);
-        userValues.put(DBConstants.mobileNumberVerified, false);
+        userValues.put(DBConstants.mobileNumberVerified, true);
         userValues.put(DBConstants.modifiedTime, ServerValue.TIMESTAMP);
 
         HashMap<String, Object> childUpdates = new HashMap<>();
-        childUpdates.put("/" + DBConstants.adList + "/" + adId, adValues);
-        childUpdates.put("/" + DBConstants.users + "/" + DBConstants.registeredUsers + "/" + getUid(), userValues);
-        mDatabase.updateChildren(childUpdates, new DatabaseReference.CompletionListener() {
+        childUpdates.put("/" + DBConstants.adList + "/"
+                + flatType + "/" + adId, adValues);
+
+        childUpdates.put("/" + DBConstants.users + "/"
+                + DBConstants.registeredUsers + "/"
+                + getUid(), userValues);
+        databaseReference.updateChildren(childUpdates, new DatabaseReference.CompletionListener() {
             @Override
             public void onComplete(DatabaseError databaseError, DatabaseReference databaseReference) {
                 if (databaseError == null) {
@@ -945,6 +1057,10 @@ public class NewAdActivity2 extends BaseMapActivity implements View.OnClickListe
                             });
                         }
                     });
+
+                    DatabaseReference ref = FirebaseDatabase.getInstance().getReference(DBConstants.geoFire);
+                    GeoFire geoFire = new GeoFire(ref);
+                    geoFire.setLocation(adId, new GeoLocation(latitude, longitude));
                 } else {
                     showToast(databaseError.getMessage());
                     closeProgressDialog();
@@ -954,8 +1070,8 @@ public class NewAdActivity2 extends BaseMapActivity implements View.OnClickListe
     }
 
     private void updateUserMobileNumber(String mobileNumber) {
-        if (mDatabase == null)
-            mDatabase = FirebaseDatabase.getInstance().getReference();
+        if (databaseReference == null)
+            databaseReference = FirebaseDatabase.getInstance().getReference();
 
         firebaseUser = FirebaseAuth.getInstance().getCurrentUser();
         HashMap<String, Object> userValues = new HashMap<>();
@@ -966,7 +1082,7 @@ public class NewAdActivity2 extends BaseMapActivity implements View.OnClickListe
         childUpdates.put(DBConstants.mobileNumberVerified, false);
 
         childUpdates.put("/" + DBConstants.users + "/" + DBConstants.registeredUsers + "/" + getUid(), userValues);
-        mDatabase.updateChildren(childUpdates);
+        databaseReference.updateChildren(childUpdates);
     }
 
     protected void uploadImage(int type, String adId, byte[] imageByte) {
@@ -981,8 +1097,8 @@ public class NewAdActivity2 extends BaseMapActivity implements View.OnClickListe
     }
 
     private void updateUserInfo() {
-        if (mDatabase == null)
-            mDatabase = FirebaseDatabase.getInstance().getReference();
+        if (databaseReference == null)
+            databaseReference = FirebaseDatabase.getInstance().getReference();
 
         if (firebaseUser == null) {
             firebaseUser = FirebaseAuth.getInstance().getCurrentUser();
@@ -999,7 +1115,7 @@ public class NewAdActivity2 extends BaseMapActivity implements View.OnClickListe
         HashMap<String, Object> childUpdates = new HashMap<>();
         childUpdates.put("/" + DBConstants.users + "/" + DBConstants.registeredUsers + "/" + getUid(), userValues);
 
-        mDatabase.updateChildren(childUpdates);
+        databaseReference.updateChildren(childUpdates);
     }
 
     private void showDatePickerDialog() {
@@ -1061,7 +1177,7 @@ public class NewAdActivity2 extends BaseMapActivity implements View.OnClickListe
         return date[0] + "-" + (date[1] + 1) + "-" + date[2];
     }
 
-    private int[] date = new int[3];//0=dayOfMonth, 1=monthOfYear, 2=year
+    private int[] date = new int[3];//0=dayOfMonth, 1=monthOfYear, 2=year (month start from 0)
 
     public void updateCalculatedRent(long calculatedRent) {
 //        totalRent.setText(String.valueOf(calculatedRent));
@@ -1070,21 +1186,6 @@ public class NewAdActivity2 extends BaseMapActivity implements View.OnClickListe
 
     public void focusDescription() {
         description.requestFocus();
-    }
-
-    private Marker selectedMarker;
-
-    private void addMarker(LatLng latLng, String title) {
-        String fullAddress = getLocationBestApproximateResult(findSelectedLocationDetails(latLng.latitude, latLng.longitude), latLng);
-        onLoadLocationDetails(fullAddress);
-        googleMap.clear();
-        selectedMarker = googleMap.addMarker(new MarkerOptions()
-                .position(latLng)
-                .snippet(fullAddress)
-                .title(title)
-//                .icon(BitmapDescriptorFactory.fromBitmap(getMarkerIcon())));
-                .icon(BitmapDescriptorFactory.fromResource(getMarkerResource())));
-        selectedMarker.setTag(0);
     }
 
     private int getMarkerResource() {
@@ -1283,9 +1384,9 @@ public class NewAdActivity2 extends BaseMapActivity implements View.OnClickListe
 
         final EditText smsCode = smsCodeDialog.findViewById(R.id.smsCode);
 
-        final ImageView okBtn, noBtn;
+        final ImageView okBtn, cancelBtn;
         okBtn = smsCodeDialog.findViewById(R.id.okBtn);
-        noBtn = smsCodeDialog.findViewById(R.id.noBtn);
+        cancelBtn = smsCodeDialog.findViewById(R.id.cancelBtn);
 
         okBtn.setOnClickListener(new View.OnClickListener() {
             @Override
@@ -1302,7 +1403,7 @@ public class NewAdActivity2 extends BaseMapActivity implements View.OnClickListe
             }
         });
 
-        noBtn.setOnClickListener(new View.OnClickListener() {
+        cancelBtn.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View v) {
                 smsCodeDialog.dismiss();
@@ -1317,7 +1418,7 @@ public class NewAdActivity2 extends BaseMapActivity implements View.OnClickListe
             public void onComplete(@NonNull Task<Void> task) {
                 closeProgressDialog();
                 if (task.isSuccessful()) {
-                    mobileNumber.addTextChangedListener(null);
+                    mobileNumber.removeTextChangedListener(textWatcher);
                     mobileNumber.setText(firebaseUser.getPhoneNumber());
                     mobileNumber.setEnabled(false);
                 } else {
