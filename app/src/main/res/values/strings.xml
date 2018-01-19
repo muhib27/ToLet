@@ -150,14 +150,23 @@
     <string name="description_if_need">Description (if need)</string>
     <string name="twenty_four_water">Water 24 hr</string>
     <string name="sublet_type">Sublet type:</string>
-    <string name="tiny_family">Tiny family(only husband &amp; wife)</string>
-    <string name="small_family">Small family(only husband &amp; wife with single kid)</string>
-    <string name="female_sublet">Female student\'s or service holder\'s (maximum 2/3)</string>
 
+    <string name="tiny_family">Tiny family</string>
+    <string name="small_family">Small family</string>
+    <string name="female_sublet">Only female</string>
     <string-array name="sublet_type_array">
         <item>@string/tiny_family</item>
         <item>@string/small_family</item>
         <item>@string/female_sublet</item>
+    </string-array>
+
+    <string name="tiny_family_details">Tiny family(only husband &amp; wife)</string>
+    <string name="small_family_details">Small family(only husband &amp; wife with single kid)</string>
+    <string name="female_sublet_details">Female student\'s or service holder\'s (maximum 2/3)</string>
+    <string-array name="sublet_type_details_array">
+        <item>@string/tiny_family_details</item>
+        <item>@string/small_family_details</item>
+        <item>@string/female_sublet_details</item>
     </string-array>
 
     <string name="attached">Attached</string>
@@ -239,7 +248,7 @@
     <string name="near_by">Near By</string>
     <string name="share">Share</string>
     <string name="title_stores">Stores</string>
-    <string name="show_in_google_map">Show in Google Map</string>
+    <string name="show_location_in_google_map">Show location in Google Map</string>
 
     <string-array name="ad_report_type_array">
         <item>@string/report_fake</item>
@@ -298,10 +307,22 @@
     <string name="nothing_to_show">Nothing to show</string>
     <string name="we_find_out_your_location">We find out your location</string>
     <string name="your_previously_selected_location">Your previously selected location</string>
+    <string name="photo_edit_or_add_long_text">If you want to add or update images, please tap here. If you want to add or update images, please tap here. If you want to add or update images, please tap here.</string>
     <string name="photo_edit_or_add">If you want to add or update images, please tap here.</string>
     <string name="please_report_a_bug">Please report a bug from the report menu.</string>
     <string name="please_type_here_for_where_you_want_to_search">Please type here for where you want to search</string>
     <string name="please_type_here_for_search">Please type here for search</string>
     <string name="resend">Resend</string>
     <string name="do_not_get_sms_code_resend">Don\'t get sms code, tap here for resend sms</string>
+    <string name="google_map_with_nearby">Google map with nearby</string>
+    <string name="click_here_for_change_location_long_text">Click here first for change location. Click here first for change location. Click here first for change location.</string>
+    <string name="click_here_for_change_location">Click here first for change location.</string>
+    <string name="dummy_long_message">If you want to add or update images, please tap here. If you want to add or update images, please tap here. If you want to add or update images, please tap here. If you want to add or update images, please tap here.</string>
+    <string name="do_you_want_to_delete_this_image_you_can_not_undo_this">Do you want to delete this image, you can\'t undo this operation.</string>
+    <string name="delete_photo">delete_photo</string>
+    <string name="next">Next</string>
+    <string name="previous">Previous</string>
+    <string name="why_do_you_want_to_delete">Why do you want to delete?</string>
+    <string name="please_review_the_summary">Please review the summary</string>
+    <string name="something_wrong_please_report_a_bug">Something wrong please report a bug</string>
 </resources>

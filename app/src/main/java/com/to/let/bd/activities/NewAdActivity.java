@@ -188,7 +188,7 @@ public class NewAdActivity extends BaseImageUploadActivity
         addressDetails = (TextView) findViewById(R.id.addressDetails);
 
         emailAddress = findViewById(R.id.emailAddress);
-        mobileNumber = findViewById(R.id.mobileNumber);
+        mobileNumber = findViewById(R.id.phoneNumber);
         mobileNumber.setText(AppSharedPrefs.getMobileNumber());
 
         mobileNumber.addTextChangedListener(new TextWatcher() {

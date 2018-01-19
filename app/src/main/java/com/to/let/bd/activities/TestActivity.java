@@ -76,11 +76,6 @@ public class TestActivity extends BaseMapActivity {
     }
 
     @Override
-    protected void onLoadLocationDetails(String fullAddress) {
-
-    }
-
-    @Override
     protected void onMapReady2(GoogleMap googleMap) {
 
     }

@@ -1,5 +1,6 @@
 package com.to.let.bd.activities;
 
+import android.Manifest;
 import android.app.DatePickerDialog;
 import android.app.Dialog;
 import android.app.PendingIntent;
@@ -8,6 +9,7 @@ import android.content.Context;
 import android.content.DialogInterface;
 import android.content.Intent;
 import android.content.IntentSender;
+import android.content.pm.PackageManager;
 import android.graphics.Bitmap;
 import android.graphics.Color;
 import android.graphics.drawable.ColorDrawable;
@@ -16,6 +18,7 @@ import android.os.CountDownTimer;
 import android.os.Handler;
 import android.support.annotation.NonNull;
 import android.support.design.widget.TabLayout;
+import android.support.v4.app.ActivityCompat;
 import android.support.v4.app.Fragment;
 import android.support.v4.content.LocalBroadcastManager;
 import android.support.v7.app.ActionBar;
@@ -55,7 +58,9 @@ import com.google.android.gms.location.places.ui.PlaceAutocompleteFragment;
 import com.google.android.gms.location.places.ui.PlaceSelectionListener;
 import com.google.android.gms.maps.CameraUpdateFactory;
 import com.google.android.gms.maps.GoogleMap;
+import com.google.android.gms.maps.model.BitmapDescriptorFactory;
 import com.google.android.gms.maps.model.LatLng;
+import com.google.android.gms.maps.model.MarkerOptions;
 import com.google.android.gms.tasks.OnCompleteListener;
 import com.google.android.gms.tasks.Task;
 import com.google.firebase.FirebaseException;
@@ -118,6 +123,13 @@ public class NewAdActivity2 extends BaseMapActivity implements View.OnClickListe
         initEmail();
         emailAddress.setText(firebaseUser.getEmail());
         emailAddress.setEnabled(false);
+
+        if (!(firebaseUser.getPhoneNumber() == null || firebaseUser.getPhoneNumber().isEmpty())) {
+            initPhone();
+            phoneNumber.removeTextChangedListener(textWatcher);
+            phoneNumber.setText(firebaseUser.getPhoneNumber());
+            phoneNumber.setEnabled(false);
+        }
 
         if (afterSuccessfulLogin) {
             validateInputtedData();
@@ -188,39 +200,8 @@ public class NewAdActivity2 extends BaseMapActivity implements View.OnClickListe
         date[0] = adInfo.startingDate;
         date[1] = adInfo.startingMonth;
         date[2] = adInfo.startingYear;
-        String selectedDate = date[0] + "-" + (date[1] + 1) + "-" + date[2];
+        String selectedDate = date[0] + "-" + date[1] + "-" + date[2];
         setRentDate(selectedDate);
-
-//        int tabIndex = 0;
-//        if (adInfo.messInfo != null) {
-//            tabIndex = 1;
-//        } else if (adInfo.subletInfo != null) {
-//            tabIndex = 2;
-//        } else if (adInfo.othersInfo != null) {
-//            tabIndex = 3;
-//        }
-//
-//        if (tabIndex > tabLayout.getTabCount() - 1) {
-//            return;
-//        }
-
-//        TabLayout.Tab tab = tabLayout.getTabAt(tabIndex);
-//        assert tab != null;
-//        tab.select();
-//        updateMarkerIcon();
-//        if (adInfo.familyInfo != null) {
-//            FamilyFlatAd familyFlatAd = (FamilyFlatAd) getSupportFragmentManager().findFragmentByTag(FamilyFlatAd.TAG);
-//            familyFlatAd.updateData(adInfo.familyInfo);
-//        } else if (adInfo.messInfo != null) {
-//            MessFlatAd messFlatAd = (MessFlatAd) getSupportFragmentManager().findFragmentByTag(MessFlatAd.TAG);
-//            messFlatAd.updateData(adInfo.messInfo);
-//        } else if (adInfo.subletInfo != null) {
-//            SubletFlatAd subletFlatAd = (SubletFlatAd) getSupportFragmentManager().findFragmentByTag(SubletFlatAd.TAG);
-//            subletFlatAd.updateData(adInfo.subletInfo);
-//        } else if (adInfo.othersInfo != null) {
-//            OthersFlatAd othersFlatAd = (OthersFlatAd) getSupportFragmentManager().findFragmentByTag(OthersFlatAd.TAG);
-//            othersFlatAd.updateData(adInfo.othersInfo);
-//        }
 
         LinearLayout tabStrip = ((LinearLayout) tabLayout.getChildAt(0));
 
@@ -239,6 +220,11 @@ public class NewAdActivity2 extends BaseMapActivity implements View.OnClickListe
         houseInfo.setText(adInfo.houseNameOrNumber);
         whichFloor.setText(adInfo.floorNumber > -1 ? String.valueOf(adInfo.floorNumber) : "");
         description.setText(adInfo.flatDescription);
+
+        editMap.setVisibility(View.VISIBLE);
+        editMap.setOnClickListener(this);
+        googleMapLay.setClickable(true);
+        placeAutocompleteView.setClickable(true);
     }
 
     private void completeSingleImageUpload(int type, String adId, String[] imageContents) {
@@ -278,7 +264,7 @@ public class NewAdActivity2 extends BaseMapActivity implements View.OnClickListe
         AlertDialog.Builder builder = new AlertDialog.Builder(this);
 
         if (adInfo == null) builder.setTitle(R.string.ad_published_successfully);
-        else builder.setTitle(R.string.ad_published_successfully);
+        else builder.setTitle(R.string.ad_updated_successfully);
 
         builder.setIcon(R.mipmap.ic_launcher);
         if (adInfo == null) {
@@ -377,11 +363,13 @@ public class NewAdActivity2 extends BaseMapActivity implements View.OnClickListe
 
     private Button submitBtn;
     private EditText addressDetails;
-    private EditText emailAddress, mobileNumber;
-    private LinearLayout flatAdditionalInfoLay;
+    private EditText emailAddress, phoneNumber;
+    private LinearLayout flatAdditionalInfoLay, googleMapLay;
     private EditText houseInfo, whichFloor, description, totalRent, totalUtility;
     private ImageView fixedMarker;
     private ProgressBar locationLoaderProgressBar;
+    private TextView editMap;
+    private View placeAutocompleteView;
 
     private void updateTitle(String title) {
         ActionBar actionBar = getSupportActionBar();
@@ -399,23 +387,23 @@ public class NewAdActivity2 extends BaseMapActivity implements View.OnClickListe
         addressDetails = findViewById(R.id.addressDetails);
 
         initEmail();
-        mobileNumber = findViewById(R.id.mobileNumber);
-//        mobileNumber.setText(AppSharedPrefs.getMobileNumber());
+        initPhone();
+//        phoneNumber.setText(AppSharedPrefs.getMobileNumber());
         if (firebaseUser != null) {
             if (firebaseUser.isAnonymous()) {
-                mobileNumber.setOnFocusChangeListener(this);
+                phoneNumber.setOnFocusChangeListener(this);
             } else {
                 String phoneNumber = firebaseUser.getPhoneNumber();
                 if (phoneNumber == null || phoneNumber.isEmpty()) {
-                    mobileNumber.setOnFocusChangeListener(this);
+                    this.phoneNumber.setOnFocusChangeListener(this);
                 } else {
-                    mobileNumber.setText(phoneNumber);
-                    mobileNumber.setEnabled(false);
+                    this.phoneNumber.setText(phoneNumber);
+                    this.phoneNumber.setEnabled(false);
                 }
             }
         }
 
-        mobileNumber.addTextChangedListener(textWatcher);
+        phoneNumber.addTextChangedListener(textWatcher);
 
         if (firebaseUser != null) {
             if (firebaseUser.isAnonymous()) {
@@ -457,6 +445,11 @@ public class NewAdActivity2 extends BaseMapActivity implements View.OnClickListe
         fixedMarker = findViewById(R.id.fixedMarker);
         locationLoaderProgressBar = findViewById(R.id.locationLoaderProgressBar);
         locationLoaderProgressBar.getIndeterminateDrawable().setColorFilter(0xFFFFFFFF, android.graphics.PorterDuff.Mode.MULTIPLY);
+
+        placeAutocompleteView = findViewById(R.id.placeAutocompleteView);
+        googleMapLay = findViewById(R.id.googleMapLay);
+        editMap = findViewById(R.id.editMap);
+        editMap.setSelected(true);
     }
 
     private TextWatcher textWatcher = new TextWatcher() {
@@ -482,9 +475,14 @@ public class NewAdActivity2 extends BaseMapActivity implements View.OnClickListe
             emailAddress = findViewById(R.id.emailAddress);
     }
 
+    private void initPhone() {
+        if (phoneNumber == null)
+            phoneNumber = findViewById(R.id.phoneNumber);
+    }
+
     @Override
     public void onFocusChange(View view, boolean hasFocus) {
-        if (view == mobileNumber) {
+        if (view == phoneNumber) {
             if (hasFocus) {
                 if (emailAddress.length() > 1)
                     showPhoneAutoCompleteHint();
@@ -582,8 +580,8 @@ public class NewAdActivity2 extends BaseMapActivity implements View.OnClickListe
     private Runnable mobileNumberValidation = new Runnable() {
         @Override
         public void run() {
-            mobileNumber.setError(null);
-            if (AppConstants.isMobileNumberValid(NewAdActivity2.this, mobileNumber)) {
+            phoneNumber.setError(null);
+            if (AppConstants.isMobileNumberValid(NewAdActivity2.this, phoneNumber)) {
                 needToVerifyPhoneNumberAlert();
             }
         }
@@ -598,7 +596,7 @@ public class NewAdActivity2 extends BaseMapActivity implements View.OnClickListe
                 new DialogInterface.OnClickListener() {
                     public void onClick(DialogInterface dialog, int which) {
                         dialog.dismiss();
-                        sendCode("+88" + AppConstants.formatAsSimplePhoneNumber(mobileNumber.getText().toString()));
+                        sendCode("+88" + AppConstants.formatAsSimplePhoneNumber(phoneNumber.getText().toString()));
                     }
                 });
 
@@ -715,6 +713,12 @@ public class NewAdActivity2 extends BaseMapActivity implements View.OnClickListe
             @Override
             public void onCameraIdle() {
                 selectedCenterLatLng = NewAdActivity2.this.googleMap.getCameraPosition().target;
+                if (editMap.getVisibility() == View.VISIBLE && adInfo != null) {
+                    addressDetails.setText(adInfo.fullAddress);
+                    if (locationLoaderProgressBar.getVisibility() == View.VISIBLE)
+                        locationLoaderProgressBar.setVisibility(View.GONE);
+                    return;
+                }
                 if (!onPlaceSelected) {
                     locationLoaderProgressBar.setVisibility(View.VISIBLE);
                     handler.removeCallbacks(addressLoader);
@@ -730,9 +734,17 @@ public class NewAdActivity2 extends BaseMapActivity implements View.OnClickListe
         this.googleMap.setOnCameraMoveStartedListener(new GoogleMap.OnCameraMoveStartedListener() {
             @Override
             public void onCameraMoveStarted(int i) {
+                if (editMap.getVisibility() == View.VISIBLE && adInfo != null) {
+                    if (locationLoaderProgressBar.getVisibility() == View.VISIBLE)
+                        locationLoaderProgressBar.setVisibility(View.GONE);
+                    return;
+                }
                 locationLoaderProgressBar.setVisibility(View.VISIBLE);
             }
         });
+
+        if (adInfo != null)
+            this.googleMap.moveCamera(CameraUpdateFactory.newLatLngZoom(new LatLng(adInfo.latitude, adInfo.longitude), DEFAULT_ZOOM));
     }
 
     private LatLng selectedCenterLatLng;
@@ -749,22 +761,11 @@ public class NewAdActivity2 extends BaseMapActivity implements View.OnClickListe
 
     @Override
     protected void findLastKnownLocation(LatLng defaultLatLng) {
-//        if (adInfo == null)
-//            addMarker(defaultLatLng, getString(R.string.we_find_out_your_location));
-//        else
-//            addMarker(new LatLng(adInfo.latitude, adInfo.longitude), getString(R.string.your_previously_selected_location));
-    }
-
-//    private void previouslyPointLocation() {
-//        if (adInfo != null) {
-//            addMarker(new LatLng(adInfo.latitude, adInfo.longitude), getString(R.string.your_previously_selected_location));
-//        }
-//    }
-
-    @Override
-    protected void onLoadLocationDetails(String fullAddress) {
-//        this.fullAddress = fullAddress;
-//        addressDetails.setText(fullAddress);
+        if (adInfo == null)
+            this.googleMap.moveCamera(CameraUpdateFactory.newLatLngZoom(defaultLatLng, DEFAULT_ZOOM));
+        else {
+            this.googleMap.moveCamera(CameraUpdateFactory.newLatLngZoom(new LatLng(adInfo.latitude, adInfo.longitude), DEFAULT_ZOOM));
+        }
     }
 
     @Override
@@ -773,6 +774,11 @@ public class NewAdActivity2 extends BaseMapActivity implements View.OnClickListe
             submitAd();
         } else if (rentDate == view) {
             showDatePickerDialog();
+        } else if (editMap == view) {
+            googleMapLay.setClickable(false);
+            placeAutocompleteView.setClickable(false);
+            placeAutocompleteView.setVisibility(View.GONE);
+            editMap.setVisibility(View.GONE);
         }
     }
 
@@ -786,27 +792,38 @@ public class NewAdActivity2 extends BaseMapActivity implements View.OnClickListe
     }
 
     private void validateInputtedData() {
+        houseInfo.setError(null);
+        whichFloor.setError(null);
+        totalRent.setError(null);
+        emailAddress.setError(null);
+        phoneNumber.setError(null);
+
         if (firebaseUser == null || firebaseUser.isAnonymous()) {
             googleSignOut();
             return;
         }
 
         if (firebaseUser.getPhoneNumber() == null || firebaseUser.getPhoneNumber().isEmpty()) {
-            if (!AppConstants.isMobileNumberValid(this, mobileNumber)) {
+            if (!AppConstants.isMobileNumberValid(this, phoneNumber)) {
                 return;
             }
             needToVerifyPhoneNumberAlert();
             return;
         }
 
-        totalRent.setError(null);
-        emailAddress.setError(null);
-        mobileNumber.setError(null);
-
-        if (totalRent == null) {
-            showToast();
+        if (houseInfo.getText().length() == 0) {
+            houseInfo.setError(getString(R.string.error_field_required));
+            houseInfo.requestFocus();
             return;
-        } else if (totalRent.getText().length() == 0) {
+        }
+
+        if (whichFloor.getText().length() == 0) {
+            whichFloor.setError(getString(R.string.error_field_required));
+            whichFloor.requestFocus();
+            return;
+        }
+
+        if (totalRent.getText().length() == 0) {
             totalRent.setError(getString(R.string.error_field_required));
             totalRent.requestFocus();
             return;
@@ -821,7 +838,17 @@ public class NewAdActivity2 extends BaseMapActivity implements View.OnClickListe
             return;
         }
 
-        AppSharedPrefs.setMobileNumber(mobileNumber.getText().toString());
+        Fragment fragment = getSupportFragmentManager().findFragmentById(R.id.fragmentContainer);
+        if (fragment != null && fragment instanceof OthersFlatAd && fragment.isVisible()) {
+            String rentType = ((OthersFlatAd) fragment).getRentType();
+            if (rentType.equals(getString(R.string.others)) && description.getText().length() <= 0) {
+                description.setError(getString(R.string.error_field_required));
+                description.requestFocus();
+                return;
+            }
+        }
+
+        AppSharedPrefs.setMobileNumber(phoneNumber.getText().toString());
         viewSummaryDialog();
     }
 
@@ -860,7 +887,7 @@ public class NewAdActivity2 extends BaseMapActivity implements View.OnClickListe
         summaryDialog.show();
 
         TextView title = summaryDialog.findViewById(R.id.title);
-        title.setText(getString(R.string.summary));
+        title.setText(getString(R.string.please_review_the_summary));
 
         TextView roomSummary = summaryDialog.findViewById(R.id.roomSummary);
         TextView address = summaryDialog.findViewById(R.id.address);
@@ -870,12 +897,18 @@ public class NewAdActivity2 extends BaseMapActivity implements View.OnClickListe
         roomSummary.setText(summary);
         roomOthersFacility.setText(othersFacility);
 
-        address.setText(addressDetails.getText());
+        String addressString = addressDetails.getText().toString();
+        addressString += "\nHouse number/name: " + houseInfo.getText().toString()
+                + " Floor: " + whichFloor.getText().toString();
+
+        if (description.getText().length() > 0)
+            addressString += "\n" + description.getText().toString();
+        address.setText(addressString);
 
         long totalR = Long.parseLong(this.totalRent.getText().toString());
-        String tr = "Total Rent: " + String.valueOf(totalR);
+        String tr = "Rent: TK " + String.valueOf(AppConstants.rentFormatter(totalR));
         long totalU = totalUtility.getText().length() > 0 ? Long.parseLong(totalUtility.getText().toString()) : 0;
-        if (totalU > 0) tr += "\nOthers utility bill: " + totalU;
+        if (totalU > 0) tr += "\nOthers utility bill: TK" + AppConstants.rentFormatter(totalU);
         totalRent.setText(tr);
 
         summaryDialog.findViewById(R.id.okBtn).setOnClickListener(new View.OnClickListener() {
@@ -964,10 +997,10 @@ public class NewAdActivity2 extends BaseMapActivity implements View.OnClickListe
             flatType = DBConstants.keyOthers;
         }
 
-        String mobileNumber = this.mobileNumber.getText().toString();
+        String mobileNumber = this.phoneNumber.getText().toString();
         String emailAddress = this.emailAddress.getText().toString();
 
-        final AdInfo adInfo = new AdInfo(adId, startingMonth, startingDate, startingYear,
+        final AdInfo newAdInfo = new AdInfo(adId, startingMonth, startingDate, startingYear,
                 selectedCenterLatLng.latitude, selectedCenterLatLng.longitude,
                 fullAddress, country, division, district, subDistrict, knownAsArea,
                 flatSpace, flatRent, othersFee,
@@ -978,46 +1011,47 @@ public class NewAdActivity2 extends BaseMapActivity implements View.OnClickListe
                 familyInfo, messInfo, subletInfo, othersInfo,
                 getUid(), mobileNumber, emailAddress);
 
-//        AdInfo adInfo = new AdInfo(adId, getUid());
-        HashMap<String, Object> adValues = adInfo.toMap();
-        adValues.put(DBConstants.createdTime, ServerValue.TIMESTAMP);
+        HashMap<String, Object> adValues = newAdInfo.toMap();
+        if (adInfo == null)
+            adValues.put(DBConstants.createdTime, ServerValue.TIMESTAMP);
         adValues.put(DBConstants.modifiedTime, ServerValue.TIMESTAMP);
 
-        HashMap<String, Object> userValues = new HashMap<>();
-        userValues.put(DBConstants.userId, getUid());
-        userValues.put(DBConstants.mobileNumber, mobileNumber);
-        userValues.put(DBConstants.mobileNumberVerified, true);
-        userValues.put(DBConstants.modifiedTime, ServerValue.TIMESTAMP);
-
-        HashMap<String, Object> childUpdates = new HashMap<>();
-        childUpdates.put("/" + DBConstants.adList + "/"
-                + flatType + "/" + adId, adValues);
-
-        childUpdates.put("/" + DBConstants.users + "/"
-                + DBConstants.registeredUsers + "/"
-                + getUid(), userValues);
-        databaseReference.updateChildren(childUpdates, new DatabaseReference.CompletionListener() {
-            @Override
-            public void onComplete(DatabaseError databaseError, DatabaseReference databaseReference) {
-                if (databaseError == null) {
-                    googleMap.snapshot(new GoogleMap.SnapshotReadyCallback() {
-                        @Override
-                        public void onSnapshotReady(Bitmap bitmap) {
-                            ByteArrayOutputStream stream = new ByteArrayOutputStream();
-                            bitmap.compress(Bitmap.CompressFormat.PNG, 50, stream);
-                            byte[] byteArray = stream.toByteArray();
-                            uploadImage(AppConstants.adMapImageType, adId, byteArray);
+        databaseReference
+                .child(DBConstants.adList)
+                .child(flatType)
+                .child(adId)
+                .updateChildren(adValues, new DatabaseReference.CompletionListener() {
+                    @Override
+                    public void onComplete(DatabaseError databaseError, DatabaseReference databaseReference) {
+                        if (databaseError == null) {
+                            if (editMap.getVisibility() != View.VISIBLE) {
+                                googleMap.addMarker(new MarkerOptions()
+                                        .position(new LatLng(selectedCenterLatLng.latitude, selectedCenterLatLng.longitude))
+                                        .snippet("")
+                                        .title("")
+                                        .icon(BitmapDescriptorFactory.fromResource(getMarkerResource())));
+                                googleMap.snapshot(new GoogleMap.SnapshotReadyCallback() {
+                                    @Override
+                                    public void onSnapshotReady(Bitmap bitmap) {
+                                        ByteArrayOutputStream stream = new ByteArrayOutputStream();
+                                        bitmap.compress(Bitmap.CompressFormat.PNG, 50, stream);
+                                        byte[] byteArray = stream.toByteArray();
+                                        uploadImage(AppConstants.adMapImageType, adId, byteArray);
+                                    }
+                                });
+                                DatabaseReference ref = FirebaseDatabase.getInstance()
+                                        .getReference(DBConstants.geoFire + "/" + flatType);
+                                GeoFire geoFire = new GeoFire(ref);
+                                geoFire.setLocation(adId, new GeoLocation(selectedCenterLatLng.latitude, selectedCenterLatLng.longitude));
+                            } else {
+                                mediaAlertDialog(adId);
+                            }
+                        } else {
+                            showSimpleDialog(databaseError.getMessage());
+                            closeProgressDialog();
                         }
-                    });
-                    DatabaseReference ref = FirebaseDatabase.getInstance().getReference(DBConstants.geoFire);
-                    GeoFire geoFire = new GeoFire(ref);
-                    geoFire.setLocation(adId, new GeoLocation(selectedCenterLatLng.latitude, selectedCenterLatLng.longitude));
-                } else {
-                    showSimpleDialog(databaseError.getMessage());
-                    closeProgressDialog();
-                }
-            }
-        });
+                    }
+                });
     }
 
     protected void uploadImage(int type, String adId, byte[] imageByte) {
@@ -1309,7 +1343,7 @@ public class NewAdActivity2 extends BaseMapActivity implements View.OnClickListe
         cancelBtn.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View v) {
-                mobileNumber.setText("");
+                NewAdActivity2.this.phoneNumber.setText("");
                 smsCodeDialog.dismiss();
             }
         });
@@ -1323,9 +1357,9 @@ public class NewAdActivity2 extends BaseMapActivity implements View.OnClickListe
                 closeProgressDialog();
                 if (task.isSuccessful()) {
                     if (smsCodeDialog != null && smsCodeDialog.isShowing()) smsCodeDialog.dismiss();
-                    mobileNumber.removeTextChangedListener(textWatcher);
-                    mobileNumber.setText(firebaseUser.getPhoneNumber());
-                    mobileNumber.setEnabled(false);
+                    phoneNumber.removeTextChangedListener(textWatcher);
+                    phoneNumber.setText(firebaseUser.getPhoneNumber());
+                    phoneNumber.setEnabled(false);
                     updateUserInfo();
                 } else {
                     FirebaseException firebaseException = (FirebaseException) task.getException();

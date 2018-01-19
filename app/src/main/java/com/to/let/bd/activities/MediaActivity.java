@@ -4,6 +4,7 @@ import android.Manifest;
 import android.app.Dialog;
 import android.content.BroadcastReceiver;
 import android.content.Context;
+import android.content.DialogInterface;
 import android.content.Intent;
 import android.content.pm.PackageManager;
 import android.graphics.Color;
@@ -16,6 +17,7 @@ import android.support.v4.app.ActivityCompat;
 import android.support.v4.content.ContextCompat;
 import android.support.v4.content.LocalBroadcastManager;
 import android.support.v7.app.ActionBar;
+import android.support.v7.app.AlertDialog;
 import android.support.v7.widget.DefaultItemAnimator;
 import android.support.v7.widget.GridLayoutManager;
 import android.support.v7.widget.LinearLayoutManager;
@@ -34,6 +36,7 @@ import android.widget.TextView;
 
 import com.bumptech.glide.Glide;
 import com.bumptech.glide.RequestManager;
+import com.bumptech.glide.request.RequestOptions;
 import com.google.android.gms.tasks.OnFailureListener;
 import com.google.android.gms.tasks.OnSuccessListener;
 import com.google.firebase.database.DatabaseError;
@@ -242,7 +245,6 @@ public class MediaActivity extends BaseActivity {
         }
     };
 
-
     @Override
     protected void onResume() {
         super.onResume();
@@ -287,73 +289,61 @@ public class MediaActivity extends BaseActivity {
         ArrayList<String> imagePathList = new ArrayList<>(pickGridAdapter.getSelectPath());
         if (previouslySelectedImage.size() == 0 && !imagePathList.isEmpty()) {
             onlyUploadNewPhoto(imagePathList, adId, AppConstants.adImageType);
-        } else if (previouslySelectedImage.size() == imagePreviewArray.size() && imagePreviewArray.size() > 0 && imagePathList.isEmpty()) {
-            showToast(getString(R.string.there_has_no_new_photo_to_publish));
-        } else if (previouslySelectedImage.size() > imagePreviewArray.size() && !imagePreviewArray.isEmpty() && imagePathList.isEmpty()) {
-            deletePreviouslySelectedSomePhoto();
-        } else if (previouslySelectedImage.size() > imagePreviewArray.size() && imagePreviewArray.isEmpty()) {
-            deletePreviouslySelectedAllPhoto();
-        } else if (previouslySelectedImage.size() < imagePreviewArray.size() && imagePreviewArray.size() > 0 && !imagePathList.isEmpty()) {
-            deleteAndNewUpload();
         } else if (imagePathList.isEmpty()) {
             showToast(getString(R.string.please_select_photo));
         } else {
-            showToast(getString(R.string.please_report_a_bug));
+//            if (previouslySelectedImage.size() > imagePreviewArray.size() && imagePreviewArray.isEmpty()) {
+//                deletePreviouslySelectedAllPhoto();
+//            } else if (previouslySelectedImage.size() < imagePreviewArray.size() && imagePreviewArray.size() > 0 && !imagePathList.isEmpty()) {
+//                deleteAndNewUpload();
+//            }
         }
-    }
-
-    private void deleteAndNewUpload() {
-
     }
 
     //photos/adPhotos/-L25qyUHGklzpUca2_4b/Map.jpg
 
-    private void deletePreviouslySelectedAllPhoto() {
-        initStorageRef();
-
-        for (int i = 0; i < previouslySelectedImage.size(); i++) {
-            ImageInfo imageInfo = previouslySelectedImage.get(i);
-            final String imagePath;
-            if (imageInfo != null) {
-                imagePath = imageInfo.imagePath;
-            } else {
-                imagePath = "photos/adPhotos/" + adId + "/" + i + ".jpg";
-            }
-
-            final int finalI = i;
-            storageReference
-                    .child(imagePath)
-                    .delete()
-                    .addOnSuccessListener(new OnSuccessListener<Void>() {
-                        @Override
-                        public void onSuccess(Void aVoid) {
-                            databaseReference
-                                    .child(DBConstants.adList)
-                                    .child(flatType)
-                                    .child(adId)
-                                    .child(DBConstants.images)
-                                    .child(String.valueOf(finalI))
-                                    .setValue(null);
-                        }
-                    })
-                    .addOnFailureListener(new OnFailureListener() {
-                        @Override
-                        public void onFailure(@NonNull Exception exception) {
-                            databaseReference
-                                    .child(DBConstants.adList)
-                                    .child(flatType)
-                                    .child(adId)
-                                    .child(DBConstants.images)
-                                    .child(String.valueOf(finalI))
-                                    .setValue(null);
-                        }
-                    });
-        }
-    }
-
-    private void deletePreviouslySelectedSomePhoto() {
-
-    }
+//    private void deletePreviouslySelectedAllPhoto() {
+//        initStorageRef();
+//
+//        for (int i = 0; i < previouslySelectedImage.size(); i++) {
+//            ImageInfo imageInfo = previouslySelectedImage.get(i);
+//            final String imagePath;
+//            if (imageInfo != null) {
+//                imagePath = imageInfo.imagePath;
+//            } else {
+//                imagePath = "photos/adPhotos/" + adId + "/" + i + ".jpg";
+//            }
+//
+//            final int finalI = i;
+//            storageReference
+//                    .child(imagePath)
+//                    .delete()
+//                    .addOnSuccessListener(new OnSuccessListener<Void>() {
+//                        @Override
+//                        public void onSuccess(Void aVoid) {
+//                            databaseReference
+//                                    .child(DBConstants.adList)
+//                                    .child(flatType)
+//                                    .child(adId)
+//                                    .child(DBConstants.images)
+//                                    .child(String.valueOf(finalI))
+//                                    .setValue(null);
+//                        }
+//                    })
+//                    .addOnFailureListener(new OnFailureListener() {
+//                        @Override
+//                        public void onFailure(@NonNull Exception exception) {
+//                            databaseReference
+//                                    .child(DBConstants.adList)
+//                                    .child(flatType)
+//                                    .child(adId)
+//                                    .child(DBConstants.images)
+//                                    .child(String.valueOf(finalI))
+//                                    .setValue(null);
+//                        }
+//                    });
+//        }
+//    }
 
     private StorageReference storageReference;
 
@@ -607,7 +597,7 @@ public class MediaActivity extends BaseActivity {
                 crossButton.setOnClickListener(new View.OnClickListener() {
                     @Override
                     public void onClick(View v) {
-                        updateList(getLayoutPosition());
+                        deleteImage(getLayoutPosition());
                     }
                 });
 
@@ -615,19 +605,67 @@ public class MediaActivity extends BaseActivity {
                     @Override
                     public void onClick(View v) {
                         String imageUri = imagePreviewArray.get(getLayoutPosition()).downloadUrl;
-                        if (imageUri != null) {
-                            if (!imageUri.startsWith("https")) {
-                                imageUri = "file://" + imageUri;
-                            }
-                            showImageDialog(imageUri);
-                        }
+                        showImageDialog(imageUri);
                     }
                 });
             }
         }
     }
 
-    void updateList(int position) {
+    private void deleteConfirmationAlert(final String imagePath, final int imageIndex) {
+        AlertDialog.Builder builder = new AlertDialog.Builder(this);
+        builder.setTitle(R.string.delete_photo);
+        builder.setIcon(R.mipmap.ic_launcher_round);
+        builder.setMessage(R.string.do_you_want_to_delete_this_image_you_can_not_undo_this);
+
+        builder.setPositiveButton(getString(R.string.yes), new DialogInterface.OnClickListener() {
+            @Override
+            public void onClick(DialogInterface dialogInterface, int i) {
+                deleteSingleImage(imagePath, imageIndex);
+            }
+        });
+
+        builder.setNegativeButton(getString(R.string.no), null);
+        final AlertDialog dialog = builder.create();
+        dialog.show();
+    }
+
+    private void deleteSingleImage(String imagePath, final int deleteImageIndex) {
+        initStorageRef();
+        storageReference
+                .child(imagePath)
+                .delete()
+                .addOnSuccessListener(new OnSuccessListener<Void>() {
+                    @Override
+                    public void onSuccess(Void aVoid) {
+                        removeContentFromDatabase(deleteImageIndex);
+                    }
+                })
+                .addOnFailureListener(new OnFailureListener() {
+                    @Override
+                    public void onFailure(@NonNull Exception exception) {
+                        String message = exception.getMessage();
+                        if (message != null && message.contains("not found")) {
+                            removeContentFromDatabase(deleteImageIndex);
+                        }
+                    }
+                });
+    }
+
+    private void removeContentFromDatabase(int deleteImageIndex) {
+        databaseReference
+                .child(DBConstants.adList)
+                .child(flatType)
+                .child(adId)
+                .child(DBConstants.images)
+                .child(String.valueOf(deleteImageIndex))
+                .removeValue();
+//        if (deleteImageIndex < previouslySelectedImage.size())
+//            previouslySelectedImage.set(deleteImageIndex, null);
+        updateList(deleteImageIndex);
+    }
+
+    private void updateList(int position) {
         String imageUri = "";
         if (imagePreviewArray.get(position) != null)
             imageUri = imagePreviewArray.get(position).downloadUrl;
@@ -648,6 +686,18 @@ public class MediaActivity extends BaseActivity {
         }
 
         updateSelectText(imagePreviewArray.size());
+    }
+
+    private void deleteImage(int position) {
+        ImageInfo imageInfo = null;
+        if (position < imagePreviewArray.size()) {
+            imageInfo = imagePreviewArray.get(position);
+            if (imageInfo != null && imageInfo.imagePath != null && !imageInfo.imagePath.isEmpty()) {
+                deleteConfirmationAlert(imageInfo.imagePath, position);
+                return;
+            }
+        }
+        updateList(position);
     }
 
     private void updateSelectText(int selectSize) {
@@ -712,8 +762,17 @@ public class MediaActivity extends BaseActivity {
         });
 
         final ImageViewZoomT zoomableImageView = imageDialog.findViewById(R.id.zoomableImageView);
-        Glide.with(this)
-                .load(Uri.parse(imageUri))
-                .into(zoomableImageView);
+
+        if (imageUri != null) {
+            if (!imageUri.startsWith("https")) {
+                imageUri = "file://" + imageUri;
+            }
+            Glide.with(this)
+                    .load(Uri.parse(imageUri))
+                    .apply(new RequestOptions().placeholder(R.mipmap.ic_launcher).error(R.mipmap.ic_launcher))
+                    .into(zoomableImageView);
+        } else {
+            zoomableImageView.setImageResource(R.drawable.dummy_flat_image);
+        }
     }
 }

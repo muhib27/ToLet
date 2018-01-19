@@ -25,14 +25,12 @@ import com.google.firebase.database.Transaction;
 import com.google.firebase.database.ValueEventListener;
 import com.to.let.bd.R;
 import com.to.let.bd.activities.AdDetailsActivity;
-import com.to.let.bd.activities.SplashActivity;
 import com.to.let.bd.adapters.AdAdapter;
 import com.to.let.bd.common.BaseActivity;
 import com.to.let.bd.common.BaseFragment;
 import com.to.let.bd.model.AdInfo;
 import com.to.let.bd.utils.AppConstants;
 import com.to.let.bd.utils.DBConstants;
-import com.to.let.bd.utils.DateUtils;
 import com.to.let.bd.utils.MyAnalyticsUtil;
 import com.to.let.bd.utils.NetworkConnection;
 
@@ -147,8 +145,6 @@ public abstract class AdListBaseFragment extends BaseFragment implements AdAdapt
 
         // Set up Layout Manager, reverse layout
         LinearLayoutManager mManager = new LinearLayoutManager(getActivity(), LinearLayoutManager.VERTICAL, false);
-//        mManager.setReverseLayout(true);
-//        mManager.setStackFromEnd(true);
         adRecyclerView.setLayoutManager(mManager);
         reload();
     }

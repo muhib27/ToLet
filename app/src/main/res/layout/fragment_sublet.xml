@@ -31,21 +31,21 @@
                 android:layout_width="match_parent"
                 android:layout_height="wrap_content"
                 android:checked="true"
-                android:text="@string/tiny_family"
+                android:text="@string/tiny_family_details"
                 android:textColor="@color/black" />
 
             <RadioButton
                 android:id="@+id/smallFamily"
                 android:layout_width="match_parent"
                 android:layout_height="wrap_content"
-                android:text="@string/small_family"
+                android:text="@string/small_family_details"
                 android:textColor="@color/black" />
 
             <RadioButton
                 android:id="@+id/femaleSublet"
                 android:layout_width="match_parent"
                 android:layout_height="wrap_content"
-                android:text="@string/female_sublet"
+                android:text="@string/female_sublet_details"
                 android:textColor="@color/black" />
 
             <RadioButton

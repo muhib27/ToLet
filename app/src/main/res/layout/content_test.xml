@@ -371,7 +371,7 @@
                 android:layout_marginTop="@dimen/new_post_common_padding">
 
                 <EditText
-                    android:id="@+id/mobileNumber"
+                    android:id="@+id/phoneNumber"
                     android:layout_width="match_parent"
                     android:layout_height="wrap_content"
                     android:ems="14"

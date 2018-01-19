@@ -22,10 +22,10 @@ import android.widget.Button;
 import android.widget.ImageView;
 import android.widget.LinearLayout;
 import android.widget.RadioGroup;
-import android.widget.RelativeLayout;
 import android.widget.TextView;
 
 import com.bumptech.glide.Glide;
+import com.bumptech.glide.request.RequestOptions;
 import com.google.android.gms.ads.AdListener;
 import com.google.android.gms.ads.AdRequest;
 import com.google.android.gms.ads.InterstitialAd;
@@ -160,9 +160,9 @@ public class AdDetailsActivity extends BaseActivity implements View.OnClickListe
         }
     }
 
-    private TextView rentDate, totalRent, roomDetails, addressDetails, rentType,
-            othersFacility, othersFacilityDetails, reportThis, photoCount,
-            privacyPolicy, imageAddOrEdit;
+    private TextView rentDate, totalRent, roomDetails, addressDetails, houseInfo,
+            rentType, othersFacility, othersFacilityDetails,
+            reportThis, photoCount, privacyPolicy, imageAddOrEdit;
     private Button callBtn, emailBtn, editBtn;
     private LinearLayout showInMapView, reportLay, contactLay;
     private ImageView noImageView, favAd;
@@ -172,6 +172,8 @@ public class AdDetailsActivity extends BaseActivity implements View.OnClickListe
         totalRent = findViewById(R.id.totalRent);
         roomDetails = findViewById(R.id.roomSummary);
         addressDetails = findViewById(R.id.addressDetails);
+        addressDetails.setOnClickListener(this);
+        houseInfo = findViewById(R.id.houseInfo);
 
         rentType = findViewById(R.id.rentType);
         othersFacility = findViewById(R.id.othersFacility);
@@ -204,6 +206,7 @@ public class AdDetailsActivity extends BaseActivity implements View.OnClickListe
 
         photoCount = findViewById(R.id.photoCount);
         imageAddOrEdit = findViewById(R.id.imageAddOrEdit);
+        imageAddOrEdit.setSelected(true);
 
         showInMapView = findViewById(R.id.showInMapView);
         contactLay = findViewById(R.id.contactLay);
@@ -211,31 +214,38 @@ public class AdDetailsActivity extends BaseActivity implements View.OnClickListe
         emailBtn = findViewById(R.id.emailBtn);
         editBtn = findViewById(R.id.editBtn);
 
+        imageAddOrEdit.setVisibility(View.INVISIBLE);
         if (adInfo.userId.equals(BaseActivity.getUid())) {
             editBtn.setVisibility(View.VISIBLE);
             contactLay.setVisibility(View.GONE);
             imageAddOrEdit.setVisibility(View.VISIBLE);
+            imageAddOrEdit.setOnClickListener(this);
         }
 
         if (adInfo.userId.equals(BaseActivity.getUid())) {
             reportLay.setVisibility(View.GONE);
         }
 
-        imageAddOrEdit.setOnClickListener(this);
-
         if (adInfo != null) {
-            String totalRent = "TK " + AppConstants.rentFormatter(adInfo.flatRent);
+            String totalRent = "TK " + String.valueOf(AppConstants.rentFormatter(adInfo.flatRent));
+            if (adInfo.othersFee > 0)
+                totalRent += " (+Utility TK " + AppConstants.rentFormatter(adInfo.othersFee) + ")";
             this.totalRent.setText(totalRent);
+
             this.roomDetails.setText(AppConstants.flatDescription(this, adInfo));
+            addressDetails.setText(adInfo.fullAddress);
 
             StringBuilder stringBuilder = new StringBuilder();
-            stringBuilder.append(adInfo.fullAddress);
+            stringBuilder.append("House number/name: ")
+                    .append(adInfo.houseNameOrNumber)
+                    .append(" Floor: ")
+                    .append(adInfo.floorNumber);
             if (adInfo.flatDescription != null && !adInfo.flatDescription.isEmpty()) {
                 stringBuilder.append("\n\n");
                 stringBuilder.append(adInfo.flatDescription);
             }
 
-            addressDetails.setText(stringBuilder);
+            houseInfo.setText(stringBuilder.toString());
             String[] splittedDate = DateUtils.splittedDate(adInfo.startingFinalDate);
             Date date = DateUtils.getDate(splittedDate, DateUtils.format4);
 
@@ -255,6 +265,7 @@ public class AdDetailsActivity extends BaseActivity implements View.OnClickListe
             if (adInfo.map != null && adInfo.map.downloadUrl != null) {
                 Glide.with(this)
                         .load(Uri.parse(adInfo.map.downloadUrl))
+                        .apply(new RequestOptions().placeholder(R.mipmap.ic_launcher).error(R.mipmap.ic_launcher))
                         .into(noImageView);
             }
         }
@@ -340,7 +351,6 @@ public class AdDetailsActivity extends BaseActivity implements View.OnClickListe
             }
         } else if (adInfo.messInfo != null) {
             MessInfo messInfo = adInfo.messInfo;
-
             rentType = getString(R.string.mess);
 
             if (messInfo.memberType == 1) {
@@ -382,7 +392,11 @@ public class AdDetailsActivity extends BaseActivity implements View.OnClickListe
             }
         } else if (adInfo.subletInfo != null) {
             SubletInfo subletInfo = adInfo.subletInfo;
-            rentType = getString(R.string.sublet);
+            String[] subletTypeArray = getResources().getStringArray(R.array.sublet_type_array);
+            rentType = getString(R.string.sublet) + ": "
+                    + (subletInfo.subletType >= 3 ? subletInfo.subletTypeOthers :
+                    subletTypeArray[subletInfo.subletType]);
+
             if (subletInfo.twentyFourWater) {
                 stringBuilder.append(getString(R.string.twenty_four_water_facility));
                 stringBuilder.append("\n");
@@ -462,21 +476,23 @@ public class AdDetailsActivity extends BaseActivity implements View.OnClickListe
         } else if (view == reportThis) {
             showReportAlert();
         } else if (view == favAd) {
-//            if (adInfo.userId.equals(BaseActivity.getUid())) {
-//                showToast(R.string.this_is_your_own_post);
-//                return;
-//            }
             needToRefreshData = true;
             favAd.setSelected(!favAd.isSelected());
             onFavClicked();
         } else if (view == editBtn) {
             editAd();
         } else if (view == noImageView) {
-            if (noImageView.getVisibility() == View.VISIBLE && adInfo.map != null && adInfo.map.downloadUrl != null) {
-                showInMapView.performClick();
+            if (noImageView.getVisibility() == View.VISIBLE) {
+                if (adInfo.map != null && adInfo.map.downloadUrl != null) {
+                    showInMapView.performClick();
+                } else {
+                    startMediaActivity();
+                }
             }
         } else if (view == imageAddOrEdit) {
             startMediaActivity();
+        } else if (view == addressDetails) {
+            showInMapView.performClick();
         }
     }
 
@@ -500,7 +516,7 @@ public class AdDetailsActivity extends BaseActivity implements View.OnClickListe
     private void callTheUser() {
         String mobileNumber = adInfo.mobileNumber;
         if (mobileNumber == null || mobileNumber.trim().isEmpty()) {
-            showToast(R.string.mobile_number_not_found);
+            showSimpleDialog(R.string.mobile_number_not_found);
             return;
         }
         Intent intent = new Intent(Intent.ACTION_DIAL, Uri.fromParts("tel", mobileNumber, null));
@@ -519,7 +535,7 @@ public class AdDetailsActivity extends BaseActivity implements View.OnClickListe
     private void mailTheUser() {
         String emailAddress = adInfo.emailAddress;
         if (emailAddress == null || emailAddress.trim().isEmpty()) {
-            showToast(R.string.email_address_not_found);
+            showSimpleDialog(R.string.email_address_not_found);
             return;
         }
 
@@ -534,7 +550,7 @@ public class AdDetailsActivity extends BaseActivity implements View.OnClickListe
     private void showReportAlert() {
         AlertDialog.Builder builderSingle = new AlertDialog.Builder(this);
         builderSingle.setIcon(R.mipmap.ic_launcher);
-        builderSingle.setTitle("Please select anyone");
+        builderSingle.setTitle("Please select any of them:");
 
         final ArrayAdapter<String> arrayAdapter = new ArrayAdapter<>(this,
                 android.R.layout.simple_list_item_1,
@@ -559,12 +575,15 @@ public class AdDetailsActivity extends BaseActivity implements View.OnClickListe
         SlidingImageAdapter slidingImageAdapter = new SlidingImageAdapter(this, images, new SlidingImageAdapter.ImageClickListener() {
             @Override
             public void imageClick(int position) {
-                showImageDialog(position);
+                selectedImagePosition = position;
+                showImageDialog();
             }
         });
 
         pager.setAdapter(slidingImageAdapter);
     }
+
+    private int selectedImagePosition;
 
     private void setRentDate(String date, long elapsedDays) {
         if (elapsedDays <= 1) {
@@ -587,12 +606,13 @@ public class AdDetailsActivity extends BaseActivity implements View.OnClickListe
 
         Intent mapIntent = new Intent(this, MapActivity.class);
         mapIntent.putExtra(AppConstants.keyAdInfo, adInfo);
+        mapIntent.putExtra(DBConstants.flatType, flatType);
         startActivity(mapIntent);
     }
 
     private Dialog imageDialog;
 
-    private void showImageDialog(final int imagePosition) {
+    private void showImageDialog() {
         if (imageDialog == null) {
             imageDialog = new Dialog(this);
             imageDialog.requestWindowFeature(Window.FEATURE_NO_TITLE);
@@ -616,14 +636,42 @@ public class AdDetailsActivity extends BaseActivity implements View.OnClickListe
             }
         });
 
-        final ImageViewZoomT zoomableImageView = imageDialog.findViewById(R.id.zoomableImageView);
+        final Button previousImageBtn, nextImageBtn;
+        previousImageBtn = imageDialog.findViewById(R.id.previousImageBtn);
+        previousImageBtn.setVisibility(View.VISIBLE);
+        nextImageBtn = imageDialog.findViewById(R.id.nextImageBtn);
+        nextImageBtn.setVisibility(View.VISIBLE);
 
-        if (images[imagePosition] != null)
+        final ImageViewZoomT zoomableImageView = imageDialog.findViewById(R.id.zoomableImageView);
+        showImage(images[selectedImagePosition], zoomableImageView);
+
+        previousImageBtn.setOnClickListener(new View.OnClickListener() {
+            @Override
+            public void onClick(View v) {
+                selectedImagePosition--;
+                if (selectedImagePosition < 0)
+                    selectedImagePosition = images.length - 1;
+                showImage(images[selectedImagePosition], zoomableImageView);
+            }
+        });
+        nextImageBtn.setOnClickListener(new View.OnClickListener() {
+            @Override
+            public void onClick(View v) {
+                selectedImagePosition++;
+                if (selectedImagePosition >= images.length)
+                    selectedImagePosition = 0;
+                showImage(images[selectedImagePosition], zoomableImageView);
+            }
+        });
+    }
+
+    private void showImage(String imagePath, ImageView imageView) {
+        if (imagePath != null)
             Glide.with(this)
-                    .load(Uri.parse(images[imagePosition]))
-                    .into(zoomableImageView);
+                    .load(Uri.parse(imagePath))
+                    .into(imageView);
         else
-            zoomableImageView.setImageResource(R.drawable.dummy_flat_image);
+            imageView.setImageResource(R.drawable.dummy_flat_image);
     }
 
     @Override
@@ -678,6 +726,8 @@ public class AdDetailsActivity extends BaseActivity implements View.OnClickListe
         deleteAdDialog.setCancelable(true);
         deleteAdDialog.show();
 
+        final TextView title = deleteAdDialog.findViewById(R.id.title);
+        title.setText(R.string.why_do_you_want_to_delete);
         final RadioGroup deleteReason = deleteAdDialog.findViewById(R.id.deleteReason);
 
         final ImageView okBtn, cancelBtn;

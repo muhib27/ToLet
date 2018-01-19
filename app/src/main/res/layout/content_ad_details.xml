@@ -62,8 +62,6 @@
                         android:layout_toStartOf="@+id/photoCountLay"
                         android:background="@color/black_overlay"
                         android:ellipsize="marquee"
-                        android:focusable="true"
-                        android:focusableInTouchMode="true"
                         android:gravity="center"
                         android:marqueeRepeatLimit="marquee_forever"
                         android:paddingEnd="@dimen/size_10dp"
@@ -71,11 +69,11 @@
                         android:paddingRight="@dimen/size_10dp"
                         android:paddingStart="@dimen/size_10dp"
                         android:singleLine="true"
-                        android:text="@string/photo_edit_or_add"
+                        android:text="@string/photo_edit_or_add_long_text"
                         android:textColor="@color/white"
                         android:textSize="@dimen/text_size_10sp"
                         android:textStyle="bold"
-                        android:visibility="visible" />
+                        android:visibility="invisible" />
                 </RelativeLayout>
 
                 <ImageView
@@ -107,7 +105,7 @@
                     android:drawableRight="@drawable/right_arrow"
                     android:drawableStart="@drawable/marker_map"
                     android:gravity="center"
-                    android:text="@string/show_in_google_map"
+                    android:text="@string/show_location_in_google_map"
                     android:textColor="@color/white" />
             </LinearLayout>
 
@@ -141,12 +139,14 @@
                     android:layout_height="wrap_content"
                     android:layout_marginTop="@dimen/size_10dp"
                     android:background="@drawable/green_round_bg"
+                    android:ellipsize="end"
                     android:paddingBottom="@dimen/size_5dp"
                     android:paddingEnd="@dimen/size_10dp"
                     android:paddingLeft="@dimen/size_10dp"
                     android:paddingRight="@dimen/size_10dp"
                     android:paddingStart="@dimen/size_10dp"
                     android:paddingTop="@dimen/size_5dp"
+                    android:singleLine="true"
                     android:text="@string/rent_type"
                     android:textColor="@color/white"
                     android:textSize="@dimen/text_size_16sp"
@@ -168,8 +168,7 @@
                     android:layout_height="wrap_content"
                     android:layout_marginTop="@dimen/size_10dp"
                     android:ellipsize="end"
-                    android:maxLines="1"
-                    android:singleLine="true"
+                    android:singleLine="false"
                     android:text="@string/app_name"
                     android:textColor="@color/colorPrimaryDark"
                     android:textSize="@dimen/text_size_12sp"
@@ -180,6 +179,19 @@
                     android:layout_width="match_parent"
                     android:layout_height="wrap_content"
                     android:layout_marginTop="@dimen/size_10dp"
+                    android:drawableLeft="@drawable/marker_location_tiny"
+                    android:drawablePadding="@dimen/size_10dp"
+                    android:drawableStart="@drawable/marker_location_tiny"
+                    android:gravity="center_vertical"
+                    android:text="@string/app_name"
+                    android:textColor="@color/selector_clickable"
+                    android:textSize="@dimen/text_size_12sp"
+                    android:textStyle="normal" />
+
+                <TextView
+                    android:id="@+id/houseInfo"
+                    android:layout_width="match_parent"
+                    android:layout_height="wrap_content"
                     android:text="@string/app_name"
                     android:textSize="@dimen/text_size_12sp"
                     android:textStyle="normal" />

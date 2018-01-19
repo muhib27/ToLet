@@ -20,9 +20,12 @@ import android.widget.TextView;
 import com.to.let.bd.R;
 import com.to.let.bd.activities.AdDetailsActivity;
 import com.to.let.bd.model.AdInfo;
+import com.to.let.bd.model.FamilyInfo;
+import com.to.let.bd.model.MessInfo;
+import com.to.let.bd.model.OthersInfo;
+import com.to.let.bd.model.SubletInfo;
 
 import java.text.DecimalFormat;
-import java.util.Calendar;
 
 public class AppConstants {
     public static final long autoScrollDuration = 5000;
@@ -241,39 +244,56 @@ public class AppConstants {
     public static String flatDescription(Context context, AdInfo adInfo) {
         String adDescription = "";
         if (adInfo.familyInfo != null) {
-            boolean isItDulpex = adInfo.familyInfo.isItDuplex;
-            if (isItDulpex)
+            FamilyInfo familyInfo = adInfo.familyInfo;
+            boolean isItDuplex = familyInfo.isItDuplex;
+            if (isItDuplex)
                 adDescription = "Duplex house with ";
-            adDescription = adDescription + adInfo.familyInfo.bedRoom + "bed " +
-                    adInfo.familyInfo.bathroom + "bath ";
+            adDescription = adDescription + familyInfo.bedRoom + "bed " +
+                    familyInfo.bathroom + "bath ";
 
             if (context instanceof AdDetailsActivity)
-                if (adInfo.familyInfo.balcony > 0) {
-                    adDescription = adDescription + adInfo.familyInfo.balcony + "balcony";
+                if (familyInfo.balcony > 0) {
+                    adDescription = adDescription + familyInfo.balcony + "balcony ";
                 }
 
             if (adInfo.flatSpace > 0) {
-                adDescription = adDescription + " " + adInfo.flatSpace + "sqft";
+                adDescription = adDescription + adInfo.flatSpace + "sqft ";
             }
 
-            if (adInfo.familyInfo.hasDrawingDining) {
-                adDescription = adDescription + " with drawing & dining";
+            if (familyInfo.hasDrawingDining) {
+                adDescription = adDescription + "with drawing & dining";
             }
         } else if (adInfo.messInfo != null) {
+            MessInfo messInfo = adInfo.messInfo;
             String[] messTypeArray = context.getResources().getStringArray(R.array.mess_member_type_array);
             if (!(context instanceof AdDetailsActivity))
-                adDescription = messTypeArray[adInfo.messInfo.memberType] + " member ";
-            adDescription += adInfo.messInfo.numberOfSeat + "seat in " +
-                    adInfo.messInfo.numberOfRoom + "room ";
-        } else if (adInfo.subletInfo != null) {
-            String[] subletTypeArray = context.getResources().getStringArray(R.array.sublet_type_array);
-            adDescription = adInfo.subletInfo.subletType >= 3 ? adInfo.subletInfo.subletTypeOthers :
-                    subletTypeArray[adInfo.subletInfo.subletType];
+                adDescription = messTypeArray[messInfo.memberType] + " member ";
+            adDescription += messInfo.numberOfSeat + "seat in " +
+                    messInfo.numberOfRoom + "room";
 
-            adDescription += " with ";
+            if (messInfo.totalMember > 0)
+                adDescription += " with " + messInfo.totalMember + " total members";
+        } else if (adInfo.subletInfo != null) {
+            SubletInfo subletInfo = adInfo.subletInfo;
+            String[] subletTypeArray = context.getResources().getStringArray(R.array.sublet_type_details_array);
+            adDescription = subletInfo.subletType >= 3 ? subletInfo.subletTypeOthers :
+                    subletTypeArray[subletInfo.subletType];
+
+            adDescription += " AND ";
 
             String[] subletBathTypeArray = context.getResources().getStringArray(R.array.sublet_bath_type_array);
-            adDescription += subletBathTypeArray[adInfo.subletInfo.bathroomType] + " bath";
+            adDescription += subletBathTypeArray[subletInfo.bathroomType] + " bathroom";
+        } else if (adInfo.othersInfo != null) {
+            OthersInfo othersInfo = adInfo.othersInfo;
+            adDescription = othersInfo.rentType;
+
+            if (adInfo.flatSpace > 0) {
+                adDescription += " " + adInfo.flatSpace + "sqft";
+            }
+
+            if (adInfo.flatDescription != null && !adInfo.flatDescription.isEmpty()) {
+                adDescription += "\n" + adInfo.flatDescription;
+            }
         }
         return adDescription;
     }

@@ -316,8 +316,6 @@ public abstract class BaseMapActivity extends BaseActivity implements OnMapReady
         onMapReady2(this.googleMap);
     }
 
-    protected abstract void onLoadLocationDetails(String fullAddress);
-
     protected abstract void onMapReady2(GoogleMap googleMap);
 
     protected abstract void findLastKnownLocation(LatLng defaultLatLng);
@@ -357,7 +355,6 @@ public abstract class BaseMapActivity extends BaseActivity implements OnMapReady
             googleMap.moveCamera(CameraUpdateFactory.newLatLngZoom(getLatLng(lastKnownLocation), DEFAULT_ZOOM));
             defaultLatLng = getLatLng(lastKnownLocation);
         } else {
-            showLog("Current location is null. Using defaults.");
             googleMap.moveCamera(CameraUpdateFactory.newLatLngZoom(defaultLatLng, DEFAULT_ZOOM));
             googleMap.getUiSettings().setMyLocationButtonEnabled(false);
         }
@@ -394,15 +391,15 @@ public abstract class BaseMapActivity extends BaseActivity implements OnMapReady
             return;
         }
 
-//        if (ActivityCompat.checkSelfPermission(this, Manifest.permission.ACCESS_FINE_LOCATION) != PackageManager.PERMISSION_GRANTED &&
-//                ActivityCompat.checkSelfPermission(this, Manifest.permission.ACCESS_COARSE_LOCATION) != PackageManager.PERMISSION_GRANTED) {
-//            googleMap.setMyLocationEnabled(false);
-//            googleMap.getUiSettings().setMyLocationButtonEnabled(false);
-//            lastKnownLocation = null;
-//        } else {
-//            googleMap.setMyLocationEnabled(true);
-//            googleMap.getUiSettings().setMyLocationButtonEnabled(true);
-//        }
+        if (ActivityCompat.checkSelfPermission(this, Manifest.permission.ACCESS_FINE_LOCATION) != PackageManager.PERMISSION_GRANTED &&
+                ActivityCompat.checkSelfPermission(this, Manifest.permission.ACCESS_COARSE_LOCATION) != PackageManager.PERMISSION_GRANTED) {
+            googleMap.setMyLocationEnabled(false);
+            googleMap.getUiSettings().setMyLocationButtonEnabled(false);
+            lastKnownLocation = null;
+        } else {
+            googleMap.setMyLocationEnabled(true);
+            googleMap.getUiSettings().setMyLocationButtonEnabled(true);
+        }
 
         gotoDeviceLocation();
     }
@@ -459,12 +456,6 @@ public abstract class BaseMapActivity extends BaseActivity implements OnMapReady
         finish();
     }
 
-//    @Override
-//    public boolean onCreateOptionsMenu(Menu menu) {
-//        getMenuInflater().inflate(R.menu.search, menu);
-//        return true;
-//    }
-
     @Override
     public boolean onOptionsItemSelected(MenuItem item) {
         switch (item.getItemId()) {
@@ -475,108 +466,6 @@ public abstract class BaseMapActivity extends BaseActivity implements OnMapReady
                 return super.onOptionsItemSelected(item);
         }
     }
-
-//    protected LocationRequest mLocationRequest;
-//
-//    /**
-//     * Sets up the location request. Android has two location request settings:
-//     * {@code ACCESS_COARSE_LOCATION} and {@code ACCESS_FINE_LOCATION}. These
-//     * settings control the accuracy of the current location. This sample uses
-//     * ACCESS_FINE_LOCATION, as defined in the AndroidManifest.xml.
-//     * <p/>
-//     * When the ACCESS_FINE_LOCATION setting is specified, combined with a fast
-//     * update interval (5 seconds), the Fused Location Provider API returns
-//     * location updates that are accurate to within a few feet.
-//     * <p/>
-//     * These settings are appropriate for mapping applications that show
-//     * real-time location updates.
-//     */
-//    protected void createLocationRequest() {
-//        mLocationRequest = new LocationRequest();
-//
-//        // Sets the desired interval for active location updates. This interval
-//        // is
-//        // inexact. You may not receive updates at all if no location sources
-//        // are available, or
-//        // you may receive them slower than requested. You may also receive
-//        // updates faster than
-//        // requested if other applications are requesting location at a faster
-//        // interval.
-//        mLocationRequest.setInterval(600000);
-//
-//        // Sets the fastest rate for active location updates. This interval is
-//        // exact, and your
-//        // application will never receive updates faster than this value.
-//        mLocationRequest.setFastestInterval(60000);
-//
-//        mLocationRequest.setPriority(LocationRequest.PRIORITY_HIGH_ACCURACY);
-//    }
-//
-//    /**
-//     * Uses a
-//     * {@link com.google.android.gms.location.LocationSettingsRequest.Builder}
-//     * to build a
-//     * {@link com.google.android.gms.location.LocationSettingsRequest} that is
-//     * used for checking if a device has the needed location settings.
-//     */
-//
-//    protected void buildLocationSettingsRequest() {
-//        if (null == mLocationRequest) {
-//            return;
-//        }
-//        LocationSettingsRequest.Builder builder = new LocationSettingsRequest.Builder();
-//        builder.addLocationRequest(mLocationRequest);
-//        builder.setAlwaysShow(true);
-//        mLocationSettingsRequest = builder.build();
-//    }
-//
-//    protected LocationSettingsRequest mLocationSettingsRequest;
-//
-//    /**
-//     * Check if the device's location settings are adequate for the app's needs
-//     * using the
-//     * {@link com.google.android.gms.location.SettingsApi#checkLocationSettings(GoogleApiClient, LocationSettingsRequest)}
-//     * method, with the results provided through a {@code PendingResult}.
-//     */
-//    protected void checkLocationSettings() {
-//        if (null == mGoogleApiClient || null == mLocationSettingsRequest) {
-//            return;
-//        }
-//        PendingResult<LocationSettingsResult> result = LocationServices.SettingsApi
-//                .checkLocationSettings(mGoogleApiClient, mLocationSettingsRequest);
-//        result.setResultCallback(this);
-//    }
-//
-//    /**
-//     * The callback invoked when
-//     * {@link com.google.android.gms.location.SettingsApi#checkLocationSettings(GoogleApiClient, LocationSettingsRequest)}
-//     * is called. Examines the
-//     * {@link com.google.android.gms.location.LocationSettingsResult} object and
-//     * determines if location settings are adequate. If they are not, begins the
-//     * process of presenting a location settings dialog to the user.
-//     */
-//    @Override
-//    public void onResult(@NonNull LocationSettingsResult locationSettingsResult) {
-//        final Status status = locationSettingsResult.getStatus();
-//        switch (status.getStatusCode()) {
-//            case LocationSettingsStatusCodes.SUCCESS:
-////                startLocationUpdates();
-//                break;
-//            case LocationSettingsStatusCodes.RESOLUTION_REQUIRED:
-//                try {
-//                    // Show the dialog by calling startResolutionForResult(), and
-//                    // check the result
-//                    // in onActivityResult().
-//                    status.startResolutionForResult(this, REQUEST_CHECK_SETTINGS);
-//                } catch (IntentSender.SendIntentException e) {
-//                    showLog("PendingIntent unable to execute request.");
-//                }
-//                break;
-//            case LocationSettingsStatusCodes.SETTINGS_CHANGE_UNAVAILABLE:
-////                Log.i(TAG, "Location settings are inadequate, and cannot be fixed here. Dialog " + "not created.");
-//                break;
-//        }
-//    }
 
     private void checkLocationSettings() {
         LocationRequest locationRequest = new LocationRequest();

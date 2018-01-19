@@ -98,9 +98,9 @@ public class SubletFlatAd extends BaseFragment {
     public String getRoomSummary() {
         String subletType;
         if (this.subletType.getCheckedRadioButtonId() == R.id.smallFamily) {
-            subletType = getString(R.string.small_family);
+            subletType = getString(R.string.small_family_details);
         } else if (this.subletType.getCheckedRadioButtonId() == R.id.femaleSublet) {
-            subletType = getString(R.string.female_sublet);
+            subletType = getString(R.string.female_sublet_details);
         } else if (this.subletType.getCheckedRadioButtonId() == R.id.othersSublet) {
             if (subletTypeOthers.getText().toString().trim().isEmpty()) {
                 subletTypeOthers.requestFocus();
@@ -109,7 +109,7 @@ public class SubletFlatAd extends BaseFragment {
             }
             subletType = subletTypeOthers.getText().toString();
         } else {
-            subletType = getString(R.string.tiny_family);
+            subletType = getString(R.string.tiny_family_details);
         }
 
         String bathroomType;

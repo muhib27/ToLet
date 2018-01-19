@@ -215,6 +215,7 @@ public class BaseActivity extends AppCompatActivity {
 //        if (adInfo.getMap() != null) {
 //            adDetailsIntent.putExtra(DBConstants.map, adInfo.getMap().getDownloadUrl());
 //        }
+        adDetailsIntent.addFlags(Intent.FLAG_ACTIVITY_CLEAR_TOP);
         adDetailsIntent.putExtra(AppConstants.keyAdInfo, adInfo);
         startActivity(adDetailsIntent);
     }
@@ -240,5 +241,9 @@ public class BaseActivity extends AppCompatActivity {
                     }
                 });
         alertDialog.show();
+    }
+
+    public void showSimpleDialog(int messageResourceId) {
+        showSimpleDialog(getString(messageResourceId));
     }
 }

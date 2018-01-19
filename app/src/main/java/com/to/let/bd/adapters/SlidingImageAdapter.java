@@ -11,6 +11,7 @@ import android.widget.ImageView;
 import android.widget.ProgressBar;
 
 import com.bumptech.glide.Glide;
+import com.bumptech.glide.request.RequestOptions;
 import com.to.let.bd.R;
 import com.to.let.bd.components.ImageViewZoomT;
 
@@ -49,6 +50,7 @@ public class SlidingImageAdapter extends PagerAdapter {
         if (images[position] != null)
             Glide.with(context)
                     .load(Uri.parse(images[position]))
+                    .apply(new RequestOptions().placeholder(R.mipmap.ic_launcher).error(R.mipmap.ic_launcher))
                     .into(imageView);
         else
             imageView.setImageResource(R.drawable.dummy_flat_image);

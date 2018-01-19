@@ -134,7 +134,12 @@ public class OthersFlatAd extends BaseFragment {
             totalSpace.requestFocus();
             return null;
         }
+
         return rentType.get(selectedPosition) + " with " + getTotalSpace() + " sqrft";
+    }
+
+    public String getRentType() {
+        return rentType.get(selectedPosition);
     }
 
     public String getRoomOthersFacility() {

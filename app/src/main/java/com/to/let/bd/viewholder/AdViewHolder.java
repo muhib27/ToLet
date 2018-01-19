@@ -1,8 +1,11 @@
 package com.to.let.bd.viewholder;
 
 import android.content.Context;
+import android.graphics.drawable.Drawable;
 import android.net.Uri;
+import android.support.annotation.Nullable;
 import android.support.v7.widget.RecyclerView;
+import android.util.Log;
 import android.view.View;
 import android.widget.ImageView;
 import android.widget.LinearLayout;
@@ -10,6 +13,11 @@ import android.widget.TextView;
 import android.widget.Toast;
 
 import com.bumptech.glide.Glide;
+import com.bumptech.glide.load.DataSource;
+import com.bumptech.glide.load.engine.GlideException;
+import com.bumptech.glide.request.RequestListener;
+import com.bumptech.glide.request.RequestOptions;
+import com.bumptech.glide.request.target.Target;
 import com.google.android.gms.ads.AdListener;
 import com.google.android.gms.ads.AdRequest;
 import com.google.android.gms.ads.AdSize;
@@ -124,9 +132,10 @@ public class AdViewHolder extends RecyclerView.ViewHolder {
         if (imagePath != null)
             Glide.with(adMainPhoto.getContext())
                     .load(Uri.parse(imagePath))
+                    .apply(new RequestOptions().placeholder(R.mipmap.ic_launcher).error(R.mipmap.ic_launcher))
                     .into(adMainPhoto);
         else
-            adMainPhoto.setImageResource(R.drawable.dummy_flat_image);
+            adMainPhoto.setImageResource(R.mipmap.ic_launcher);
 
         String photoCount = imageCount > 1 ? imageCount + " Photo's" : imageCount + " Photo";
         this.photoCount.setText(photoCount);
@@ -159,5 +168,13 @@ public class AdViewHolder extends RecyclerView.ViewHolder {
 
     private void showToast(int resourceId) {
         Toast.makeText(context, context.getString(resourceId), Toast.LENGTH_SHORT).show();
+    }
+
+    private void showLog() {
+        showLog("test");
+    }
+
+    private void showLog(String message) {
+        Log.v(AdViewHolder.class.getSimpleName(), message);
     }
 }

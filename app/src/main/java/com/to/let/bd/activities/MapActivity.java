@@ -1,26 +1,29 @@
 package com.to.let.bd.activities;
 
-import android.graphics.Bitmap;
+import android.content.Intent;
 import android.os.Build;
 import android.os.Bundle;
 import android.support.annotation.NonNull;
 import android.support.design.widget.BottomNavigationView;
 import android.view.Menu;
 import android.view.MenuItem;
+import android.view.View;
 
 import com.firebase.geofire.GeoFire;
 import com.firebase.geofire.GeoLocation;
 import com.firebase.geofire.GeoQuery;
-import com.firebase.geofire.GeoQueryDataEventListener;
 import com.firebase.geofire.GeoQueryEventListener;
+import com.google.android.gms.maps.CameraUpdateFactory;
 import com.google.android.gms.maps.GoogleMap;
 import com.google.android.gms.maps.model.BitmapDescriptorFactory;
 import com.google.android.gms.maps.model.LatLng;
+import com.google.android.gms.maps.model.Marker;
 import com.google.android.gms.maps.model.MarkerOptions;
 import com.google.firebase.database.DataSnapshot;
 import com.google.firebase.database.DatabaseError;
 import com.google.firebase.database.DatabaseReference;
 import com.google.firebase.database.FirebaseDatabase;
+import com.google.firebase.database.ValueEventListener;
 import com.google.gson.JsonObject;
 import com.to.let.bd.R;
 import com.to.let.bd.common.BaseMapActivity;
@@ -32,11 +35,15 @@ import com.to.let.bd.utils.DBConstants;
 import com.to.let.bd.utils.JsonUtils;
 import com.to.let.bd.utils.retrofit.RetrofitConstants;
 
+import java.util.HashMap;
+
 import retrofit2.Call;
 import retrofit2.Callback;
 import retrofit2.Response;
 
 public class MapActivity extends BaseMapActivity implements BottomNavigationView.OnNavigationItemSelectedListener {
+
+    private static final String TAG = MapActivity.class.getSimpleName();
 
     @Override
     public boolean onNavigationItemSelected(@NonNull MenuItem item) {
@@ -85,9 +92,8 @@ public class MapActivity extends BaseMapActivity implements BottomNavigationView
             return;
         googleMap.clear();
         addMarkerForSelectedFlat();
+        addMarkerForNearbyFlat();
     }
-
-    private static final String TAG = MapActivity.class.getSimpleName();
 
     @Override
     protected int getLayoutResourceId() {
@@ -96,7 +102,7 @@ public class MapActivity extends BaseMapActivity implements BottomNavigationView
 
     public static final String[] googlePlaceType = {"bank", "school", "department_store", "bus_station"};
 
-    private double latitude, longitude;
+    //    private double latitude, longitude;
     private String flatType;
     private AdInfo adInfo;
     private LatLng selectedLocation;
@@ -107,117 +113,114 @@ public class MapActivity extends BaseMapActivity implements BottomNavigationView
         if (bundle == null)
             return;
         adInfo = (AdInfo) bundle.getSerializable(AppConstants.keyAdInfo);
+        flatType = bundle.getString(DBConstants.flatType);
+
         if (adInfo == null)
             return;
 
-        latitude = adInfo.latitude;
-        longitude = adInfo.longitude;
-        flatType = adInfo.flatType;
-        flatRent = adInfo.flatRent;
-
-        selectedLocation = new LatLng(latitude, longitude);
+        selectedLocation = new LatLng(adInfo.latitude, adInfo.longitude);
         initBottomNavigation();
-
-        DatabaseReference ref = FirebaseDatabase.getInstance().getReference("path/to/geofire");
-        GeoFire geoFire = new GeoFire(ref);
-
-        geoFire.setLocation("firebase-hq", new GeoLocation(37.7853889, -122.4056973), new GeoFire.CompletionListener() {
-
-            @Override
-            public void onComplete(String key, DatabaseError error) {
-                if (error != null) {
-                    showLog("There was an error saving the location to GeoFire: " + error);
-                } else {
-                    showLog("Location saved on server successfully!");
-                }
-            }
-        });
-
-        GeoQuery geoQuery = geoFire.queryAtLocation(new GeoLocation(37.7832, -122.4056), 0.6);
-        geoQuery.addGeoQueryDataEventListener(new GeoQueryDataEventListener() {
-            @Override
-            public void onDataEntered(DataSnapshot dataSnapshot, GeoLocation geoLocation) {
-
-            }
-
-            @Override
-            public void onDataExited(DataSnapshot dataSnapshot) {
-
-            }
-
-            @Override
-            public void onDataMoved(DataSnapshot dataSnapshot, GeoLocation geoLocation) {
-
-            }
-
-            @Override
-            public void onDataChanged(DataSnapshot dataSnapshot, GeoLocation geoLocation) {
-
-            }
-
-            @Override
-            public void onGeoQueryReady() {
-
-            }
-
-            @Override
-            public void onGeoQueryError(DatabaseError databaseError) {
-
-            }
-        });
-        geoQuery.addGeoQueryEventListener(new GeoQueryEventListener() {
-            @Override
-            public void onKeyEntered(String s, GeoLocation geoLocation) {
-
-            }
-
-            @Override
-            public void onKeyExited(String s) {
-
-            }
-
-            @Override
-            public void onKeyMoved(String s, GeoLocation geoLocation) {
-
-            }
-
-            @Override
-            public void onGeoQueryReady() {
-
-            }
-
-            @Override
-            public void onGeoQueryError(DatabaseError databaseError) {
-
-            }
-        });
     }
 
     @Override
     protected String getActivityTitle() {
-        return getString(R.string.map);
+        return getString(R.string.google_map_with_nearby);
     }
 
+    private HashMap<String, GeoLocation> nearbySimilar = new HashMap<>();
     private GoogleMap googleMap;
 
     @Override
     protected void onMapReady2(GoogleMap googleMap) {
         this.googleMap = googleMap;
-//        onNavigationItemSelected(bottomNavigationView.getMenu().findItem(R.id.actionSchool));
-        bottomNavigationView.setSelectedItemId(R.id.actionSchool);
 
-        this.googleMap.setOnMapLoadedCallback(new GoogleMap.OnMapLoadedCallback() {
+        googleMap.setOnInfoWindowClickListener(new GoogleMap.OnInfoWindowClickListener() {
             @Override
-            public void onMapLoaded() {
-                LatLng center = MapActivity.this.googleMap.getCameraPosition().target;
-                showLog();
+            public void onInfoWindowClick(Marker marker) {
+                if (marker.getTag() == null) {
+                    showSimpleDialog(R.string.something_wrong_please_report_a_bug);
+                    return;
+                }
+                showProgressDialog();
+                DatabaseReference databaseReference = FirebaseDatabase.getInstance().getReference();
+                databaseReference
+                        .child(DBConstants.adList)
+                        .child(flatType)
+                        .child(marker.getTag().toString())
+                        .addListenerForSingleValueEvent(new ValueEventListener() {
+                            @Override
+                            public void onDataChange(DataSnapshot dataSnapshot) {
+                                closeProgressDialog();
+                                AdInfo adInfo = dataSnapshot.getValue(AdInfo.class);
+                                if (adInfo != null)
+                                    startAdDetailsActivity(adInfo);
+                                else
+                                    showSimpleDialog(R.string.something_wrong_please_report_a_bug);
+                            }
+
+                            @Override
+                            public void onCancelled(DatabaseError databaseError) {
+                                closeProgressDialog();
+                                showSimpleDialog(R.string.something_wrong_please_report_a_bug);
+                            }
+                        });
+            }
+        });
+    }
+
+//    private void startAdDetailsActivity() {
+//        Intent adDetailsIntent = new Intent(this, AdDetailsActivity.class);
+//        adDetailsIntent.addFlags(Intent.FLAG_ACTIVITY_NEW_TASK);
+//        startActivity(adDetailsIntent);
+//    }
+
+    private void loadData() {
+        if (adInfo == null)
+            return;
+
+        this.googleMap.moveCamera(CameraUpdateFactory.newLatLngZoom(new LatLng(adInfo.latitude, adInfo.longitude), DEFAULT_ZOOM));
+        DatabaseReference ref = FirebaseDatabase.getInstance().getReference(DBConstants.geoFire + "/" + flatType);
+        GeoFire geoFire = new GeoFire(ref);
+
+        final double radius = 5.0;
+        nearbySimilar.clear();
+        GeoQuery geoQuery = geoFire.queryAtLocation(new GeoLocation(adInfo.latitude, adInfo.longitude), radius);
+        geoQuery.addGeoQueryEventListener(new GeoQueryEventListener() {
+            @Override
+            public void onKeyEntered(String key, GeoLocation geoLocation) {
+                showLog("onKeyEntered" + key);
+                showLog("onKeyEntered" + geoLocation.toString());
+                nearbySimilar.put(key, geoLocation);
+            }
+
+            @Override
+            public void onKeyExited(String key) {
+                showLog("onKeyExited" + key);
+            }
+
+            @Override
+            public void onKeyMoved(String s, GeoLocation geoLocation) {
+                showLog("onKeyMoved" + s);
+                showLog("onKeyMoved" + geoLocation.toString());
+            }
+
+            @Override
+            public void onGeoQueryReady() {
+                showLog("onGeoQueryReady" + System.currentTimeMillis());
+                bottomNavigationView.setSelectedItemId(R.id.actionMap);
+            }
+
+            @Override
+            public void onGeoQueryError(DatabaseError databaseError) {
+                showLog("onGeoQueryError" + databaseError.getMessage());
+                bottomNavigationView.setSelectedItemId(R.id.actionMap);
             }
         });
     }
 
     @Override
     protected void findLastKnownLocation(LatLng defaultLatLng) {
-
+        loadData();
     }
 
     private BottomNavigationView bottomNavigationView;
@@ -228,7 +231,7 @@ public class MapActivity extends BaseMapActivity implements BottomNavigationView
     }
 
     private void initPlacesRequest(int type) {
-        String location = latitude + "," + longitude;
+        String location = adInfo.latitude + "," + adInfo.longitude;
         googlePlaceCall = RetrofitConstants.getGooglePlaces(location, googlePlaceType[type]);
         startRequest(type);
     }
@@ -271,15 +274,15 @@ public class MapActivity extends BaseMapActivity implements BottomNavigationView
         isCanceled = true;
     }
 
-    private long flatRent = 15000;
+//    private long flatRent = 15000;
 
     private void addMarkerForSelectedFlat() {
         int resourceId = R.drawable.marker_purple_others;
-        if (flatType.equalsIgnoreCase(getString(R.string.family))) {
+        if (flatType.equals(DBConstants.keyFamily)) {
             resourceId = R.drawable.marker_blue_family;
-        } else if (flatType.equalsIgnoreCase(getString(R.string.mess))) {
+        } else if (flatType.equals(DBConstants.keyMess)) {
             resourceId = R.drawable.marker_green_mess;
-        } else if (flatType.equalsIgnoreCase(getString(R.string.sublet))) {
+        } else if (flatType.equals(DBConstants.keySublet)) {
             resourceId = R.drawable.marker_merun_sublet;
         }
 
@@ -336,6 +339,32 @@ public class MapActivity extends BaseMapActivity implements BottomNavigationView
         }
     }
 
+    private void addMarkerForNearbyFlat() {
+        int resourceId = R.drawable.marker_others_nearby;
+        switch (flatType) {
+            case DBConstants.keyFamily:
+                resourceId = R.drawable.marker_family_nearby;
+                break;
+            case DBConstants.keyMess:
+                resourceId = R.drawable.marker_mess_nearby;
+                break;
+            case DBConstants.keySublet:
+                resourceId = R.drawable.marker_sublet_nearby;
+                break;
+        }
+
+        for (String key : nearbySimilar.keySet()) {
+            if (key.equals(adInfo.adId))
+                continue;
+            Marker marker = googleMap.addMarker(new MarkerOptions()
+                    .position(new LatLng(nearbySimilar.get(key).latitude, nearbySimilar.get(key).longitude))
+                    .snippet("tap here for see details about this flat")
+                    .title("Please tap here")
+                    .icon(BitmapDescriptorFactory.fromResource(resourceId)));
+            marker.setTag(key);
+        }
+    }
+
     @Override
     public boolean onCreateOptionsMenu(Menu menu) {
         getMenuInflater().inflate(R.menu.share, menu);
@@ -358,11 +387,6 @@ public class MapActivity extends BaseMapActivity implements BottomNavigationView
 
     @Override
     protected void setEmailAddress(boolean afterSuccessfulLogin) {
-
-    }
-
-    @Override
-    protected void onLoadLocationDetails(String fullAddress) {
 
     }
 }

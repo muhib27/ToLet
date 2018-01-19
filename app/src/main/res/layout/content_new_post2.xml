@@ -24,6 +24,13 @@
                 android:name="com.google.android.gms.location.places.ui.PlaceAutocompleteFragment"
                 android:layout_width="match_parent"
                 android:layout_height="wrap_content" />
+
+            <View
+                android:id="@+id/placeAutocompleteView"
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:layout_alignBottom="@+id/placeAutocomplete"
+                android:layout_alignTop="@+id/placeAutocomplete" />
         </RelativeLayout>
 
         <RelativeLayout
@@ -38,6 +45,7 @@
                 android:visibility="visible" />
 
             <LinearLayout
+                android:id="@+id/googleMapLay"
                 android:layout_width="match_parent"
                 android:layout_height="match_parent"
                 android:gravity="center"
@@ -69,6 +77,26 @@
                     android:src="@drawable/marker_blue_family"
                     android:visibility="invisible" />
             </LinearLayout>
+
+            <TextView
+                android:id="@+id/editMap"
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:layout_alignParentBottom="true"
+                android:layout_alignParentEnd="true"
+                android:layout_alignParentRight="true"
+                android:layout_margin="@dimen/size_10dp"
+                android:background="@color/black_overlay"
+                android:ellipsize="marquee"
+                android:gravity="center"
+                android:marqueeRepeatLimit="marquee_forever"
+                android:padding="@dimen/size_10dp"
+                android:singleLine="true"
+                android:text="@string/click_here_for_change_location_long_text"
+                android:textColor="@color/white"
+                android:textSize="@dimen/text_size_12sp"
+                android:textStyle="normal"
+                android:visibility="gone" />
         </RelativeLayout>
 
         <LinearLayout
@@ -362,7 +390,7 @@
                 android:layout_marginTop="@dimen/new_post_common_padding">
 
                 <EditText
-                    android:id="@+id/mobileNumber"
+                    android:id="@+id/phoneNumber"
                     android:layout_width="match_parent"
                     android:layout_height="wrap_content"
                     android:ems="14"

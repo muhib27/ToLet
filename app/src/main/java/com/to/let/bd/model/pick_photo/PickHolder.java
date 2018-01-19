@@ -19,7 +19,7 @@ public class PickHolder {
 
     public static ArrayList<String> getStringPaths() {
         if (stringPaths == null)
-            return new ArrayList<String>();
+            return new ArrayList<>();
 
         return stringPaths;
     }
