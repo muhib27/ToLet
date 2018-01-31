@@ -1,6 +1,5 @@
 package com.to.let.bd.activities;
 
-import android.Manifest;
 import android.app.DatePickerDialog;
 import android.app.Dialog;
 import android.app.PendingIntent;
@@ -9,7 +8,6 @@ import android.content.Context;
 import android.content.DialogInterface;
 import android.content.Intent;
 import android.content.IntentSender;
-import android.content.pm.PackageManager;
 import android.graphics.Bitmap;
 import android.graphics.Color;
 import android.graphics.drawable.ColorDrawable;
@@ -18,7 +16,6 @@ import android.os.CountDownTimer;
 import android.os.Handler;
 import android.support.annotation.NonNull;
 import android.support.design.widget.TabLayout;
-import android.support.v4.app.ActivityCompat;
 import android.support.v4.app.Fragment;
 import android.support.v4.content.LocalBroadcastManager;
 import android.support.v7.app.ActionBar;
@@ -89,19 +86,17 @@ import com.to.let.bd.utils.ActivityUtils;
 import com.to.let.bd.utils.AppConstants;
 import com.to.let.bd.utils.AppSharedPrefs;
 import com.to.let.bd.utils.DBConstants;
+import com.to.let.bd.utils.DateUtils;
 import com.to.let.bd.utils.FirebaseAuthError;
 import com.to.let.bd.utils.GoogleApiHelper;
 import com.to.let.bd.utils.PhoneNumberUtils;
 import com.to.let.bd.utils.UploadImageService;
 
 import java.io.ByteArrayOutputStream;
-import java.text.ParseException;
-import java.text.SimpleDateFormat;
 import java.util.ArrayList;
 import java.util.Calendar;
 import java.util.Date;
 import java.util.HashMap;
-import java.util.Locale;
 import java.util.concurrent.TimeUnit;
 
 public class NewAdActivity2 extends BaseMapActivity implements View.OnClickListener, View.OnFocusChangeListener {
@@ -197,11 +192,8 @@ public class NewAdActivity2 extends BaseMapActivity implements View.OnClickListe
             date = new int[3];
         }
 
-        date[0] = adInfo.startingDate;
-        date[1] = adInfo.startingMonth;
-        date[2] = adInfo.startingYear;
-        String selectedDate = date[0] + "-" + date[1] + "-" + date[2];
-        setRentDate(selectedDate);
+        date = DateUtils.splittedDate(String.valueOf(adInfo.startingFinalDate));
+        setRentDate(date);
 
         LinearLayout tabStrip = ((LinearLayout) tabLayout.getChildAt(0));
 
@@ -270,7 +262,7 @@ public class NewAdActivity2 extends BaseMapActivity implements View.OnClickListe
         if (adInfo == null) {
             builder.setMessage(R.string.your_ad_published_successfully_would_u_like);
         } else {
-            if (adInfo.images != null && adInfo.images.size() > 0) {
+            if (adInfo.images != null) {
                 builder.setMessage(R.string.your_ad_updated_successfully_would_u_like);
             } else {
                 builder.setMessage(R.string.your_ad_published_successfully_would_u_like);
@@ -295,6 +287,7 @@ public class NewAdActivity2 extends BaseMapActivity implements View.OnClickListe
     }
 
     private void startMediaActivity(String adId) {
+        finish();
         Intent intent = new Intent(this, MediaActivity.class);
         if (adInfo != null && adInfo.images != null && adInfo.images.size() > 0) {
             Bundle bundle = new Bundle();
@@ -305,8 +298,7 @@ public class NewAdActivity2 extends BaseMapActivity implements View.OnClickListe
         intent.putExtra(DBConstants.adId, adId);
         intent.putExtra(DBConstants.flatType, flatType);
         intent.addFlags(Intent.FLAG_ACTIVITY_CLEAR_TASK);
-        startActivity(intent);
-        finish();
+        startActivityForResult(intent, AppConstants.addOrUpdateMedia);
     }
 
     protected BroadcastReceiver mBroadcastReceiver;
@@ -370,13 +362,6 @@ public class NewAdActivity2 extends BaseMapActivity implements View.OnClickListe
     private ProgressBar locationLoaderProgressBar;
     private TextView editMap;
     private View placeAutocompleteView;
-
-    private void updateTitle(String title) {
-        ActionBar actionBar = getSupportActionBar();
-        if (actionBar != null) {
-            actionBar.setTitle(title);
-        }
-    }
 
     private void init() {
         mapScrollView = findViewById(R.id.mapScrollView);
@@ -623,7 +608,7 @@ public class NewAdActivity2 extends BaseMapActivity implements View.OnClickListe
         tabLayout.addTab(tabLayout.newTab().setText(flatTypesArray.get(2)), false);
         tabLayout.addTab(tabLayout.newTab().setText(flatTypesArray.get(3)), false);
 
-        int tabIndex = 0;
+        int tabIndex = 1;
         if (adInfo != null) {
             if (adInfo.familyInfo != null) {
                 tabIndex = 0;
@@ -699,7 +684,6 @@ public class NewAdActivity2 extends BaseMapActivity implements View.OnClickListe
     @Override
     protected void onMapReady2(GoogleMap googleMap) {
         this.googleMap = googleMap;
-
         mapScrollView = findViewById(R.id.mapScrollView); //parent scrollview in xml, give your scrollview id value
 
         ((WorkaroundMapFragment) getSupportFragmentManager().findFragmentById(R.id.map))
@@ -740,6 +724,13 @@ public class NewAdActivity2 extends BaseMapActivity implements View.OnClickListe
                     return;
                 }
                 locationLoaderProgressBar.setVisibility(View.VISIBLE);
+            }
+        });
+
+        this.googleMap.setOnMapLongClickListener(new GoogleMap.OnMapLongClickListener() {
+            @Override
+            public void onMapLongClick(LatLng latLng) {
+                NewAdActivity2.this.googleMap.moveCamera(CameraUpdateFactory.newLatLngZoom(latLng, DEFAULT_ZOOM));
             }
         });
 
@@ -960,9 +951,9 @@ public class NewAdActivity2 extends BaseMapActivity implements View.OnClickListe
             adId = adInfo.adId;
         }
 
-        int startingDate = date[0];
-        int startingMonth = date[1] + 1;
-        int startingYear = date[2];
+        int startingYear = date[0];
+        int startingMonth = date[1];
+        int startingDate = date[2];
 
         String fullAddress = addressDetails.getText().toString();
         String country = "";
@@ -1012,46 +1003,55 @@ public class NewAdActivity2 extends BaseMapActivity implements View.OnClickListe
                 getUid(), mobileNumber, emailAddress);
 
         HashMap<String, Object> adValues = newAdInfo.toMap();
-        if (adInfo == null)
+        if (adInfo == null) {
             adValues.put(DBConstants.createdTime, ServerValue.TIMESTAMP);
+        } else {
+            adValues.put(DBConstants.images, adInfo.images);
+            adValues.put(DBConstants.map, adInfo.map);
+            adValues.put(DBConstants.favCount, adInfo.favCount);
+            adValues.put(DBConstants.fav, adInfo.fav);
+            adValues.put(DBConstants.reportCount, adInfo.reportCount);
+            adValues.put(DBConstants.report, adInfo.report);
+        }
+
         adValues.put(DBConstants.modifiedTime, ServerValue.TIMESTAMP);
 
-        databaseReference
-                .child(DBConstants.adList)
-                .child(flatType)
-                .child(adId)
-                .updateChildren(adValues, new DatabaseReference.CompletionListener() {
-                    @Override
-                    public void onComplete(DatabaseError databaseError, DatabaseReference databaseReference) {
-                        if (databaseError == null) {
-                            if (editMap.getVisibility() != View.VISIBLE) {
-                                googleMap.addMarker(new MarkerOptions()
-                                        .position(new LatLng(selectedCenterLatLng.latitude, selectedCenterLatLng.longitude))
-                                        .snippet("")
-                                        .title("")
-                                        .icon(BitmapDescriptorFactory.fromResource(getMarkerResource())));
-                                googleMap.snapshot(new GoogleMap.SnapshotReadyCallback() {
-                                    @Override
-                                    public void onSnapshotReady(Bitmap bitmap) {
-                                        ByteArrayOutputStream stream = new ByteArrayOutputStream();
-                                        bitmap.compress(Bitmap.CompressFormat.PNG, 50, stream);
-                                        byte[] byteArray = stream.toByteArray();
-                                        uploadImage(AppConstants.adMapImageType, adId, byteArray);
-                                    }
-                                });
-                                DatabaseReference ref = FirebaseDatabase.getInstance()
-                                        .getReference(DBConstants.geoFire + "/" + flatType);
-                                GeoFire geoFire = new GeoFire(ref);
-                                geoFire.setLocation(adId, new GeoLocation(selectedCenterLatLng.latitude, selectedCenterLatLng.longitude));
-                            } else {
-                                mediaAlertDialog(adId);
+        HashMap<String, Object> hashMap = new HashMap<>();
+        hashMap.put("/" + DBConstants.adList + "/" + flatType + "/" + adId, adValues);
+        hashMap.put("/" + DBConstants.userAdList + "/" + getUid() + "/" + adId, adValues);
+
+        databaseReference.updateChildren(hashMap, new DatabaseReference.CompletionListener() {
+            @Override
+            public void onComplete(DatabaseError databaseError, DatabaseReference databaseReference) {
+                if (databaseError == null) {
+                    if (editMap.getVisibility() != View.VISIBLE) {
+                        googleMap.addMarker(new MarkerOptions()
+                                .position(new LatLng(selectedCenterLatLng.latitude, selectedCenterLatLng.longitude))
+                                .snippet("")
+                                .title("")
+                                .icon(BitmapDescriptorFactory.fromResource(getMarkerResource())));
+                        googleMap.snapshot(new GoogleMap.SnapshotReadyCallback() {
+                            @Override
+                            public void onSnapshotReady(Bitmap bitmap) {
+                                ByteArrayOutputStream stream = new ByteArrayOutputStream();
+                                bitmap.compress(Bitmap.CompressFormat.PNG, 50, stream);
+                                byte[] byteArray = stream.toByteArray();
+                                uploadImage(AppConstants.adMapImageType, adId, byteArray);
                             }
-                        } else {
-                            showSimpleDialog(databaseError.getMessage());
-                            closeProgressDialog();
-                        }
+                        });
+                        DatabaseReference ref = FirebaseDatabase.getInstance()
+                                .getReference(DBConstants.geoFire + "/" + flatType);
+                        GeoFire geoFire = new GeoFire(ref);
+                        geoFire.setLocation(adId, new GeoLocation(selectedCenterLatLng.latitude, selectedCenterLatLng.longitude));
+                    } else {
+                        mediaAlertDialog(adId);
                     }
-                });
+                } else {
+                    showSimpleDialog(databaseError.getMessage());
+                    closeProgressDialog();
+                }
+            }
+        });
     }
 
     protected void uploadImage(int type, String adId, byte[] imageByte) {
@@ -1073,8 +1073,6 @@ public class NewAdActivity2 extends BaseMapActivity implements View.OnClickListe
             firebaseUser = FirebaseAuth.getInstance().getCurrentUser();
         }
 
-        String fcmToken = FirebaseInstanceId.getInstance().getToken();
-
         HashMap<String, Object> userValues = new HashMap<>();
         userValues.put(DBConstants.userId, firebaseUser.getUid());
         userValues.put(DBConstants.userEmail, firebaseUser.getEmail());
@@ -1086,7 +1084,7 @@ public class NewAdActivity2 extends BaseMapActivity implements View.OnClickListe
         if (firebaseUser.getPhotoUrl() != null)
             userValues.put(DBConstants.userProfilePic, firebaseUser.getPhotoUrl().toString());
 
-        userValues.put(DBConstants.fcmToken, fcmToken);
+        userValues.put(DBConstants.fcmToken, FirebaseInstanceId.getInstance().getToken());
 
         databaseReference
                 .child(DBConstants.users)
@@ -1099,62 +1097,45 @@ public class NewAdActivity2 extends BaseMapActivity implements View.OnClickListe
         DatePickerDialog datePickerDialog = new DatePickerDialog(this, new DatePickerDialog.OnDateSetListener() {
             @Override
             public void onDateSet(DatePicker datePicker, int year, int monthOfYear, int dayOfMonth) {
-                date[0] = dayOfMonth;
+                date[0] = year;
                 date[1] = monthOfYear;
-                date[2] = year;
-                String selectedDate = dayOfMonth + "-" + (monthOfYear + 1) + "-" + year;
-                setRentDate(selectedDate);
+                date[2] = dayOfMonth;
+                setRentDate(date);
             }
-        }, date[2], date[1], date[0]);
+        }, date[0], date[1], date[2]);
         datePickerDialog.getDatePicker().setMinDate(System.currentTimeMillis());
         datePickerDialog.show();
     }
 
-    private void setRentDate(String date) {
-        SimpleDateFormat dateFormatter = new SimpleDateFormat("dd-MM-yyyy", Locale.US);
+    private void setRentDate(int[] dateArray) {
+        Date date = DateUtils.getDate(dateArray);
+        String dateAsString = DateUtils.getFormattedDateString(date, DateUtils.format2);
+        long elapsedDays = DateUtils.differenceBetweenToday(date.getTime());
+
         String remainingTime = "";
-        try {
-            Date newDate = dateFormatter.parse(date);
-            dateFormatter = new SimpleDateFormat("MMM dd, yyyy", Locale.US);
-            date = dateFormatter.format(newDate);
-
-            long differenceTime = newDate.getTime() - System.currentTimeMillis();
-            long elapsedDays = 0;
-            if (differenceTime > 1) {
-                elapsedDays = (differenceTime / (60 * 60 * 24 * 1000)) + 1;
-            }
-
-            if (elapsedDays <= 1) {
-                remainingTime = elapsedDays + " day remaining.";
-            } else {
-                remainingTime = elapsedDays + " days remaining.";
-            }
-        } catch (ParseException e) {
-            e.printStackTrace();
-            setRentDate(getDefaultRentMonth());
+        if (elapsedDays <= 1) {
+            remainingTime = elapsedDays + " day remaining.";
+        } else {
+            remainingTime = elapsedDays + " days remaining.";
         }
 
-        rentDate.setText(date);
+        rentDate.setText(dateAsString);
         this.remainingTime.setText(remainingTime);
     }
 
-    private String getDefaultRentMonth() {
+    private int[] getDefaultRentMonth() {
         Calendar calendar = Calendar.getInstance();
         int monthOfYear = calendar.get(Calendar.MONTH) + 1;
         int year = calendar.get(Calendar.YEAR);
-        if (monthOfYear > 11) {
-            monthOfYear = 0;
-            year++;
-        }
 
-        date[0] = 1;
+        date[0] = year;
         date[1] = monthOfYear;
-        date[2] = year;
+        date[2] = 1;// 1st day of month
 
-        return date[0] + "-" + (date[1] + 1) + "-" + date[2];
+        return date;
     }
 
-    private int[] date = new int[3];//0=dayOfMonth, 1=monthOfYear, 2=year (month start from 0)
+    private int[] date = new int[3];//0=year, 1=monthOfYear, 2=dayOfMonth (month start from 0)
 
     public void updateCalculatedRent(long calculatedRent) {
 //        totalRent.setText(String.valueOf(calculatedRent));

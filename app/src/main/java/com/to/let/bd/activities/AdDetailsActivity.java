@@ -36,6 +36,7 @@ import com.google.firebase.database.FirebaseDatabase;
 import com.google.firebase.database.MutableData;
 import com.google.firebase.database.ServerValue;
 import com.google.firebase.database.Transaction;
+import com.google.firebase.database.ValueEventListener;
 import com.to.let.bd.R;
 import com.to.let.bd.adapters.SlidingImageAdapter;
 import com.to.let.bd.common.BaseActivity;
@@ -51,8 +52,11 @@ import com.to.let.bd.utils.DBConstants;
 import com.to.let.bd.utils.DateUtils;
 import com.to.let.bd.utils.MyAnalyticsUtil;
 
+import java.util.ArrayList;
 import java.util.Date;
 import java.util.HashMap;
+import java.util.SortedSet;
+import java.util.TreeSet;
 
 public class AdDetailsActivity extends BaseActivity implements View.OnClickListener {
 
@@ -69,8 +73,9 @@ public class AdDetailsActivity extends BaseActivity implements View.OnClickListe
         if (actionBar != null) {
             actionBar.setDisplayHomeAsUpEnabled(true);
             actionBar.setDisplayShowTitleEnabled(true);
-            actionBar.setTitle(R.string.ad_details);
         }
+
+        updateTitle(getString(R.string.ad_details));
 
         needToRefreshData = false;
 
@@ -79,11 +84,7 @@ public class AdDetailsActivity extends BaseActivity implements View.OnClickListe
 
         getData();
         init();
-
-        if (images != null && images.length > 0) {
-            initSlider();
-        }
-
+        initSlider();
         myAnalyticsUtil.showAdDetails(adInfo, getUid());
         initInterstitialAd();
     }
@@ -132,21 +133,15 @@ public class AdDetailsActivity extends BaseActivity implements View.OnClickListe
     private void getData() {
         Bundle bundle = getIntent().getExtras();
         if (bundle == null) {
-            images = new String[0];
+            images = new ArrayList<>();
+            images.clear();
             return;
         }
         adInfo = (AdInfo) bundle.getSerializable(AppConstants.keyAdInfo);
-        if (adInfo == null || adInfo.images == null || adInfo.images.isEmpty()) {
-            images = new String[0];
-        } else {
-            images = new String[adInfo.images.size()];
-            for (int i = 0; i < adInfo.images.size(); i++) {
-                ImageInfo imageInfo = adInfo.images.get(i);
-                if (imageInfo != null) {
-                    images[i] = adInfo.images.get(i).downloadUrl;
-                }
-            }
-        }
+        if (adInfo == null)
+            return;
+
+        processImageList();
 
         flatType = null;
         if (adInfo.familyInfo != null) {
@@ -157,6 +152,20 @@ public class AdDetailsActivity extends BaseActivity implements View.OnClickListe
             flatType = DBConstants.keySublet;
         } else if (adInfo.othersInfo != null) {
             flatType = DBConstants.keyOthers;
+        }
+    }
+
+    private void processImageList() {
+        images = new ArrayList<>();
+        images.clear();
+        if (!(adInfo.images == null || adInfo.images.isEmpty())) {
+            SortedSet<String> keys = new TreeSet<>(adInfo.images.keySet());
+            for (String key : keys) {
+                ImageInfo imageInfo = adInfo.images.get(key);
+                if (imageInfo != null) {
+                    images.add(imageInfo.downloadUrl);
+                }
+            }
         }
     }
 
@@ -184,23 +193,7 @@ public class AdDetailsActivity extends BaseActivity implements View.OnClickListe
         privacyPolicy.setText(getString(R.string.privacy_policy_note, getString(R.string.terms_of_use), getString(R.string.privacy_policy)));
         reportThis = findViewById(R.id.reportThis);
 
-        reportThis.setEnabled(true);
-
-        if (adInfo.reportCount > 0) {
-            if (adInfo.report.containsKey(BaseActivity.getUid())) {
-                reportThis.setEnabled(false);
-                reportThis.setText(R.string.already_reported);
-            }
-        }
-
         favAd = findViewById(R.id.favAd);
-        favAd.setSelected(false);
-
-        if (adInfo.favCount > 0) {
-            if (adInfo.fav.containsKey(BaseActivity.getUid())) {
-                favAd.setSelected(true);
-            }
-        }
 
         favAd.setOnClickListener(this);
 
@@ -213,62 +206,7 @@ public class AdDetailsActivity extends BaseActivity implements View.OnClickListe
         callBtn = findViewById(R.id.callBtn);
         emailBtn = findViewById(R.id.emailBtn);
         editBtn = findViewById(R.id.editBtn);
-
-        imageAddOrEdit.setVisibility(View.INVISIBLE);
-        if (adInfo.userId.equals(BaseActivity.getUid())) {
-            editBtn.setVisibility(View.VISIBLE);
-            contactLay.setVisibility(View.GONE);
-            imageAddOrEdit.setVisibility(View.VISIBLE);
-            imageAddOrEdit.setOnClickListener(this);
-        }
-
-        if (adInfo.userId.equals(BaseActivity.getUid())) {
-            reportLay.setVisibility(View.GONE);
-        }
-
-        if (adInfo != null) {
-            String totalRent = "TK " + String.valueOf(AppConstants.rentFormatter(adInfo.flatRent));
-            if (adInfo.othersFee > 0)
-                totalRent += " (+Utility TK " + AppConstants.rentFormatter(adInfo.othersFee) + ")";
-            this.totalRent.setText(totalRent);
-
-            this.roomDetails.setText(AppConstants.flatDescription(this, adInfo));
-            addressDetails.setText(adInfo.fullAddress);
-
-            StringBuilder stringBuilder = new StringBuilder();
-            stringBuilder.append("House number/name: ")
-                    .append(adInfo.houseNameOrNumber)
-                    .append(" Floor: ")
-                    .append(adInfo.floorNumber);
-            if (adInfo.flatDescription != null && !adInfo.flatDescription.isEmpty()) {
-                stringBuilder.append("\n\n");
-                stringBuilder.append(adInfo.flatDescription);
-            }
-
-            houseInfo.setText(stringBuilder.toString());
-            String[] splittedDate = DateUtils.splittedDate(adInfo.startingFinalDate);
-            Date date = DateUtils.getDate(splittedDate, DateUtils.format4);
-
-            String rentDate = DateUtils.getFormattedDateString(date, DateUtils.format2);
-            long elapsedDays = DateUtils.differenceBetweenToday(date.getTime());
-            setRentDate(rentDate, elapsedDays);
-        }
-
         noImageView = findViewById(R.id.noImageView);
-        othersFacilityDetails();
-        noImageView.setVisibility(View.GONE);
-        if (images != null && images.length > 0) {
-            String photoCount = images.length > 1 ? images.length + " Photo's" : images.length + " Photos";
-            this.photoCount.setText(photoCount);
-        } else {
-            noImageView.setVisibility(View.VISIBLE);
-            if (adInfo.map != null && adInfo.map.downloadUrl != null) {
-                Glide.with(this)
-                        .load(Uri.parse(adInfo.map.downloadUrl))
-                        .apply(new RequestOptions().placeholder(R.mipmap.ic_launcher).error(R.mipmap.ic_launcher))
-                        .into(noImageView);
-            }
-        }
 
         showInMapView.setOnClickListener(this);
         callBtn.setOnClickListener(this);
@@ -276,38 +214,73 @@ public class AdDetailsActivity extends BaseActivity implements View.OnClickListe
         editBtn.setOnClickListener(this);
         reportThis.setOnClickListener(this);
         noImageView.setOnClickListener(this);
+
+        updateFullView();
     }
 
     private void onFavClicked() {
-        DatabaseReference userAdRef = databaseReference.child(DBConstants.adList).child(adInfo.adId);
-        userAdRef.runTransaction(new Transaction.Handler() {
+        if (getUid() == null)
+            return;
+
+        DatabaseReference userFavAdRef = databaseReference
+                .child(DBConstants.userFavAdList)
+                .child(getUid())
+                .child(adInfo.adId);
+
+        if (favAd.isSelected()) {
+            favAd.setSelected(false);
+            userFavAdRef.removeValue();
+        } else {
+            favAd.setSelected(true);
+            AdInfo tmpAdInfo = adInfo;
+            tmpAdInfo.favCount++;
+            if (tmpAdInfo.fav == null) {
+                tmpAdInfo.fav = new HashMap<>();
+            }
+            tmpAdInfo.fav.put(getUid(), true);
+            userFavAdRef.setValue(tmpAdInfo);
+        }
+
+        DatabaseReference globalAdRef = databaseReference.child(DBConstants.adList).child(flatType).child(adInfo.adId);
+        DatabaseReference userAdRef = databaseReference.child(DBConstants.userAdList).child(getUid()).child(adInfo.adId);
+
+        // Run two transactions
+        onFavClicked(globalAdRef);
+        onFavClicked(userAdRef);
+    }
+
+    // [START ad_fav_transaction]
+    private void onFavClicked(DatabaseReference adRef) {
+        favAd.setEnabled(false);
+        adRef.runTransaction(new Transaction.Handler() {
             @Override
             public Transaction.Result doTransaction(MutableData mutableData) {
-                AdInfo p = mutableData.getValue(AdInfo.class);
-                if (p == null) {
+                AdInfo adInfo = mutableData.getValue(AdInfo.class);
+                if (adInfo == null) {
                     return Transaction.success(mutableData);
                 }
-                if (p.fav.containsKey(getUid())) {
-                    // Unstar the ad and remove self from stars
-                    p.favCount = p.favCount - 1;
-                    p.fav.remove(getUid());
+                if (adInfo.fav.containsKey(getUid())) {
+                    // UnFav the ad and remove self from stars
+                    adInfo.favCount = adInfo.favCount - 1;
+                    adInfo.fav.remove(getUid());
                 } else {
-                    // Star the ad and add self to stars
-                    p.favCount = p.favCount + 1;
-                    p.fav.put(getUid(), true);
+                    // Fav the ad and add self to stars
+                    adInfo.favCount = adInfo.favCount + 1;
+                    adInfo.fav.put(getUid(), true);
                 }
 
                 // Set value and report transaction success
-                mutableData.setValue(p);
+                mutableData.setValue(adInfo);
                 return Transaction.success(mutableData);
             }
 
             @Override
             public void onComplete(DatabaseError databaseError, boolean b, DataSnapshot dataSnapshot) {
-
+                favAd.setEnabled(true);
             }
         });
     }
+    // [END ad_fav_transaction]
 
     private void othersFacilityDetails() {
         StringBuilder stringBuilder = new StringBuilder();
@@ -468,16 +441,14 @@ public class AdDetailsActivity extends BaseActivity implements View.OnClickListe
     @Override
     public void onClick(View view) {
         if (view == showInMapView) {
-            openMapActivity(0);
+            openMapActivity();
         } else if (view == callBtn) {
-            callTheUser();
+            phoneCall();
         } else if (view == emailBtn) {
-            mailTheUser();
+            sendEmail();
         } else if (view == reportThis) {
             showReportAlert();
         } else if (view == favAd) {
-            needToRefreshData = true;
-            favAd.setSelected(!favAd.isSelected());
             onFavClicked();
         } else if (view == editBtn) {
             editAd();
@@ -485,8 +456,6 @@ public class AdDetailsActivity extends BaseActivity implements View.OnClickListe
             if (noImageView.getVisibility() == View.VISIBLE) {
                 if (adInfo.map != null && adInfo.map.downloadUrl != null) {
                     showInMapView.performClick();
-                } else {
-                    startMediaActivity();
                 }
             }
         } else if (view == imageAddOrEdit) {
@@ -510,29 +479,162 @@ public class AdDetailsActivity extends BaseActivity implements View.OnClickListe
         intent.putExtra(DBConstants.adId, adInfo.adId);
         intent.putExtra(DBConstants.flatType, flatType);
         intent.addFlags(Intent.FLAG_ACTIVITY_CLEAR_TASK);
-        startActivity(intent);
+        startActivityForResult(intent, AppConstants.addOrUpdateMedia);
     }
 
-    private void callTheUser() {
+    private void phoneCall() {
         String mobileNumber = adInfo.mobileNumber;
         if (mobileNumber == null || mobileNumber.trim().isEmpty()) {
             showSimpleDialog(R.string.mobile_number_not_found);
             return;
         }
         Intent intent = new Intent(Intent.ACTION_DIAL, Uri.fromParts("tel", mobileNumber, null));
-        startActivityForResult(intent, 1);
+        startActivityForResult(intent, AppConstants.phoneCall);
     }
 
     @Override
     protected void onActivityResult(int requestCode, int resultCode, Intent data) {
         super.onActivityResult(requestCode, resultCode, data);
 
-        if (interstitialAd.isLoaded()) {
-            interstitialAd.show();
+        if (requestCode == AppConstants.addOrUpdateMedia) {
+            if (resultCode == RESULT_OK) {
+                reloadAdDataFromServer(onlyUpdateImageView);
+            }
+        } else if (requestCode == AppConstants.editAd) {
+            if (resultCode == RESULT_OK) {
+                reloadAdDataFromServer(updateFullView);
+            }
+        } else if (requestCode == AppConstants.phoneCall || requestCode == AppConstants.sendEmail) {
+            if (interstitialAd.isLoaded()) {
+                interstitialAd.show();
+                initInterstitialAd();
+            } else {
+                initInterstitialAd();
+            }
         }
     }
 
-    private void mailTheUser() {
+    private final int onlyUpdateImageView = 1;
+    private final int updateFullView = 100;
+
+    private void reloadAdDataFromServer(final int type) {
+        if (flatType == null || flatType.isEmpty())
+            return;
+
+        if (adInfo == null || adInfo.adId == null || adInfo.adId.isEmpty())
+            return;
+
+        if (databaseReference == null)
+            databaseReference = FirebaseDatabase.getInstance().getReference();
+
+        databaseReference
+                .child(DBConstants.adList)
+                .child(flatType)
+                .child(adInfo.adId)
+                .addListenerForSingleValueEvent(new ValueEventListener() {
+                    @Override
+                    public void onDataChange(DataSnapshot dataSnapshot) {
+                        AdInfo newAdInfo = dataSnapshot.getValue(AdInfo.class);
+                        if (newAdInfo != null) {
+                            adInfo = newAdInfo;
+
+                            if (type == onlyUpdateImageView) {
+                                processImageList();
+                                updateImageSingleView();
+                                initSlider();
+                            } else {
+                                updateFullView();
+                            }
+                        }
+                    }
+
+                    @Override
+                    public void onCancelled(DatabaseError databaseError) {
+
+                    }
+                });
+    }
+
+    private void updateFullView() {
+        reportThis.setEnabled(true);
+        if (adInfo.reportCount > 0) {
+            if (adInfo.report.containsKey(BaseActivity.getUid())) {
+                reportThis.setEnabled(false);
+                reportThis.setText(R.string.already_reported);
+            }
+        }
+
+        favAd.setSelected(false);
+        if (adInfo.favCount > 0) {
+            if (adInfo.fav.containsKey(BaseActivity.getUid())) {
+                favAd.setSelected(true);
+            }
+        }
+
+        imageAddOrEdit.setVisibility(View.INVISIBLE);
+        if (adInfo.userId.equals(BaseActivity.getUid())) {
+            editBtn.setVisibility(View.VISIBLE);
+            contactLay.setVisibility(View.GONE);
+            imageAddOrEdit.setVisibility(View.VISIBLE);
+            imageAddOrEdit.setOnClickListener(this);
+        }
+
+        if (adInfo.userId.equals(BaseActivity.getUid())) {
+            reportLay.setVisibility(View.GONE);
+        }
+
+        if (adInfo != null) {
+            String totalRent = "TK " + String.valueOf(AppConstants.rentFormatter(adInfo.flatRent));
+            if (adInfo.othersFee > 0)
+                totalRent += " (+Utility TK " + AppConstants.rentFormatter(adInfo.othersFee) + ")";
+            this.totalRent.setText(totalRent);
+
+            this.roomDetails.setText(AppConstants.flatDescription(this, adInfo));
+            addressDetails.setText(adInfo.fullAddress);
+
+            StringBuilder stringBuilder = new StringBuilder();
+            stringBuilder.append("House number/name: ")
+                    .append(adInfo.houseNameOrNumber)
+                    .append(" Floor: ")
+                    .append(adInfo.floorNumber);
+            if (adInfo.flatDescription != null && !adInfo.flatDescription.isEmpty()) {
+                stringBuilder.append("\n\n");
+                stringBuilder.append(adInfo.flatDescription);
+            }
+
+            houseInfo.setText(stringBuilder.toString());
+
+            String[] dateArray = DateUtils.splittedDate(adInfo.startingFinalDate);
+            Date date = DateUtils.getDate(dateArray, DateUtils.format4);
+            String dateAsString = DateUtils.getFormattedDateString(date, DateUtils.format2);
+            long elapsedDays = DateUtils.differenceBetweenToday(date.getTime());
+
+            setRentDate(dateAsString, elapsedDays);
+        }
+
+        othersFacilityDetails();
+        processImageList();
+        updateImageSingleView();
+        initSlider();
+    }
+
+    private void updateImageSingleView() {
+        noImageView.setVisibility(View.GONE);
+        if (images != null && !images.isEmpty()) {
+            String photoCount = images.size() > 1 ? images.size() + " Photo's" : images.size() + " Photos";
+            this.photoCount.setText(photoCount);
+        } else {
+            noImageView.setVisibility(View.VISIBLE);
+            if (adInfo.map != null && adInfo.map.downloadUrl != null) {
+                Glide.with(this)
+                        .load(Uri.parse(adInfo.map.downloadUrl))
+                        .apply(new RequestOptions().placeholder(R.mipmap.ic_launcher).error(R.mipmap.ic_launcher))
+                        .into(noImageView);
+            }
+        }
+    }
+
+    private void sendEmail() {
         String emailAddress = adInfo.emailAddress;
         if (emailAddress == null || emailAddress.trim().isEmpty()) {
             showSimpleDialog(R.string.email_address_not_found);
@@ -544,7 +646,7 @@ public class AdDetailsActivity extends BaseActivity implements View.OnClickListe
         emailIntent.putExtra(Intent.EXTRA_EMAIL, emailAddress);
         emailIntent.putExtra(Intent.EXTRA_SUBJECT, "Interested in your ad");
         emailIntent.putExtra(Intent.EXTRA_TEXT, "Hello dear, I would like to inform you that the ");
-        startActivityForResult(Intent.createChooser(emailIntent, "Send email..."), 2);
+        startActivityForResult(Intent.createChooser(emailIntent, "Send email..."), AppConstants.sendEmail);
     }
 
     private void showReportAlert() {
@@ -567,12 +669,13 @@ public class AdDetailsActivity extends BaseActivity implements View.OnClickListe
         builderSingle.show();
     }
 
-    private String[] images;
+    private ArrayList<String> images;
+    private SlidingImageAdapter slidingImageAdapter;
 
     private void initSlider() {
         ViewPager pager = findViewById(R.id.pager);
 
-        SlidingImageAdapter slidingImageAdapter = new SlidingImageAdapter(this, images, new SlidingImageAdapter.ImageClickListener() {
+        slidingImageAdapter = new SlidingImageAdapter(this, images, new SlidingImageAdapter.ImageClickListener() {
             @Override
             public void imageClick(int position) {
                 selectedImagePosition = position;
@@ -597,10 +700,10 @@ public class AdDetailsActivity extends BaseActivity implements View.OnClickListe
     private void editAd() {
         Intent editIntent = new Intent(this, NewAdActivity2.class);
         editIntent.putExtra(AppConstants.keyAdInfo, adInfo);
-        startActivity(editIntent);
+        startActivityForResult(editIntent, AppConstants.editAd);
     }
 
-    private void openMapActivity(int typePosition) {
+    private void openMapActivity() {
         if (adInfo == null)
             return;
 
@@ -643,24 +746,24 @@ public class AdDetailsActivity extends BaseActivity implements View.OnClickListe
         nextImageBtn.setVisibility(View.VISIBLE);
 
         final ImageViewZoomT zoomableImageView = imageDialog.findViewById(R.id.zoomableImageView);
-        showImage(images[selectedImagePosition], zoomableImageView);
+        showImage(images.get(selectedImagePosition), zoomableImageView);
 
         previousImageBtn.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View v) {
                 selectedImagePosition--;
                 if (selectedImagePosition < 0)
-                    selectedImagePosition = images.length - 1;
-                showImage(images[selectedImagePosition], zoomableImageView);
+                    selectedImagePosition = images.size() - 1;
+                showImage(images.get(selectedImagePosition), zoomableImageView);
             }
         });
         nextImageBtn.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View v) {
                 selectedImagePosition++;
-                if (selectedImagePosition >= images.length)
+                if (selectedImagePosition >= images.size())
                     selectedImagePosition = 0;
-                showImage(images[selectedImagePosition], zoomableImageView);
+                showImage(images.get(selectedImagePosition), zoomableImageView);
             }
         });
     }
@@ -669,6 +772,7 @@ public class AdDetailsActivity extends BaseActivity implements View.OnClickListe
         if (imagePath != null)
             Glide.with(this)
                     .load(Uri.parse(imagePath))
+                    .apply(new RequestOptions().placeholder(R.drawable.image_loading).error(R.drawable.no_image_available))
                     .into(imageView);
         else
             imageView.setImageResource(R.drawable.dummy_flat_image);

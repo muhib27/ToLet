@@ -1,6 +1,5 @@
 <?xml version="1.0" encoding="utf-8"?>
 <RelativeLayout xmlns:android="http://schemas.android.com/apk/res/android"
-    xmlns:app="http://schemas.android.com/apk/res-auto"
     android:layout_width="match_parent"
     android:layout_height="wrap_content"
     android:background="@drawable/side_nav_bar"
@@ -21,23 +20,46 @@
 
         <ImageView
             android:id="@+id/userPic"
-            android:layout_width="wrap_content"
-            android:layout_height="wrap_content"
-            app:srcCompat="@android:drawable/sym_def_app_icon" />
+            android:layout_width="@dimen/nav_profile_pic_height"
+            android:layout_height="@dimen/nav_profile_pic_height"
+            android:background="@drawable/nav_profile_pic_bg"
+            android:padding="@dimen/nav_profile_pic_padding"
+            android:src="@mipmap/ic_launcher_round" />
 
-        <TextView
-            android:id="@+id/userName"
+        <LinearLayout
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
-            android:layout_marginTop="@dimen/size_5dp"
-            android:text="@string/default_user_name"
-            android:textAppearance="@style/TextAppearance.AppCompat.Body1" />
+            android:gravity="bottom"
+            android:orientation="horizontal">
 
-        <TextView
-            android:id="@+id/contactInfo"
-            android:layout_width="wrap_content"
-            android:layout_height="wrap_content"
-            android:text="@string/default_contact_info" />
+            <LinearLayout
+                android:layout_width="0dp"
+                android:layout_height="wrap_content"
+                android:layout_weight="1"
+                android:orientation="vertical">
+
+                <TextView
+                    android:id="@+id/userName"
+                    android:layout_width="match_parent"
+                    android:layout_height="wrap_content"
+                    android:layout_marginTop="@dimen/size_5dp"
+                    android:text="@string/default_user_name"
+                    android:textAppearance="@style/TextAppearance.AppCompat.Body1" />
+
+                <TextView
+                    android:id="@+id/contactInfo"
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    android:text="@string/default_contact_info" />
+            </LinearLayout>
+
+            <ImageView
+                android:id="@+id/switchAccount"
+                android:layout_width="@dimen/size_40dp"
+                android:layout_height="@dimen/size_40dp"
+                android:src="@drawable/dummy_flat_image"
+                android:visibility="gone" />
+        </LinearLayout>
     </LinearLayout>
 
     <Button
@@ -46,5 +68,5 @@
         android:layout_height="wrap_content"
         android:layout_marginTop="@dimen/nav_header_vertical_spacing"
         android:text="@string/login"
-        android:visibility="gone" />
+        android:visibility="invisible" />
 </RelativeLayout>

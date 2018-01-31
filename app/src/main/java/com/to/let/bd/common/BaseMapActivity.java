@@ -14,7 +14,6 @@ import android.support.v4.app.ActivityCompat;
 import android.support.v4.content.ContextCompat;
 import android.support.v7.app.ActionBar;
 import android.support.v7.widget.Toolbar;
-import android.view.Menu;
 import android.view.MenuItem;
 
 import com.google.android.gms.auth.api.Auth;
@@ -24,7 +23,6 @@ import com.google.android.gms.auth.api.signin.GoogleSignInResult;
 import com.google.android.gms.common.ConnectionResult;
 import com.google.android.gms.common.api.ApiException;
 import com.google.android.gms.common.api.GoogleApiClient;
-import com.google.android.gms.common.api.PendingResult;
 import com.google.android.gms.common.api.ResolvableApiException;
 import com.google.android.gms.common.api.ResultCallback;
 import com.google.android.gms.common.api.Status;
@@ -32,7 +30,6 @@ import com.google.android.gms.location.LocationRequest;
 import com.google.android.gms.location.LocationServices;
 import com.google.android.gms.location.LocationSettingsRequest;
 import com.google.android.gms.location.LocationSettingsResponse;
-import com.google.android.gms.location.LocationSettingsResult;
 import com.google.android.gms.location.LocationSettingsStatusCodes;
 import com.google.android.gms.maps.CameraUpdateFactory;
 import com.google.android.gms.maps.GoogleMap;
@@ -69,7 +66,7 @@ public abstract class BaseMapActivity extends BaseActivity implements OnMapReady
 
     // A default location (Sydney, Australia) and default zoom to use when location permission is
     // not granted.
-    private LatLng defaultLatLng = new LatLng(23.8103, 90.4125);
+    private LatLng defaultLatLng = new LatLng(AppConstants.defaultLatitude, AppConstants.defaultLongitude);
     protected static final int DEFAULT_ZOOM = 15;
     private static final int PERMISSIONS_REQUEST_CODE = 1;
 
@@ -130,9 +127,8 @@ public abstract class BaseMapActivity extends BaseActivity implements OnMapReady
         if (actionBar != null) {
             actionBar.setDisplayHomeAsUpEnabled(true);
             actionBar.setDisplayShowTitleEnabled(true);
-            actionBar.setTitle(getActivityTitle());
         }
-
+        updateTitle(getActivityTitle());
         if (firebaseUser != null) {
             if (!firebaseUser.isAnonymous()) {
                 String email = firebaseUser.getEmail();
@@ -308,6 +304,9 @@ public abstract class BaseMapActivity extends BaseActivity implements OnMapReady
      */
     @Override
     public void onMapReady(GoogleMap googleMap) {
+        if (this.googleMap != null) {
+            return;
+        }
         this.googleMap = googleMap;
         this.googleMap.setMapType(GoogleMap.MAP_TYPE_NORMAL);
         this.googleMap.getUiSettings().setZoomControlsEnabled(true);

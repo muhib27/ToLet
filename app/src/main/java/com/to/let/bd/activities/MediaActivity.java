@@ -63,6 +63,8 @@ import com.to.let.bd.utils.pick_photo.SpaceItemDecoration;
 
 import java.util.ArrayList;
 import java.util.HashMap;
+import java.util.SortedSet;
+import java.util.TreeSet;
 
 public class MediaActivity extends BaseActivity {
 
@@ -78,8 +80,9 @@ public class MediaActivity extends BaseActivity {
         if (actionBar != null) {
             actionBar.setDisplayHomeAsUpEnabled(true);
             actionBar.setDisplayShowTitleEnabled(true);
-            actionBar.setTitle(R.string.please_select_photo);
         }
+
+        updateTitle(getString(R.string.please_select_photo));
 
         requestStoragePermission();
         initBroadcast();
@@ -95,26 +98,6 @@ public class MediaActivity extends BaseActivity {
         }
     }
 
-//    private void requestCameraPermission() {
-//        if (ContextCompat.checkSelfPermission(this.getApplicationContext(), Manifest.permission.CAMERA) == PackageManager.PERMISSION_GRANTED) {
-//            executeCameraAction();
-//        } else {
-//            ActivityCompat.requestPermissions(this, new String[]{Manifest.permission.CAMERA}, PERMISSIONS_REQUEST_CODE);
-//        }
-//    }
-
-//    private void requestCameraAndStoragePermission() {
-//        if (ContextCompat.checkSelfPermission(this.getApplicationContext(), Manifest.permission.CAMERA) == PackageManager.PERMISSION_GRANTED &&
-//                ContextCompat.checkSelfPermission(this.getApplicationContext(), Manifest.permission.READ_EXTERNAL_STORAGE) == PackageManager.PERMISSION_GRANTED &&
-//                ContextCompat.checkSelfPermission(this.getApplicationContext(), Manifest.permission.WRITE_EXTERNAL_STORAGE) == PackageManager.PERMISSION_GRANTED) {
-//            executeFullAction();
-//        } else {
-//            ActivityCompat.requestPermissions(this, new String[]{Manifest.permission.CAMERA,
-//                            Manifest.permission.READ_EXTERNAL_STORAGE, Manifest.permission.WRITE_EXTERNAL_STORAGE},
-//                    PERMISSIONS_REQUEST_CODE);
-//        }
-//    }
-
     private String adId;
     private String flatType;
     private ArrayList<ImageInfo> previouslySelectedImage = new ArrayList<>();
@@ -128,12 +111,20 @@ public class MediaActivity extends BaseActivity {
 
             Bundle bundle = intent.getExtras();
             if (bundle != null) {
-                Object imageArray = bundle.getSerializable(AppConstants.keyImageList);
-                if (imageArray instanceof ArrayList) {
-                    imagePreviewArray.clear();
-                    imagePreviewArray.addAll((ArrayList<ImageInfo>) imageArray);
-                    previouslySelectedImage.clear();
-                    previouslySelectedImage.addAll((ArrayList<ImageInfo>) imageArray);
+                imagePreviewArray.clear();
+                previouslySelectedImage.clear();
+
+                Object object = bundle.getSerializable(AppConstants.keyImageList);
+                if (object != null) {
+                    HashMap<String, ImageInfo> imageMap = (HashMap) object;
+                    SortedSet<String> keys = new TreeSet<>(imageMap.keySet());
+                    for (String key : keys) {
+                        ImageInfo imageInfo = imageMap.get(key);
+                        if (imageInfo != null) {
+                            imagePreviewArray.add(imageInfo);
+                            previouslySelectedImage.add(imageInfo);
+                        }
+                    }
                 }
             }
         }
@@ -155,10 +146,6 @@ public class MediaActivity extends BaseActivity {
         init();
     }
 
-    private void executeCameraAction() {
-
-    }
-
     /**
      * Handles the result of the request for location permissions.
      */
@@ -168,8 +155,6 @@ public class MediaActivity extends BaseActivity {
             case PERMISSIONS_REQUEST_CODE:
                 if (grantResults.length > 0 && permissions[0].equals(Manifest.permission.WRITE_EXTERNAL_STORAGE) && grantResults[0] == PackageManager.PERMISSION_GRANTED) {
                     executeStorageAction();
-                } else if (grantResults.length > 0 && permissions[0].equals(Manifest.permission.CAMERA) && grantResults[0] == PackageManager.PERMISSION_GRANTED) {
-                    executeCameraAction();
                 } else {
                     finish();
                 }
@@ -181,7 +166,6 @@ public class MediaActivity extends BaseActivity {
     private PickData pickData;
     private RecyclerView photoList;
     private PickGridAdapter pickGridAdapter;
-    private ArrayList<String> allPhotos;
     private RequestManager manager;
 
     private void init() {
@@ -215,7 +199,7 @@ public class MediaActivity extends BaseActivity {
             public void pickSuccess() {
                 closeProgressDialog();
                 GroupImage groupImage = PickPreferences.getInstance(MediaActivity.this).getListImage();
-                allPhotos = groupImage.mGroupMap.get(PickConfig.ALL_PHOTOS);
+                ArrayList<String> allPhotos = groupImage.mGroupMap.get(PickConfig.ALL_PHOTOS);
                 if (allPhotos != null && !allPhotos.isEmpty()) {
                     pickGridAdapter = new PickGridAdapter(MediaActivity.this,
                             allPhotos, pickData, (AppConstants.maximumImage - imagePreviewArray.size()));
@@ -259,11 +243,24 @@ public class MediaActivity extends BaseActivity {
     public boolean onOptionsItemSelected(MenuItem item) {
         switch (item.getItemId()) {
             case android.R.id.home:
-                finish();
+                onBackPressed();
                 return true;
             default:
                 return super.onOptionsItemSelected(item);
         }
+    }
+
+    private boolean isImageDeleted = false;
+
+    @Override
+    public void onBackPressed() {
+        if (isImageDeleted) {
+            Intent intent = new Intent();
+            setResult(RESULT_OK, intent);
+            finish();
+            return;
+        }
+        super.onBackPressed();
     }
 
     @Override
@@ -282,68 +279,35 @@ public class MediaActivity extends BaseActivity {
     }
 
     private BroadcastReceiver mBroadcastReceiver;
-    private ArrayList<String> imagePathList = new ArrayList<>();
     private int imageIndex = 0;
 
     private void submitImages() {
-        ArrayList<String> imagePathList = new ArrayList<>(pickGridAdapter.getSelectPath());
-        if (previouslySelectedImage.size() == 0 && !imagePathList.isEmpty()) {
-            onlyUploadNewPhoto(imagePathList, adId, AppConstants.adImageType);
-        } else if (imagePathList.isEmpty()) {
-            showToast(getString(R.string.please_select_photo));
-        } else {
-//            if (previouslySelectedImage.size() > imagePreviewArray.size() && imagePreviewArray.isEmpty()) {
-//                deletePreviouslySelectedAllPhoto();
-//            } else if (previouslySelectedImage.size() < imagePreviewArray.size() && imagePreviewArray.size() > 0 && !imagePathList.isEmpty()) {
-//                deleteAndNewUpload();
-//            }
+        if (pickGridAdapter.getSelectPath().isEmpty()) {
+            showSimpleDialog(getString(R.string.please_select_photo));
+            return;
         }
+
+        if (previouslySelectedImage.size() == imagePreviewArray.size()) {
+            boolean similarityFlag = true;
+            for (int i = 0; i < previouslySelectedImage.size(); i++) {
+                if (previouslySelectedImage.get(i) == null || imagePreviewArray.get(i) == null) {
+                    continue;
+                }
+
+                if (!previouslySelectedImage.get(i).downloadUrl.equals(imagePreviewArray.get(i).downloadUrl)) {
+                    similarityFlag = false;
+                    break;
+                }
+            }
+
+            if (similarityFlag) {
+                showSimpleDialog(getString(R.string.there_has_no_new_photo_to_publish));
+                return;
+            }
+        }
+
+        startUploadingPhoto();
     }
-
-    //photos/adPhotos/-L25qyUHGklzpUca2_4b/Map.jpg
-
-//    private void deletePreviouslySelectedAllPhoto() {
-//        initStorageRef();
-//
-//        for (int i = 0; i < previouslySelectedImage.size(); i++) {
-//            ImageInfo imageInfo = previouslySelectedImage.get(i);
-//            final String imagePath;
-//            if (imageInfo != null) {
-//                imagePath = imageInfo.imagePath;
-//            } else {
-//                imagePath = "photos/adPhotos/" + adId + "/" + i + ".jpg";
-//            }
-//
-//            final int finalI = i;
-//            storageReference
-//                    .child(imagePath)
-//                    .delete()
-//                    .addOnSuccessListener(new OnSuccessListener<Void>() {
-//                        @Override
-//                        public void onSuccess(Void aVoid) {
-//                            databaseReference
-//                                    .child(DBConstants.adList)
-//                                    .child(flatType)
-//                                    .child(adId)
-//                                    .child(DBConstants.images)
-//                                    .child(String.valueOf(finalI))
-//                                    .setValue(null);
-//                        }
-//                    })
-//                    .addOnFailureListener(new OnFailureListener() {
-//                        @Override
-//                        public void onFailure(@NonNull Exception exception) {
-//                            databaseReference
-//                                    .child(DBConstants.adList)
-//                                    .child(flatType)
-//                                    .child(adId)
-//                                    .child(DBConstants.images)
-//                                    .child(String.valueOf(finalI))
-//                                    .setValue(null);
-//                        }
-//                    });
-//        }
-//    }
 
     private StorageReference storageReference;
 
@@ -352,26 +316,94 @@ public class MediaActivity extends BaseActivity {
             storageReference = FirebaseStorage.getInstance().getReference();
     }
 
-    private void onlyUploadNewPhoto(ArrayList<String> imagePathList, String adId, int type) {
-        this.imagePathList.clear();
-        this.imagePathList.addAll(imagePathList);
-        imageIndex = imagePathList.size() - 1;
+    private void startUploadingPhoto() {
+        imageIndex = imagePreviewArray.size() - 1;
         showImageUploadProgressDialog();
-        uploadSingleImage(type, adId);
+
+        restrictedIndexArrayList.clear();
+        permittedIndexArrayList.clear();
+        for (int i = 0; i < imagePreviewArray.size(); i++) {
+            int foundedIndex = processImagePathIndex(i);
+            if (foundedIndex >= 0)
+                restrictedIndexArrayList.add(foundedIndex);
+        }
+
+        for (int i = imagePreviewArray.size() - 1; i >= 0; i--) {
+            if (!restrictedIndexArrayList.contains(i))
+                permittedIndexArrayList.add(i);
+        }
+        uploadSingleImage();
     }
 
-    private void uploadSingleImage(int type, String adId) {
-        if (imageIndex >= imagePathList.size()) {
+    private ArrayList<Integer> restrictedIndexArrayList = new ArrayList<>();
+    private ArrayList<Integer> permittedIndexArrayList = new ArrayList<>();
+
+    private void uploadSingleImage() {
+        if (imageIndex >= imagePreviewArray.size() || imageIndex < 0) {
+            completeImageUpload();
             return;
         }
+
+        if (imagePreviewArray.get(imageIndex) != null && imagePreviewArray.get(imageIndex).downloadUrl.startsWith("https")) {
+            imageIndex = imageIndex - 1;
+            uploadSingleImage();
+            return;
+        }
+
+        int saveIndex = imageIndex;
+
+        if (restrictedIndexArrayList.contains(saveIndex)) {
+            if (permittedIndexArrayList.size() > 0) {
+                saveIndex = permittedIndexArrayList.get(0);
+                permittedIndexArrayList.remove(0);
+                restrictedIndexArrayList.add(saveIndex);
+            }
+        }
+
+//        for (int i = saveIndex; i >= 0; i--) {
+//            int foundedIndex = processImagePathIndex(i);
+//            if (foundedIndex < 0)
+//                continue;
+//
+//            if (foundedIndex == saveIndex) {
+//                conflictDatabaseIndex = true;
+//                break;
+//            }
+//        }
+//
+//        if (conflictDatabaseIndex)
+
+
         // Start StorageUploadService to upload the file, so that the file is uploaded
         // even if this Activity is killed or put in the background
         startService(new Intent(this, UploadImageService.class)
-                .putExtra(AppConstants.keyType, type)
-                .putExtra(AppConstants.fileUri, Uri.parse("file://" + imagePathList.get(imageIndex)))
+                .putExtra(AppConstants.keyType, AppConstants.adImageType)
+                .putExtra(AppConstants.fileUri, Uri.parse("file://" + imagePreviewArray.get(imageIndex).downloadUrl))
                 .putExtra(DBConstants.adId, adId)
+                .putExtra(AppConstants.saveIndex, saveIndex)
                 .putExtra(AppConstants.imageIndex, imageIndex)
                 .setAction(AppConstants.actionUpload));
+    }
+
+    private int processImagePathIndex(int providedIndex) {
+        ImageInfo imageInfo = imagePreviewArray.get(providedIndex);
+        if (imageInfo == null || imageInfo.imageName == null || imageInfo.imageName.isEmpty())
+            return -1;
+        String imageName = imageInfo.imageName;
+
+        if (imageName.contains(".")) {
+            String[] part = imageName.split("\\.");
+
+            if (part.length > 0) {
+                try {
+                    return Integer.parseInt(part[0]);
+                } catch (Exception e) {
+                    e.printStackTrace();
+                }
+            }
+        }
+
+        return -1;
     }
 
     private void initBroadcast() {
@@ -389,14 +421,16 @@ public class MediaActivity extends BaseActivity {
                         int type = intent.getIntExtra(AppConstants.keyType, 0);
                         String adId = intent.getStringExtra(DBConstants.adId);
                         int imageIndex = intent.getIntExtra(AppConstants.imageIndex, 0);
+                        int saveIndex = intent.getIntExtra(AppConstants.saveIndex, 0);
                         String[] imageContents = intent.getStringArrayExtra(AppConstants.imageContents);
-                        completeSingleImageUpload(type, adId, imageIndex, imageContents);
+                        completeSingleImageUpload(type, adId, saveIndex, imageIndex, imageContents);
                     }
                     break;
                     case AppConstants.uploadProgress: {
                         int type = intent.getIntExtra(AppConstants.keyType, 0);
                         String adId = intent.getStringExtra(DBConstants.adId);
                         int imageIndex = intent.getIntExtra(AppConstants.imageIndex, 0);
+                        int saveIndex = intent.getIntExtra(AppConstants.saveIndex, 0);
                         int progress = intent.getIntExtra(AppConstants.progress, -1);
 
                         if (type == AppConstants.adImageType)
@@ -421,7 +455,7 @@ public class MediaActivity extends BaseActivity {
             progressBar.setIndeterminate(false);
 
         int max = progressBar.getMax();
-        int count = imagePathList.size();
+        int count = imagePreviewArray.size();
 
         int perImageMax = max / count;
 
@@ -436,11 +470,11 @@ public class MediaActivity extends BaseActivity {
         progressStatus.setText(imageUploadStatus);
     }
 
-    private void completeSingleImageUpload(int type, String adId, int imageIndex, String[] imageContents) {
-        updateDatabase(type, adId, imageIndex, imageContents);
+    private void completeSingleImageUpload(int type, String adId, int saveIndex, int imageIndex, String[] imageContents) {
+        updateDatabase(type, adId, saveIndex, imageContents);
         if (imageIndex != 0) {
             this.imageIndex = imageIndex - 1;
-            uploadSingleImage(type, adId);
+            uploadSingleImage();
         } else {
             completeImageUpload();
         }
@@ -459,9 +493,8 @@ public class MediaActivity extends BaseActivity {
     }
 
     private void imageUploadSuccess() {
-//        Intent intent = new Intent(this, AdListActivity.class);
-//        intent.addFlags(Intent.FLAG_ACTIVITY_CLEAR_TASK);
-//        startActivity(intent);
+        Intent intent = new Intent();
+        setResult(RESULT_OK, intent);
         finish();
     }
 
@@ -470,22 +503,23 @@ public class MediaActivity extends BaseActivity {
     }
 
     private void updateDatabase(int type, String adId, int imageIndex, String[] imageContents) {
-        HashMap<String, Object> adValues = new HashMap<>();
-        adValues.put(AppConstants.downloadUrl, imageContents[0]);
-        adValues.put(AppConstants.imageName, imageContents[1]);
-        adValues.put(AppConstants.imagePath, imageContents[2]);
+        HashMap<String, Object> imageValues = new HashMap<>();
+        imageValues.put(AppConstants.downloadUrl, imageContents[0]);
+        imageValues.put(AppConstants.imageName, imageContents[1]);
+        imageValues.put(AppConstants.imagePath, imageContents[2]);
 
-        HashMap<String, Object> childUpdates = new HashMap<>();
-        if (type == AppConstants.adImageType) {
-            childUpdates.put("/" + DBConstants.adList + "/" + flatType + "/" + adId + "/" + DBConstants.images + "/" + imageIndex, adValues);
-        }
+        databaseReference
+                .child(DBConstants.adList)
+                .child(flatType)
+                .child(adId)
+                .child(DBConstants.images)
+                .child(DBConstants.imageKeyForDatabase + String.valueOf(imageIndex))
+                .updateChildren(imageValues, new DatabaseReference.CompletionListener() {
+                    @Override
+                    public void onComplete(DatabaseError databaseError, DatabaseReference databaseReference) {
 
-        databaseReference.updateChildren(childUpdates, new DatabaseReference.CompletionListener() {
-            @Override
-            public void onComplete(DatabaseError databaseError, DatabaseReference databaseReference) {
-
-            }
-        });
+                    }
+                });
     }
 
     private DatabaseReference databaseReference;
@@ -546,7 +580,7 @@ public class MediaActivity extends BaseActivity {
     private ImagePreviewAdapter imagePreviewAdapter;
     private ArrayList<ImageInfo> imagePreviewArray = new ArrayList<>();
 
-    class ImagePreviewAdapter extends RecyclerView.Adapter<ImagePreviewAdapter.MyViewHolder> {
+    private class ImagePreviewAdapter extends RecyclerView.Adapter<ImagePreviewAdapter.MyViewHolder> {
 
         @Override
         public MyViewHolder onCreateViewHolder(ViewGroup parent, int viewType) {
@@ -632,12 +666,14 @@ public class MediaActivity extends BaseActivity {
 
     private void deleteSingleImage(String imagePath, final int deleteImageIndex) {
         initStorageRef();
+        showProgressDialog();
         storageReference
                 .child(imagePath)
                 .delete()
                 .addOnSuccessListener(new OnSuccessListener<Void>() {
                     @Override
                     public void onSuccess(Void aVoid) {
+                        closeProgressDialog();
                         removeContentFromDatabase(deleteImageIndex);
                     }
                 })
@@ -648,21 +684,24 @@ public class MediaActivity extends BaseActivity {
                         if (message != null && message.contains("not found")) {
                             removeContentFromDatabase(deleteImageIndex);
                         }
+                        closeProgressDialog();
                     }
                 });
     }
 
     private void removeContentFromDatabase(int deleteImageIndex) {
-        databaseReference
-                .child(DBConstants.adList)
-                .child(flatType)
-                .child(adId)
-                .child(DBConstants.images)
-                .child(String.valueOf(deleteImageIndex))
-                .removeValue();
-//        if (deleteImageIndex < previouslySelectedImage.size())
-//            previouslySelectedImage.set(deleteImageIndex, null);
+        int processImageIndex = processImagePathIndex(deleteImageIndex);
+        if (processImageIndex > -1) {
+            databaseReference
+                    .child(DBConstants.adList)
+                    .child(flatType)
+                    .child(adId)
+                    .child(DBConstants.images)
+                    .child(DBConstants.imageKeyForDatabase + String.valueOf(processImageIndex))
+                    .removeValue();
+        }
         updateList(deleteImageIndex);
+        isImageDeleted = true;
     }
 
     private void updateList(int position) {
@@ -689,7 +728,7 @@ public class MediaActivity extends BaseActivity {
     }
 
     private void deleteImage(int position) {
-        ImageInfo imageInfo = null;
+        ImageInfo imageInfo;
         if (position < imagePreviewArray.size()) {
             imageInfo = imagePreviewArray.get(position);
             if (imageInfo != null && imageInfo.imagePath != null && !imageInfo.imagePath.isEmpty()) {
@@ -701,13 +740,10 @@ public class MediaActivity extends BaseActivity {
     }
 
     private void updateSelectText(int selectSize) {
-        ActionBar actionBar = getSupportActionBar();
-        if (actionBar != null) {
-            if (selectSize <= 1) {
-                actionBar.setTitle("(" + selectSize + ") item selected.");
-            } else {
-                actionBar.setTitle("(" + selectSize + ") item's selected.");
-            }
+        if (selectSize <= 1) {
+            updateTitle("(" + selectSize + ") item selected.");
+        } else {
+            updateTitle("(" + selectSize + ") item's selected.");
         }
         if (selectSize > 0) {
             previewMessage.setVisibility(View.GONE);

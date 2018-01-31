@@ -4,6 +4,7 @@ import android.os.Bundle;
 
 import com.google.firebase.database.DatabaseReference;
 import com.google.firebase.database.Query;
+import com.to.let.bd.utils.AppConstants;
 import com.to.let.bd.utils.DBConstants;
 
 /**
@@ -27,13 +28,20 @@ public class SubAdList extends AdListBaseFragment {
     public Query getQuery(DatabaseReference databaseReference) {
         // All sub type ad like fav, all, user self, nearest, smart
         int subListTypeFav = getSubQuery();
-        if (subListTypeFav == 0) {
+        if (subListTypeFav == AppConstants.subQuerySmart) {
+            return null;
+        } else if (subListTypeFav == AppConstants.subQueryMy) {
             return databaseReference
-                    .child(DBConstants.adList)
-                    .orderByChild(DBConstants.favCount)
-                    .startAt(1);
+                    .child(DBConstants.userAdList)
+                    .child(getUid())
+                    .orderByChild(DBConstants.userId)
+                    .equalTo(getUid());
+        } else if (subListTypeFav == AppConstants.subQueryFav) {
+            return databaseReference
+                    .child(DBConstants.userFavAdList)
+                    .child(getUid());
         } else {
-            return databaseReference.child(DBConstants.adList);
+            return null;
         }
     }
 

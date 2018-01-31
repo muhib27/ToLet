@@ -4,34 +4,42 @@
     <group android:checkableBehavior="single">
         <item
             android:id="@+id/navAllAds"
-            android:icon="@drawable/ic_menu_share"
+            android:icon="@drawable/ic_menu_all_ad"
             android:title="@string/all_ad_list" />
         <item
-            android:id="@+id/navNearestAds"
-            android:icon="@drawable/ic_menu_send"
-            android:title="@string/nearest_ads" />
-        <item
-            android:id="@+id/navSmartAds"
-            android:icon="@drawable/ic_menu_send"
-            android:title="@string/smart_ads" />
+            android:id="@+id/navMyAds"
+            android:icon="@drawable/ic_menu_my_ad"
+            android:title="@string/my_ads" />
     </group>
 
-    <item android:title="@string/user_profile">
+    <item android:title="Filtered Item">
         <menu>
             <item
-                android:id="@+id/navMyAds"
-                android:icon="@drawable/ic_menu_share"
-                android:title="@string/my_ads" />
+                android:id="@+id/navNearestAds"
+                android:icon="@drawable/ic_menu_nearby2"
+                android:title="@string/nearest_ads" />
             <item
-                android:id="@+id/nav_favorites"
-                android:icon="@drawable/ic_menu_send"
-                android:title="@string/favorites" />
+                android:id="@+id/navSmartAds"
+                android:icon="@drawable/ic_menu_nearby"
+                android:title="@string/smart_ads" />
+            <item
+                android:id="@+id/navFavAds"
+                android:icon="@drawable/ic_menu_fav"
+                android:title="@string/my_favorites" />
         </menu>
     </item>
 
-    <item
-        android:id="@+id/navLogout"
-        android:icon="@drawable/ic_menu_share"
-        android:title="@string/logout" />
+    <item android:title="Action">
+        <menu>
+            <item
+                android:id="@+id/navShare"
+                android:icon="@drawable/ic_menu_share"
+                android:title="@string/share" />
+            <item
+                android:id="@+id/navLogout"
+                android:icon="@drawable/ic_menu_logout"
+                android:title="@string/logout" />
+        </menu>
+    </item>
 
 </menu>

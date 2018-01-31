@@ -36,6 +36,11 @@ public class AppConstants {
     public static final int placeAutoComplete = 1005;
     public static final int phoneHint = 1006;
     public static final int REQUEST_CHECK_SETTINGS = 1007;
+    public static final int addOrUpdateMedia = 1008;
+    public static final int editAd = 1009;
+    public static final int phoneCall = 1010;
+    public static final int sendEmail = 1011;
+    public static final int newAdType = 1012;
 
     public static final double defaultLatitude = 23.8103d;
     public static final double defaultLongitude = 90.4125d;
@@ -65,6 +70,7 @@ public class AppConstants {
     public static final String uploadError = "uploadError";
     public static final String imageContents = "imageContents";
     public static final String downloadUrl = "downloadUrl";
+    public static final String saveIndex = "saveIndex";
     public static final String imageIndex = "imageIndex";
     public static final String imageName = "imageName";
     public static final String imagePath = "imagePath";
@@ -268,7 +274,7 @@ public class AppConstants {
             String[] messTypeArray = context.getResources().getStringArray(R.array.mess_member_type_array);
             if (!(context instanceof AdDetailsActivity))
                 adDescription = messTypeArray[messInfo.memberType] + " member ";
-            adDescription += messInfo.numberOfSeat + "seat in " +
+            adDescription += messInfo.numberOfSeat + "seat-" +
                     messInfo.numberOfRoom + "room";
 
             if (messInfo.totalMember > 0)
@@ -296,5 +302,32 @@ public class AppConstants {
             }
         }
         return adDescription;
+    }
+
+    public static String mapMarkerTitle(Context context, AdInfo adInfo) {
+        String mapMarkerTitle = "";
+        if (adInfo.familyInfo != null) {
+            FamilyInfo familyInfo = adInfo.familyInfo;
+            mapMarkerTitle = familyInfo.bedRoom + "bed " + familyInfo.bathroom + "bath";
+        } else if (adInfo.messInfo != null) {
+            MessInfo messInfo = adInfo.messInfo;
+            String[] messTypeArray = context.getResources().getStringArray(R.array.mess_member_type_array);
+            mapMarkerTitle = messTypeArray[messInfo.memberType] + ": ";
+            mapMarkerTitle += messInfo.numberOfSeat + "seat-" + messInfo.numberOfRoom + "room";
+        } else if (adInfo.subletInfo != null) {
+            SubletInfo subletInfo = adInfo.subletInfo;
+            String[] subletTypeArray = context.getResources().getStringArray(R.array.sublet_type_array);
+            mapMarkerTitle = subletInfo.subletType >= 3 ? subletInfo.subletTypeOthers : subletTypeArray[subletInfo.subletType];
+        } else if (adInfo.othersInfo != null) {
+            OthersInfo othersInfo = adInfo.othersInfo;
+            mapMarkerTitle = othersInfo.rentType;
+            if (adInfo.flatSpace > 0) {
+                mapMarkerTitle += " " + adInfo.flatSpace + "sqft";
+            }
+        }
+
+        mapMarkerTitle += " TK " + rentFormatter(adInfo.flatRent) + "(" + DateUtils.getRentDateAsSmallFormat(adInfo.startingFinalDate) + ")";
+
+        return mapMarkerTitle;
     }
 }

@@ -1,6 +1,5 @@
 package com.to.let.bd.activities;
 
-import android.content.Intent;
 import android.os.Build;
 import android.os.Bundle;
 import android.support.annotation.NonNull;
@@ -13,6 +12,11 @@ import com.firebase.geofire.GeoFire;
 import com.firebase.geofire.GeoLocation;
 import com.firebase.geofire.GeoQuery;
 import com.firebase.geofire.GeoQueryEventListener;
+import com.google.android.gms.common.api.Status;
+import com.google.android.gms.location.places.AutocompleteFilter;
+import com.google.android.gms.location.places.Place;
+import com.google.android.gms.location.places.ui.PlaceAutocompleteFragment;
+import com.google.android.gms.location.places.ui.PlaceSelectionListener;
 import com.google.android.gms.maps.CameraUpdateFactory;
 import com.google.android.gms.maps.GoogleMap;
 import com.google.android.gms.maps.model.BitmapDescriptorFactory;
@@ -28,10 +32,12 @@ import com.google.gson.JsonObject;
 import com.to.let.bd.R;
 import com.to.let.bd.common.BaseMapActivity;
 import com.to.let.bd.model.AdInfo;
+import com.to.let.bd.model.FamilyInfo;
 import com.to.let.bd.model.google_place.GooglePlace;
 import com.to.let.bd.model.google_place.GooglePlaceResult;
 import com.to.let.bd.utils.AppConstants;
 import com.to.let.bd.utils.DBConstants;
+import com.to.let.bd.utils.DateUtils;
 import com.to.let.bd.utils.JsonUtils;
 import com.to.let.bd.utils.retrofit.RetrofitConstants;
 
@@ -102,24 +108,58 @@ public class MapActivity extends BaseMapActivity implements BottomNavigationView
 
     public static final String[] googlePlaceType = {"bank", "school", "department_store", "bus_station"};
 
-    //    private double latitude, longitude;
     private String flatType;
     private AdInfo adInfo;
-    private LatLng selectedLocation;
 
     @Override
     protected void onCreate() {
-        Bundle bundle = getIntent().getExtras();
-        if (bundle == null)
-            return;
-        adInfo = (AdInfo) bundle.getSerializable(AppConstants.keyAdInfo);
-        flatType = bundle.getString(DBConstants.flatType);
-
-        if (adInfo == null)
-            return;
-
-        selectedLocation = new LatLng(adInfo.latitude, adInfo.longitude);
         initBottomNavigation();
+        initPlace();
+
+        Bundle bundle = getIntent().getExtras();
+        if (bundle != null) {
+            adInfo = (AdInfo) bundle.getSerializable(AppConstants.keyAdInfo);
+            flatType = bundle.getString(DBConstants.flatType);
+        }
+
+        if (flatType == null || flatType.isEmpty())
+            flatType = DBConstants.keyMess;
+
+        invalidateOptionsMenu();
+        if (adInfo != null) {
+            selectedCenterLatLng = new LatLng(adInfo.latitude, adInfo.longitude);
+        }
+    }
+
+    private void initPlace() {
+        findViewById(R.id.searchThisArea).setOnClickListener(new View.OnClickListener() {
+            @Override
+            public void onClick(View v) {
+                selectedCenterLatLng = googleMap.getCameraPosition().target;
+                loadNearestData();
+            }
+        });
+
+        PlaceAutocompleteFragment placeAutocomplete = (PlaceAutocompleteFragment) getFragmentManager()
+                .findFragmentById(R.id.placeAutocomplete);
+        placeAutocomplete.setHint(getString(R.string.please_type_here_for_search));
+        AutocompleteFilter typeFilter = new AutocompleteFilter.Builder()
+                .setCountry("BD")
+                .build();
+        placeAutocomplete.setFilter(typeFilter);
+        placeAutocomplete.setOnPlaceSelectedListener(new PlaceSelectionListener() {
+            @Override
+            public void onPlaceSelected(Place place) {
+                googleMap.moveCamera(CameraUpdateFactory.newLatLngZoom(place.getLatLng(), DEFAULT_ZOOM));
+                selectedCenterLatLng = place.getLatLng();
+                loadNearestData();
+            }
+
+            @Override
+            public void onError(Status status) {
+                showLog("An error occurred: " + status);
+            }
+        });
     }
 
     @Override
@@ -134,13 +174,32 @@ public class MapActivity extends BaseMapActivity implements BottomNavigationView
     protected void onMapReady2(GoogleMap googleMap) {
         this.googleMap = googleMap;
 
-        googleMap.setOnInfoWindowClickListener(new GoogleMap.OnInfoWindowClickListener() {
+        this.googleMap.setOnCameraIdleListener(new GoogleMap.OnCameraIdleListener() {
+            @Override
+            public void onCameraIdle() {
+                selectedCenterLatLng = MapActivity.this.googleMap.getCameraPosition().target;
+            }
+        });
+
+        this.googleMap.setOnMapLongClickListener(new GoogleMap.OnMapLongClickListener() {
+            @Override
+            public void onMapLongClick(LatLng latLng) {
+                MapActivity.this.googleMap.moveCamera(CameraUpdateFactory.newLatLngZoom(latLng, DEFAULT_ZOOM));
+            }
+        });
+
+        this.googleMap.setOnInfoWindowClickListener(new GoogleMap.OnInfoWindowClickListener() {
             @Override
             public void onInfoWindowClick(Marker marker) {
                 if (marker.getTag() == null) {
-                    showSimpleDialog(R.string.something_wrong_please_report_a_bug);
                     return;
                 }
+
+                if (marker.getTag() instanceof AdInfo) {
+                    startAdDetailsActivity((AdInfo) marker.getTag());
+                    return;
+                }
+
                 showProgressDialog();
                 DatabaseReference databaseReference = FirebaseDatabase.getInstance().getReference();
                 databaseReference
@@ -168,51 +227,42 @@ public class MapActivity extends BaseMapActivity implements BottomNavigationView
         });
     }
 
-//    private void startAdDetailsActivity() {
-//        Intent adDetailsIntent = new Intent(this, AdDetailsActivity.class);
-//        adDetailsIntent.addFlags(Intent.FLAG_ACTIVITY_NEW_TASK);
-//        startActivity(adDetailsIntent);
-//    }
+    private LatLng selectedCenterLatLng;
 
-    private void loadData() {
-        if (adInfo == null)
+    private void loadNearestData() {
+        if (adInfo == null && selectedCenterLatLng == null)
             return;
 
-        this.googleMap.moveCamera(CameraUpdateFactory.newLatLngZoom(new LatLng(adInfo.latitude, adInfo.longitude), DEFAULT_ZOOM));
+        this.googleMap.moveCamera(CameraUpdateFactory.newLatLngZoom(new LatLng(selectedCenterLatLng.latitude, selectedCenterLatLng.longitude), DEFAULT_ZOOM));
         DatabaseReference ref = FirebaseDatabase.getInstance().getReference(DBConstants.geoFire + "/" + flatType);
         GeoFire geoFire = new GeoFire(ref);
 
         final double radius = 5.0;
         nearbySimilar.clear();
-        GeoQuery geoQuery = geoFire.queryAtLocation(new GeoLocation(adInfo.latitude, adInfo.longitude), radius);
+        GeoQuery geoQuery = geoFire.queryAtLocation(new GeoLocation(selectedCenterLatLng.latitude, selectedCenterLatLng.longitude), radius);
         geoQuery.addGeoQueryEventListener(new GeoQueryEventListener() {
             @Override
             public void onKeyEntered(String key, GeoLocation geoLocation) {
-                showLog("onKeyEntered" + key);
-                showLog("onKeyEntered" + geoLocation.toString());
                 nearbySimilar.put(key, geoLocation);
             }
 
             @Override
             public void onKeyExited(String key) {
-                showLog("onKeyExited" + key);
+
             }
 
             @Override
             public void onKeyMoved(String s, GeoLocation geoLocation) {
-                showLog("onKeyMoved" + s);
-                showLog("onKeyMoved" + geoLocation.toString());
+
             }
 
             @Override
             public void onGeoQueryReady() {
-                showLog("onGeoQueryReady" + System.currentTimeMillis());
                 bottomNavigationView.setSelectedItemId(R.id.actionMap);
             }
 
             @Override
             public void onGeoQueryError(DatabaseError databaseError) {
-                showLog("onGeoQueryError" + databaseError.getMessage());
                 bottomNavigationView.setSelectedItemId(R.id.actionMap);
             }
         });
@@ -220,7 +270,11 @@ public class MapActivity extends BaseMapActivity implements BottomNavigationView
 
     @Override
     protected void findLastKnownLocation(LatLng defaultLatLng) {
-        loadData();
+        if (adInfo == null)
+            selectedCenterLatLng = defaultLatLng;
+        else
+            selectedCenterLatLng = new LatLng(adInfo.latitude, adInfo.longitude);
+        loadNearestData();
     }
 
     private BottomNavigationView bottomNavigationView;
@@ -231,7 +285,7 @@ public class MapActivity extends BaseMapActivity implements BottomNavigationView
     }
 
     private void initPlacesRequest(int type) {
-        String location = adInfo.latitude + "," + adInfo.longitude;
+        String location = selectedCenterLatLng.latitude + "," + selectedCenterLatLng.longitude;
         googlePlaceCall = RetrofitConstants.getGooglePlaces(location, googlePlaceType[type]);
         startRequest(type);
     }
@@ -274,26 +328,36 @@ public class MapActivity extends BaseMapActivity implements BottomNavigationView
         isCanceled = true;
     }
 
-//    private long flatRent = 15000;
-
     private void addMarkerForSelectedFlat() {
-        int resourceId = R.drawable.marker_purple_others;
-        if (flatType.equals(DBConstants.keyFamily)) {
-            resourceId = R.drawable.marker_blue_family;
-        } else if (flatType.equals(DBConstants.keyMess)) {
-            resourceId = R.drawable.marker_green_mess;
-        } else if (flatType.equals(DBConstants.keySublet)) {
-            resourceId = R.drawable.marker_merun_sublet;
+        if (adInfo == null)
+            return;
+        else {
+            if (adInfo.familyInfo != null && !flatType.equals(DBConstants.keyFamily)) {
+                return;
+            } else if (adInfo.messInfo != null && !flatType.equals(DBConstants.keyMess)) {
+                return;
+            } else if (adInfo.subletInfo != null && !flatType.equals(DBConstants.keySublet)) {
+                return;
+            } else if (adInfo.othersInfo != null && !flatType.equals(DBConstants.keyOthers)) {
+                return;
+            }
         }
 
-//        String markerValue = "৳ " + AppConstants.rentFormatter(flatRent);
-//        if ((flatRent / 1000) > 0) {
-//            markerValue = "৳ " + (flatRent / 1000) + "K";
-//        }
-//        Bitmap bitmap = AppConstants.writeOnDrawable(this, resourceId, markerValue);
+        int resourceId = R.drawable.marker_purple_others;
+        switch (flatType) {
+            case DBConstants.keyFamily:
+                resourceId = R.drawable.marker_blue_family;
+                break;
+            case DBConstants.keyMess:
+                resourceId = R.drawable.marker_green_mess;
+                break;
+            case DBConstants.keySublet:
+                resourceId = R.drawable.marker_merun_sublet;
+                break;
+        }
 
         googleMap.addMarker(new MarkerOptions()
-                .position(selectedLocation)
+                .position(new LatLng(adInfo.latitude, adInfo.longitude))
                 .icon(BitmapDescriptorFactory.fromResource(resourceId)));
     }
 
@@ -354,21 +418,66 @@ public class MapActivity extends BaseMapActivity implements BottomNavigationView
         }
 
         for (String key : nearbySimilar.keySet()) {
-            if (key.equals(adInfo.adId))
+            if (adInfo != null && key.equals(adInfo.adId))
                 continue;
-            Marker marker = googleMap.addMarker(new MarkerOptions()
+            final Marker marker = googleMap.addMarker(new MarkerOptions()
                     .position(new LatLng(nearbySimilar.get(key).latitude, nearbySimilar.get(key).longitude))
-                    .snippet("tap here for see details about this flat")
-                    .title("Please tap here")
+                    .title("!!!Please tap here!!!")
+                    .snippet("Please tap here for see details")
                     .icon(BitmapDescriptorFactory.fromResource(resourceId)));
+
+            DatabaseReference databaseReference = FirebaseDatabase.getInstance().getReference();
+            databaseReference
+                    .child(DBConstants.adList)
+                    .child(flatType)
+                    .child(key)
+                    .addListenerForSingleValueEvent(new ValueEventListener() {
+                        @Override
+                        public void onDataChange(DataSnapshot dataSnapshot) {
+                            AdInfo adInfo = dataSnapshot.getValue(AdInfo.class);
+                            if (adInfo != null) {
+                                marker.setTitle(AppConstants.mapMarkerTitle(MapActivity.this, adInfo));
+                                marker.setTag(adInfo);
+                            }
+                        }
+
+                        @Override
+                        public void onCancelled(DatabaseError databaseError) {
+
+                        }
+                    });
             marker.setTag(key);
         }
     }
 
     @Override
     public boolean onCreateOptionsMenu(Menu menu) {
-        getMenuInflater().inflate(R.menu.share, menu);
+        getMenuInflater().inflate(R.menu.map_activity, menu);
         return true;
+    }
+
+    @Override
+    public boolean onPrepareOptionsMenu(Menu menu) {
+        final MenuItem filterByFamily = menu.findItem(R.id.filterByFamily);
+        final MenuItem filterByMess = menu.findItem(R.id.filterByMess);
+        final MenuItem filterBySublet = menu.findItem(R.id.filterBySublet);
+        final MenuItem filterByOthers = menu.findItem(R.id.filterByOthers);
+
+        switch (flatType) {
+            case DBConstants.keyFamily:
+                filterByFamily.setChecked(true);
+                break;
+            case DBConstants.keyMess:
+                filterByMess.setChecked(true);
+                break;
+            case DBConstants.keySublet:
+                filterBySublet.setChecked(true);
+                break;
+            default:
+                filterByOthers.setChecked(true);
+
+        }
+        return super.onPrepareOptionsMenu(menu);
     }
 
     @Override
@@ -377,8 +486,25 @@ public class MapActivity extends BaseMapActivity implements BottomNavigationView
             case android.R.id.home:
                 finish();
                 return true;
-            case R.id.shareAction:
-                shareAction();
+            case R.id.filterByFamily:
+                flatType = DBConstants.keyFamily;
+                invalidateOptionsMenu();
+                loadNearestData();
+                return true;
+            case R.id.filterByMess:
+                flatType = DBConstants.keyMess;
+                invalidateOptionsMenu();
+                loadNearestData();
+                return true;
+            case R.id.filterBySublet:
+                flatType = DBConstants.keySublet;
+                invalidateOptionsMenu();
+                loadNearestData();
+                return true;
+            case R.id.filterByOthers:
+                flatType = DBConstants.keyOthers;
+                invalidateOptionsMenu();
+                loadNearestData();
                 return true;
             default:
                 return super.onOptionsItemSelected(item);

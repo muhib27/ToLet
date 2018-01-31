@@ -215,7 +215,7 @@
                         android:gravity="center"
                         android:hint="@string/floor"
                         android:imeOptions="actionNext"
-                        android:inputType="numberDecimal"
+                        android:inputType="number"
                         android:maxLength="2"
                         android:maxLines="1"
                         android:minWidth="@dimen/size_50dp"
@@ -253,7 +253,7 @@
                         android:gravity="center"
                         android:hint="@string/rent"
                         android:imeOptions="actionNext"
-                        android:inputType="numberDecimal"
+                        android:inputType="number"
                         android:maxLength="6"
                         android:maxLines="1"
                         android:singleLine="true" />
@@ -281,7 +281,7 @@
                         android:gravity="center"
                         android:hint="@string/utility_bill"
                         android:imeOptions="actionNext"
-                        android:inputType="numberDecimal"
+                        android:inputType="number"
                         android:maxLength="5"
                         android:maxLines="1"
                         android:singleLine="true" />

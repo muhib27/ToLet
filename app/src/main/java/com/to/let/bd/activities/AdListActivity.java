@@ -104,13 +104,6 @@ public class AdListActivity extends BaseActivity implements NavigationView.OnNav
         init();
     }
 
-    private void startNewAdActivity() {
-//        requestHint();
-        Intent newAdIntent = new Intent(this, NewAdActivity2.class);
-        newAdIntent.addFlags(Intent.FLAG_ACTIVITY_CLEAR_TASK);
-        startActivity(newAdIntent);
-    }
-
     private NavigationView navigationView;
     private LinearLayout profileInfoLay;
     private ImageView userPic;

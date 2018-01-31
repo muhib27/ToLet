@@ -18,6 +18,7 @@ package com.to.let.bd.activities;
 
 import android.app.DatePickerDialog;
 import android.app.Dialog;
+import android.content.DialogInterface;
 import android.content.Intent;
 import android.graphics.Color;
 import android.graphics.drawable.ColorDrawable;
@@ -30,8 +31,8 @@ import android.support.v4.app.FragmentPagerAdapter;
 import android.support.v4.view.GravityCompat;
 import android.support.v4.view.ViewPager;
 import android.support.v4.widget.DrawerLayout;
-import android.support.v7.app.ActionBar;
 import android.support.v7.app.ActionBarDrawerToggle;
+import android.support.v7.app.AlertDialog;
 import android.support.v7.widget.Toolbar;
 import android.view.Gravity;
 import android.view.Menu;
@@ -51,19 +52,25 @@ import com.bumptech.glide.request.RequestOptions;
 import com.google.android.gms.ads.AdListener;
 import com.google.android.gms.ads.AdRequest;
 import com.google.android.gms.ads.InterstitialAd;
+import com.google.firebase.database.DataSnapshot;
+import com.google.firebase.database.DatabaseError;
 import com.google.firebase.database.DatabaseReference;
 import com.google.firebase.database.FirebaseDatabase;
+import com.google.firebase.database.Query;
+import com.google.firebase.database.ValueEventListener;
 import com.to.let.bd.R;
 import com.to.let.bd.common.BaseFirebaseAuthActivity;
+import com.to.let.bd.fragments.AdListBaseFragment;
 import com.to.let.bd.fragments.FamilyFlatList;
 import com.to.let.bd.fragments.MessFlatList;
 import com.to.let.bd.fragments.OthersFlatList;
 import com.to.let.bd.fragments.SubletFlatList;
+import com.to.let.bd.model.AdInfo;
 import com.to.let.bd.utils.AppConstants;
 import com.to.let.bd.utils.DBConstants;
 import com.to.let.bd.utils.DateUtils;
 
-import java.util.Calendar;
+import java.util.ArrayList;
 
 public class AdListActivity2 extends BaseFirebaseAuthActivity implements
         NavigationView.OnNavigationItemSelectedListener {
@@ -75,20 +82,13 @@ public class AdListActivity2 extends BaseFirebaseAuthActivity implements
         return R.layout.activity_ad_list2;
     }
 
-    private Calendar newDate;
-
     @Override
     protected void onCreate() {
         initTitle();
 
         Toolbar toolbar = findViewById(R.id.toolbar);
         setSupportActionBar(toolbar);
-
-        ActionBar actionBar = getSupportActionBar();
-        if (actionBar != null) {
-            actionBar.setTitle(getActivityTitle());
-        }
-
+        updateTitle(getActivityTitle());
         init();
 
         DrawerLayout drawer = findViewById(R.id.drawer_layout);
@@ -127,113 +127,20 @@ public class AdListActivity2 extends BaseFirebaseAuthActivity implements
 //                phoneNumberVerification("1674547477");
             }
         });
+        navigationView.setCheckedItem(R.id.navAllAds);
+    }
+
+    @Override
+    public void onActivityResult(int requestCode, int resultCode, Intent data) {
+        super.onActivityResult(requestCode, resultCode, data);
     }
 
     @Override
     protected void onResume() {
         super.onResume();
         updateNavHeader();
+        navigationView.setCheckedItem(R.id.navAllAds);
     }
-
-//    private void facebookAccountKit() {
-//        AccessToken accessToken = AccountKit.getCurrentAccessToken();
-//
-//        if (accessToken != null) {
-//            //Handle Returning User
-//        } else {
-//            //Handle new or logged out userCopy Code
-//        }
-//    }
-//
-//    public void phoneNumberVerification(String selectedPhoneNumber) {
-//        final Intent intent = new Intent(this, AccountKitActivity.class);
-//        AccountKitConfiguration.AccountKitConfigurationBuilder configurationBuilder =
-//                new AccountKitConfiguration.AccountKitConfigurationBuilder(
-//                        LoginType.PHONE, AccountKitActivity.ResponseType.TOKEN); // or .ResponseType.TOKEN
-//        PhoneNumber phoneNumber = new PhoneNumber("+880", selectedPhoneNumber, "BD");
-//        configurationBuilder.setInitialPhoneNumber(phoneNumber);
-//        intent.putExtra(AccountKitActivity.ACCOUNT_KIT_ACTIVITY_CONFIGURATION,
-//                configurationBuilder.build());
-//        startActivityForResult(intent, SMS_REQUEST_CODE);
-//    }
-//
-//    @Override
-//    public void onActivityResult(int requestCode, int resultCode, Intent data) {
-//        super.onActivityResult(requestCode, resultCode, data);
-//        if (requestCode == SMS_REQUEST_CODE) { // confirm that this response matches your request
-//            AccountKitLoginResult loginResult = data.getParcelableExtra(AccountKitLoginResult.RESULT_KEY);
-//            String toastMessage;
-//            getCurrentAccount();
-//            if (loginResult.getError() != null) {
-//                toastMessage = loginResult.getError().getErrorType().getMessage();
-//            } else if (loginResult.wasCancelled()) {
-//                toastMessage = "Cancelled";
-//            } else {
-//                if (loginResult.getAccessToken() != null) {
-//                    toastMessage = "Success:" + loginResult.getAccessToken().getAccountId();
-//                } else {
-//                    toastMessage = String.format("Success:%s...", loginResult.getAuthorizationCode().substring(0, 10));
-//                }
-//                // Success! Start your next activity...
-////                loginResult.getAuthorizationCode()
-//
-//                AccountKit.getCurrentAccount(new AccountKitCallback<Account>() {
-//                    @Override
-//                    public void onSuccess(final Account account) {
-//                        String accountKitId = account.getId();
-//                        PhoneNumber phoneNumber = account.getPhoneNumber();
-//                        String phoneNumberString = phoneNumber.toString();
-//                    }
-//
-//                    @Override
-//                    public void onError(final AccountKitError error) {
-//                        // Handle Error
-//                    }
-//                });
-//                return;
-//            }
-//            showToast(toastMessage);
-//        }
-//    }
-//
-//    private void getCurrentAccount() {
-//        AccessToken accessToken = AccountKit.getCurrentAccessToken();
-//        if (accessToken != null) {
-//            //Handle Returning User
-//            AccountKit.getCurrentAccount(new AccountKitCallback<Account>() {
-//                @Override
-//                public void onSuccess(final Account account) {
-//                    // Get Account Kit ID
-//                    String accountKitId = account.getId();
-//                    showLog("Account Kit Id " + accountKitId);
-//
-//                    if (account.getPhoneNumber() != null) {
-//                        showLog("CountryCode" + "" + account.getPhoneNumber().getCountryCode());
-//                        showLog("PhoneNumber" + "" + account.getPhoneNumber().getPhoneNumber());
-//
-//                        // Get phone number
-//                        PhoneNumber phoneNumber = account.getPhoneNumber();
-//                        String phoneNumberString = phoneNumber.toString();
-//                        showLog("NumberString" + phoneNumberString);
-//                    }
-//
-//                    if (account.getEmail() != null)
-//                        showLog("Email" + account.getEmail());
-//                }
-//
-//                @Override
-//                public void onError(final AccountKitError error) {
-//                    // Handle Error
-//                    showLog(TAG + error.toString());
-//                }
-//            });
-//        } else {
-//            //Handle new or logged out user
-//            showLog(TAG + "Logged Out");
-//        }
-//    }
-
-    private final int SMS_REQUEST_CODE = 99;
 
     private void updateNavHeader() {
         Menu menuNav = navigationView.getMenu();
@@ -244,7 +151,6 @@ public class AdListActivity2 extends BaseFirebaseAuthActivity implements
             if (firebaseUser.isAnonymous()) {
                 profileInfoLay.setVisibility(View.GONE);
                 navPostYourAdd.setVisibility(View.VISIBLE);
-
                 logoutItem.setTitle(R.string.exit);
             } else {
                 profileInfoLay.setVisibility(View.VISIBLE);
@@ -281,11 +187,27 @@ public class AdListActivity2 extends BaseFirebaseAuthActivity implements
     @Override
     protected void setEmailAddress() {
         updateNavHeader();
+
+        int pagerSelection = mViewPager.getCurrentItem();
+
+        for (int i = pagerSelection - 1; i < pagerSelection + 1; i++) {
+            if (i == 0)
+                continue;
+            if (i >= mViewPager.getChildCount())
+                continue;
+
+            Fragment fragment = getSupportFragmentManager().findFragmentByTag("android:switcher:" + R.id.pager + ":" + i);
+
+            if (fragment != null && fragment instanceof AdListBaseFragment && fragment.isVisible()) {
+                ((AdListBaseFragment) fragment).reload();
+            }
+        }
     }
 
+    private ViewPager mViewPager;
+
     private void init() {
-        Button postYourAdd = findViewById(R.id.postYourAdd);
-        postYourAdd.setOnClickListener(new View.OnClickListener() {
+        findViewById(R.id.postYourAdd).setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View view) {
                 startNewAdActivity();
@@ -293,20 +215,16 @@ public class AdListActivity2 extends BaseFirebaseAuthActivity implements
         });
 
         CategoryPagerAdapter categoryPagerAdapter = new CategoryPagerAdapter(getSupportFragmentManager());
-        ViewPager mViewPager = findViewById(R.id.pager);
+        mViewPager = findViewById(R.id.pager);
         mViewPager.setAdapter(categoryPagerAdapter);
 
-        TabLayout tabLayout = findViewById(R.id.tabs);
+        tabLayout = findViewById(R.id.tabs);
         tabLayout.setupWithViewPager(mViewPager);
 
-        mViewPager.setCurrentItem(0);
+        mViewPager.setCurrentItem(1);
     }
 
-    private void startNewAdActivity() {
-        Intent newAdIntent = new Intent(this, NewAdActivity2.class);
-        newAdIntent.addFlags(Intent.FLAG_ACTIVITY_CLEAR_TASK);
-        startActivity(newAdIntent);
-    }
+    private TabLayout tabLayout;
 
     private String[] titles = new String[4];
 
@@ -322,17 +240,73 @@ public class AdListActivity2 extends BaseFirebaseAuthActivity implements
         // Handle navigation view item clicks here.
         int id = item.getItemId();
 
-        if (id == R.id.navLogout) {
-            logoutAndAnonymousLogin();
+        if (id == R.id.navAllAds) {
+            if (mViewPager.getCurrentItem() != 0) {
+                mViewPager.setCurrentItem(0, true);
+            }
+        } else if (id == R.id.navLogout) {
+            if (firebaseUser.isAnonymous()) {
+                showLoginAlert(-1, getString(R.string.exit_alert));
+            } else {
+                showLoginAlert(0, getString(R.string.logout_alert));
+            }
+            return true;
+        } else if (id == R.id.navNearestAds) {
+            startNearestActivity();
+        } else if (id == R.id.navSmartAds) {
+//            startSubAdListActivity(AppConstants.subQuerySmart);
+            showSimpleDialog(R.string.working_progress);
+            return true;
         } else if (id == R.id.navMyAds) {
-            startSubAdListActivity(AppConstants.subQueryFav);
-        } else if (id == R.id.navAllAds) {
-            startSubAdListActivity(AppConstants.subQueryAll);
+            if (firebaseUser.isAnonymous()) {
+                showLoginAlert(1, getString(R.string.login_alert));
+            } else {
+                startSubAdListActivity(AppConstants.subQueryMy);
+            }
+        } else if (id == R.id.navFavAds) {
+            if (firebaseUser.isAnonymous()) {
+                showLoginAlert(1, getString(R.string.login_alert));
+            } else {
+                startSubAdListActivity(AppConstants.subQueryFav);
+            }
+        } else if (id == R.id.navShare) {
+            shareAction();
         }
 
         DrawerLayout drawer = findViewById(R.id.drawer_layout);
         drawer.closeDrawer(GravityCompat.START);
         return true;
+    }
+
+    private void showLoginAlert(final int type, String message) {
+        AlertDialog alertDialog = new AlertDialog.Builder(this).create();
+        alertDialog.setIcon(R.mipmap.ic_launcher_round);
+        alertDialog.setTitle(R.string.alert);
+        alertDialog.setMessage(message);
+        alertDialog.setButton(AlertDialog.BUTTON_POSITIVE, getString(R.string.yes),
+                new DialogInterface.OnClickListener() {
+                    public void onClick(DialogInterface dialog, int which) {
+                        if (type == 1)
+                            navPostYourAdd.performClick();
+                        else if (type == 0)
+                            logoutAndAnonymousLogin();
+                        else
+                            onBackPressed();
+                    }
+                });
+        alertDialog.setButton(AlertDialog.BUTTON_NEGATIVE, getString(R.string.no),
+                new DialogInterface.OnClickListener() {
+                    public void onClick(DialogInterface dialog, int which) {
+
+                    }
+                });
+        alertDialog.show();
+    }
+
+    private void startNearestActivity() {
+        Intent mapIntent = new Intent(this, MapActivity.class);
+        mapIntent.addFlags(Intent.FLAG_ACTIVITY_NEW_TASK);
+        startActivity(mapIntent);
     }
 
     private void startSubAdListActivity(int subAdListType) {
@@ -380,15 +354,15 @@ public class AdListActivity2 extends BaseFirebaseAuthActivity implements
 
     @Override
     public boolean onCreateOptionsMenu(Menu menu) {
-        getMenuInflater().inflate(R.menu.share, menu);
+        getMenuInflater().inflate(R.menu.ad_list_activity, menu);
         return true;
     }
 
     @Override
     public boolean onOptionsItemSelected(MenuItem item) {
         switch (item.getItemId()) {
-            case R.id.shareAction:
-                shareAction();
+            case R.id.filterAction:
+                showFilterWindow();
                 return true;
             default:
                 return super.onOptionsItemSelected(item);
@@ -398,7 +372,6 @@ public class AdListActivity2 extends BaseFirebaseAuthActivity implements
     @Override
     public void onBackPressed() {
         super.onBackPressed();
-
         if (interstitialAd.isLoaded()) {
             interstitialAd.show();
         }
@@ -441,47 +414,67 @@ public class AdListActivity2 extends BaseFirebaseAuthActivity implements
 
     private Dialog searchDialog;
 
-    private void showSearchWindow() {
-        searchDialog = new Dialog(this);
-        searchDialog.requestWindowFeature(Window.FEATURE_NO_TITLE);
-        searchDialog.setContentView(R.layout.dialog_search_date_price_range);
-        Window window = searchDialog.getWindow();
-        if (window != null) {
-            window.setBackgroundDrawable(new ColorDrawable(Color.TRANSPARENT));
-            window.setLayout(ViewGroup.LayoutParams.MATCH_PARENT, ViewGroup.LayoutParams.WRAP_CONTENT);
-            window.setGravity(Gravity.CENTER_HORIZONTAL | Gravity.TOP);
+    private void showFilterWindow() {
+        if (searchDialog == null) {
+            searchDialog = new Dialog(this);
+            searchDialog.requestWindowFeature(Window.FEATURE_NO_TITLE);
+            searchDialog.setContentView(R.layout.dialog_search_date_price_range);
+            Window window = searchDialog.getWindow();
+            if (window != null) {
+                window.setBackgroundDrawable(new ColorDrawable(Color.TRANSPARENT));
+                window.setLayout(ViewGroup.LayoutParams.MATCH_PARENT, ViewGroup.LayoutParams.WRAP_CONTENT);
+                window.setGravity(Gravity.CENTER_HORIZONTAL | Gravity.TOP);
+            }
         }
-
         searchDialog.show();
 
         TextView title = searchDialog.findViewById(R.id.title);
-        title.setText(getString(R.string.search));
+        title.setText(getString(R.string.filter_the_selected_list));
 
-        final Button fromMonth, toMonth;
+        final TextView fromMonth, toMonth;
         fromMonth = searchDialog.findViewById(R.id.fromMonth);
         toMonth = searchDialog.findViewById(R.id.toMonth);
 
-        final int[] dateAsArray = DateUtils.getTodayDateAsArray();
+        final int[] fromDateAsArray = DateUtils.getTodayDateAsArray();
+        final int[] toDateAsArray = DateUtils.getTodayDateAsArray();
+
         fromMonth.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View view) {
                 if (fromMonth.getText().toString().equalsIgnoreCase(getString(R.string.any))) {
-                    showDatePickerDialog(fromMonth, dateAsArray[0], dateAsArray[1], dateAsArray[2]);
+                    showDatePickerDialog(fromMonth, fromDateAsArray[0], fromDateAsArray[1], fromDateAsArray[2]);
                 } else {
-                    int[] dateAsArray = DateUtils.splittedDate(fromMonth.getText().toString());
+                    int[] dateAsArray = DateUtils.getDateAsArray(DateUtils.getDate(fromMonth.getText().toString(), DateUtils.format2));
                     showDatePickerDialog(fromMonth, dateAsArray[0], dateAsArray[1], dateAsArray[2]);
                 }
             }
         });
+
+        fromMonth.setOnLongClickListener(new View.OnLongClickListener() {
+            @Override
+            public boolean onLongClick(View v) {
+                fromMonth.setText(R.string.any);
+                return true;
+            }
+        });
+
         toMonth.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View view) {
                 if (toMonth.getText().toString().equalsIgnoreCase(getString(R.string.any))) {
-                    showDatePickerDialog(toMonth, dateAsArray[0], dateAsArray[1], dateAsArray[2]);
+                    showDatePickerDialog(toMonth, toDateAsArray[0], toDateAsArray[1], toDateAsArray[2]);
                 } else {
-                    int[] dateAsArray = DateUtils.splittedDate(toMonth.getText().toString());
+                    int[] dateAsArray = DateUtils.getDateAsArray(DateUtils.getDate(toMonth.getText().toString(), DateUtils.format2));
                     showDatePickerDialog(toMonth, dateAsArray[0], dateAsArray[1], dateAsArray[2]);
                 }
+            }
+        });
+
+        toMonth.setOnLongClickListener(new View.OnLongClickListener() {
+            @Override
+            public boolean onLongClick(View v) {
+                toMonth.setText(R.string.any);
+                return true;
             }
         });
 
@@ -492,9 +485,14 @@ public class AdListActivity2 extends BaseFirebaseAuthActivity implements
         searchDialog.findViewById(R.id.okBtn).setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View view) {
-                long fromDateLong = 0;
-
-                long toDateLong = 0;
+                long fromDateTime = DateUtils.getDate(fromMonth.getText().toString(), DateUtils.format2).getTime();
+                if (fromDateTime > 0) {
+                    fromDateTime = DateUtils.getDateForQuery(fromDateTime);
+                }
+                long toDateTime = DateUtils.getDate(toMonth.getText().toString(), DateUtils.format2).getTime();
+                if (toDateTime > 0) {
+                    toDateTime = DateUtils.getDateForQuery(toDateTime);
+                }
 
                 long rentMinLong = 0;
                 if (!rentMin.getText().toString().trim().isEmpty()) {
@@ -506,8 +504,85 @@ public class AdListActivity2 extends BaseFirebaseAuthActivity implements
                     rentMaxLong = Long.parseLong(rentMax.getText().toString());
                 }
 
-                updateSearchedData(fromDateLong, toDateLong, rentMinLong, rentMaxLong);
-                searchDialog.dismiss();
+                if (fromDateTime == 0 && toDateTime == 0 && rentMinLong == 0 && rentMaxLong == 0) {
+                    showSimpleDialog(R.string.please_insert_valid_data);
+                    return;
+                }
+
+                if (fromDateTime > 0 && toDateTime > 0 && fromDateTime > toDateTime &&
+                        rentMinLong > 0 && rentMaxLong > 0 && rentMinLong > rentMaxLong) {
+                    showSimpleDialog(R.string.please_insert_valid_date_range_and_rent_range);
+                    return;
+                } else {
+                    if (fromDateTime > 0 && toDateTime > 0 && fromDateTime > toDateTime) {
+                        showSimpleDialog(R.string.please_insert_valid_date_range);
+                        return;
+                    } else if (rentMinLong > 0 && rentMaxLong > 0 && rentMinLong > rentMaxLong) {
+                        showSimpleDialog(R.string.please_insert_valid_rent_range);
+                        return;
+                    } else {
+                        int selectedTabPosition = tabLayout.getSelectedTabPosition();
+                        String flatType;
+                        if (selectedTabPosition == 1) {
+                            flatType = DBConstants.keyMess;
+                        } else if (selectedTabPosition == 2) {
+                            flatType = DBConstants.keySublet;
+                        } else if (selectedTabPosition == 3) {
+                            flatType = DBConstants.keyOthers;
+                        } else {
+                            flatType = DBConstants.keyFamily;
+                        }
+
+                        DatabaseReference databaseReference = FirebaseDatabase.getInstance().getReference();
+                        Query query = databaseReference.child(DBConstants.adList)
+                                .child(flatType);
+                        if ((fromDateTime == 0 && toDateTime == 0) || (rentMinLong == 0 && rentMaxLong == 0)) {
+                            if (fromDateTime == 0 && toDateTime == 0) {
+                                query = query.orderByChild(DBConstants.flatRent);
+                                if (rentMinLong > 0 && rentMaxLong > 0) {
+                                    query = query.startAt(rentMinLong).endAt(rentMaxLong);
+                                } else {
+                                    if (rentMinLong == 0) {
+                                        query = query.endAt(rentMaxLong);
+                                    } else {
+                                        query = query.startAt(rentMinLong);
+                                    }
+                                }
+                            } else {
+                                query = query.orderByChild(DBConstants.startingFinalDate);
+                                if (fromDateTime > 0 && toDateTime > 0) {
+                                    query = query.startAt(fromDateTime).endAt(toDateTime);
+                                } else {
+                                    if (fromDateTime == 0) {
+                                        query = query.endAt(toDateTime);
+                                    } else {
+                                        query = query.startAt(fromDateTime);
+                                    }
+                                }
+                            }
+                            loadData(query, 0, 0);
+                            searchDialog.dismiss();
+                            return;
+                        } else {
+                            query = query.orderByChild(DBConstants.flatRent);
+                            if (rentMinLong > 0 && rentMaxLong > 0) {
+                                query = query.startAt(rentMinLong).endAt(rentMaxLong);
+                            } else {
+                                if (rentMinLong == 0) {
+                                    query = query.endAt(rentMaxLong);
+                                } else {
+                                    query = query.startAt(rentMinLong);
+                                }
+                            }
+                            loadData(query, fromDateTime, toDateTime);
+                            searchDialog.dismiss();
+                            return;
+                        }
+                    }
+                }
+//                updateSearchedData(fromDateLong, toDateLong, rentMinLong, rentMaxLong);
+//                searchDialog.dismiss();
+//                showLog();
             }
         });
 
@@ -519,21 +594,87 @@ public class AdListActivity2 extends BaseFirebaseAuthActivity implements
         });
     }
 
-    private void updateSearchedData(long fromDateLong, long toDateLong, long rentMinLong, long rentMaxLong) {
+    private void updateSearchedData(long fromDateTime, long toDateTime, long rentMinLong, long rentMaxLong) {
+        int selectedTabPosition = tabLayout.getSelectedTabPosition();
+        String flatType;
+        if (selectedTabPosition == 1) {
+            flatType = DBConstants.keyMess;
+        } else if (selectedTabPosition == 2) {
+            flatType = DBConstants.keySublet;
+        } else if (selectedTabPosition == 3) {
+            flatType = DBConstants.keyOthers;
+        } else {
+            flatType = DBConstants.keyFamily;
+        }
+
         DatabaseReference databaseReference = FirebaseDatabase.getInstance().getReference();
-        databaseReference.child(DBConstants.adList)
-                .orderByChild(DBConstants.startingFinalDate)
-                .startAt(rentMinLong)
-                .endAt(rentMaxLong);
+        Query query = databaseReference.child(DBConstants.adList)
+                .child(flatType)
+                .orderByChild(DBConstants.flatRent);
+
+        query.startAt(rentMinLong)
+                .endAt(rentMaxLong)
+                .addListenerForSingleValueEvent(new ValueEventListener() {
+                    @Override
+                    public void onDataChange(DataSnapshot dataSnapshot) {
+
+                    }
+
+                    @Override
+                    public void onCancelled(DatabaseError databaseError) {
+
+                    }
+                });
     }
 
-    private void showDatePickerDialog(final Button view, int year, int month, int dayOfMonth) {
+    private void loadData(Query query, final long fromDateTime, final long toDateTime) {
+        query.addListenerForSingleValueEvent(new ValueEventListener() {
+            @Override
+            public void onDataChange(DataSnapshot dataSnapshot) {
+                ArrayList<AdInfo> adList = new ArrayList<>();
+                adList.clear();
+                for (DataSnapshot ad : dataSnapshot.getChildren()) {
+                    AdInfo adInfo = ad.getValue(AdInfo.class);
+
+                    if (adInfo == null)
+                        continue;
+
+                    if (fromDateTime > 0 || toDateTime > 0) {
+                        if (fromDateTime > 0 && toDateTime > 0) {
+                            if (adInfo.startingFinalDate >= fromDateTime && adInfo.startingFinalDate <= toDateTime)
+                                adList.add(adInfo);
+                        } else {
+                            if (toDateTime > 0) {
+                                if (adInfo.startingFinalDate <= toDateTime)
+                                    adList.add(adInfo);
+                            } else {// fromDateTime > 0
+                                if (adInfo.startingFinalDate >= fromDateTime)
+                                    adList.add(adInfo);
+                            }
+                        }
+                    } else {
+                        adList.add(adInfo);
+                    }
+                }
+
+                showLog("adList size: " + adList.size());
+            }
+
+            @Override
+            public void onCancelled(DatabaseError databaseError) {
+
+            }
+        });
+    }
+
+    private void showDatePickerDialog(final TextView view, int year, int month, int dayOfMonth) {
         DatePickerDialog datePickerDialog = new DatePickerDialog(this, new DatePickerDialog.OnDateSetListener() {
             @Override
             public void onDateSet(DatePicker datePicker, int year, int monthOfYear, int dayOfMonth) {
-                view.setText(AppConstants.twoDigitIntFormatter(year)
-                        + AppConstants.twoDigitIntFormatter(monthOfYear + 1) +
-                        AppConstants.twoDigitIntFormatter(dayOfMonth));
+                String dateAsString = year + "-" + AppConstants.twoDigitIntFormatter(monthOfYear + 1)
+                        + "-" + AppConstants.twoDigitIntFormatter(dayOfMonth);
+                String formattedDate = DateUtils.getFormattedDateString(DateUtils.getDate(dateAsString, DateUtils.format4), DateUtils.format2);
+                view.setText(formattedDate);
             }
         }, year, month, dayOfMonth);
         datePickerDialog.getDatePicker().setMinDate(System.currentTimeMillis());

@@ -9,12 +9,50 @@
     tools:context="com.to.let.bd.activities.MapActivity"
     tools:showIn="@layout/activity_map">
 
-    <fragment
-        android:id="@+id/map"
-        android:name="com.google.android.gms.maps.SupportMapFragment"
+    <RelativeLayout
         android:layout_width="match_parent"
         android:layout_height="0dp"
-        android:layout_weight="1" />
+        android:layout_weight="1">
+
+        <RelativeLayout
+            android:id="@+id/placeAutocompleteLay"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:background="@color/white"
+            android:visibility="visible">
+
+            <fragment
+                android:id="@+id/placeAutocomplete"
+                android:name="com.google.android.gms.location.places.ui.PlaceAutocompleteFragment"
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content" />
+        </RelativeLayout>
+
+        <fragment
+            android:id="@+id/map"
+            android:name="com.google.android.gms.maps.SupportMapFragment"
+            android:layout_width="match_parent"
+            android:layout_height="match_parent"
+            android:layout_below="@+id/placeAutocompleteLay" />
+
+        <TextView
+            android:id="@+id/searchThisArea"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:layout_alignParentBottom="true"
+            android:layout_centerHorizontal="true"
+            android:layout_marginBottom="@dimen/size_10dp"
+            android:background="@drawable/search_this_area_bg"
+            android:padding="@dimen/size_10dp"
+            android:paddingEnd="@dimen/size_20dp"
+            android:paddingLeft="@dimen/size_20dp"
+            android:paddingRight="@dimen/size_20dp"
+            android:paddingStart="@dimen/size_20dp"
+            android:text="@string/search_this_area"
+            android:textColor="@color/black"
+            android:textSize="@dimen/text_size_10sp"
+            android:visibility="visible" />
+    </RelativeLayout>
 
     <android.support.design.widget.BottomNavigationView
         android:id="@+id/navigation"

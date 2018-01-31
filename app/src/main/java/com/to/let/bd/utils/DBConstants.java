@@ -2,6 +2,8 @@ package com.to.let.bd.utils;
 
 public class DBConstants {
     public static final String adList = "adList";
+    public static final String userAdList = "userAdList";
+    public static final String userFavAdList = "userFavAdList";
     public static final String user = "user";
     public static final String users = "users";
 
@@ -56,11 +58,14 @@ public class DBConstants {
     public static final String userPhoneNumber = "userPhoneNumber";
     public static final String userProfilePic = "userProfilePic";
 
+    public static final String imageKeyForDatabase = "image";
     public static final String images = "images";
     public static final String map = "map";
     public static final String location = "location";
     public static final String fav = "fav";
     public static final String favCount = "favCount";
+    public static final String reportCount = "reportCount";
+    public static final String report = "report";
 
     public static final String familyInfo = "familyInfo";
     public static final String messInfo = "messInfo";

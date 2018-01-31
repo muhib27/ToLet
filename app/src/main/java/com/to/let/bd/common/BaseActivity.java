@@ -3,16 +3,20 @@ package com.to.let.bd.common;
 import android.app.ProgressDialog;
 import android.content.DialogInterface;
 import android.content.Intent;
+import android.support.v7.app.ActionBar;
 import android.support.v7.app.AlertDialog;
 import android.support.v7.app.AppCompatActivity;
+import android.support.v7.widget.Toolbar;
 import android.util.Log;
 import android.util.Patterns;
+import android.widget.TextView;
 import android.widget.Toast;
 
 import com.google.firebase.auth.FirebaseAuth;
 import com.google.firebase.auth.FirebaseUser;
 import com.to.let.bd.R;
 import com.to.let.bd.activities.AdDetailsActivity;
+import com.to.let.bd.activities.NewAdActivity2;
 import com.to.let.bd.model.AdInfo;
 import com.to.let.bd.utils.AppConstants;
 import com.to.let.bd.utils.DBConstants;
@@ -21,9 +25,20 @@ public class BaseActivity extends AppCompatActivity {
 
     private static final String TAG = BaseActivity.class.getSimpleName();
 
+    protected void updateTitle(String title) {
+        ActionBar actionBar = getSupportActionBar();
+        if (actionBar != null) {
+            actionBar.setTitle(null);
+        }
+
+        TextView toolbarTitle = findViewById(R.id.toolbarTitle);
+        if (toolbarTitle != null) {
+            toolbarTitle.setSelected(true);
+            toolbarTitle.setText(title);
+        }
+    }
+
     private ProgressDialog progressDialog;
-//    public ImageLoader imageLoader;
-//    public ImageLoaderConfiguration imageLoaderConfiguration;
 
     public void showProgressDialog() {
         showProgressDialog("", getString(R.string.loading));
@@ -184,6 +199,12 @@ public class BaseActivity extends AppCompatActivity {
 //        startActivity(intent);
 //    }
 
+    protected void startNewAdActivity() {
+        Intent newAdIntent = new Intent(this, NewAdActivity2.class);
+        newAdIntent.addFlags(Intent.FLAG_ACTIVITY_CLEAR_TASK);
+        startActivityForResult(newAdIntent, AppConstants.newAdType);
+    }
+
     public void startAdDetailsActivity(AdInfo adInfo) {
         Intent adDetailsIntent = new Intent(this, AdDetailsActivity.class);
 //        adDetailsIntent.putExtra(DBConstants.adId, adInfo.getAdId());
@@ -215,7 +236,7 @@ public class BaseActivity extends AppCompatActivity {
 //        if (adInfo.getMap() != null) {
 //            adDetailsIntent.putExtra(DBConstants.map, adInfo.getMap().getDownloadUrl());
 //        }
-        adDetailsIntent.addFlags(Intent.FLAG_ACTIVITY_CLEAR_TOP);
+        adDetailsIntent.addFlags(Intent.FLAG_ACTIVITY_NEW_TASK);
         adDetailsIntent.putExtra(AppConstants.keyAdInfo, adInfo);
         startActivity(adDetailsIntent);
     }

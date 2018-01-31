@@ -30,7 +30,7 @@ public class DateUtils {
         int month = calendar.get(Calendar.MONTH);
         int year = calendar.get(Calendar.YEAR);
 
-        return Long.parseLong(year + AppConstants.twoDigitIntFormatter(month + 1) + AppConstants.twoDigitIntFormatter(dayOfMonth));
+        return Long.parseLong(year + AppConstants.twoDigitIntFormatter(month) + AppConstants.twoDigitIntFormatter(dayOfMonth));
     }
 
     public static Date getCurrentDate() {
@@ -46,9 +46,10 @@ public class DateUtils {
     }
 
     public static final String format1 = "format1";//dd-MM-yyyy
-    public static final String format2 = "format2";//MMM dd, yyyy
-    public static final String format3 = "format3";//MMM yyyy
+    public static final String format2 = "format2";//MMMM dd, yyyy
+    public static final String format3 = "format3";//MMMM yyyy
     public static final String format4 = "format4";//yyyy-MM-dd
+    public static final String format5 = "format5";//MMM dd, yy
 
     public static String getFormattedDateString(final Date date, final String requestFor) {
         switch (requestFor) {
@@ -60,6 +61,8 @@ public class DateUtils {
                 return new SimpleDateFormat(dateFormat3, Locale.US).format(date);
             case format4:
                 return new SimpleDateFormat(dateFormat4, Locale.US).format(date);
+            case format5:
+                return new SimpleDateFormat(dateFormat5, Locale.US).format(date);
             default:
                 return null;
         }
@@ -69,6 +72,7 @@ public class DateUtils {
     private static final String dateFormat2 = "MMMM dd, yyyy";
     private static final String dateFormat3 = "MMMM yyyy";
     private static final String dateFormat4 = "yyyy-MM-dd";
+    private static final String dateFormat5 = "MMM dd, yy";
 
     public static Date getDate(final String[] dateArray, final String requestFor) {
         String date = dateArray[0] + "-" + dateArray[1] + "-" + dateArray[2];
@@ -80,12 +84,19 @@ public class DateUtils {
         switch (requestFor) {
             case format1:
                 simpleDateFormat = new SimpleDateFormat(dateFormat1, Locale.US);
+                break;
             case format2:
                 simpleDateFormat = new SimpleDateFormat(dateFormat2, Locale.US);
+                break;
             case format3:
                 simpleDateFormat = new SimpleDateFormat(dateFormat3, Locale.US);
+                break;
             case format4:
                 simpleDateFormat = new SimpleDateFormat(dateFormat4, Locale.US);
+                break;
+            case format5:
+                simpleDateFormat = new SimpleDateFormat(dateFormat5, Locale.US);
+                break;
         }
 
         if (simpleDateFormat != null) {
@@ -121,8 +132,14 @@ public class DateUtils {
     }
 
     public static String getRentDateString(long yearMonthDay) {
+        int[] dateArray = DateUtils.splittedDate(String.valueOf(yearMonthDay));
+        Date date = DateUtils.getDate(dateArray);
+        return getFormattedDateString(date, DateUtils.format2);
+    }
+
+    public static String getRentDateAsSmallFormat(long yearMonthDay) {
         String[] splittedDate = splittedDate(yearMonthDay);
-        return getFormattedDateString(getDate(splittedDate, format4), format2);
+        return getFormattedDateString(getDate(splittedDate, format4), format5);
     }
 
     public static long differenceBetweenToday(long selectedDateTimestamp) {
@@ -136,11 +153,38 @@ public class DateUtils {
     }
 
     public static int[] getTodayDateAsArray() {
-        int[] dateArray = new int[0];
+        int[] dateArray = new int[3];
         Calendar calendar = getCalendar();
         dateArray[0] = calendar.get(Calendar.YEAR);
         dateArray[1] = calendar.get(Calendar.MONTH);
         dateArray[2] = calendar.get(Calendar.DAY_OF_MONTH);
         return dateArray;
+    }
+
+    public static int[] getDateAsArray(Date date) {
+        int[] dateArray = new int[3];
+        Calendar calendar = getCalendar();
+        calendar.setTime(date);
+        dateArray[0] = calendar.get(Calendar.YEAR);
+        dateArray[1] = calendar.get(Calendar.MONTH);
+        dateArray[2] = calendar.get(Calendar.DAY_OF_MONTH);
+        return dateArray;
+    }
+
+    public static Date getDate(int[] dateArray) {
+        String[] dateArrayString = new String[3];
+        dateArrayString[0] = String.valueOf(dateArray[0]);
+        dateArrayString[1] = AppConstants.twoDigitIntFormatter(dateArray[1] + 1);
+        dateArrayString[2] = AppConstants.twoDigitIntFormatter(dateArray[2]);
+
+        return getDate(dateArrayString, format4);
+    }
+
+    public static long getDateForQuery(long timeInMills) {
+        Calendar calendar = getCalendar();
+        calendar.setTimeInMillis(timeInMills);
+        return Long.parseLong(calendar.get(Calendar.YEAR)
+                + AppConstants.twoDigitIntFormatter(calendar.get(Calendar.MONTH))
+                + AppConstants.twoDigitIntFormatter(calendar.get(Calendar.DAY_OF_MONTH)));
     }
 }

@@ -35,6 +35,10 @@
                 android:textSize="@dimen/text_size_12sp"
                 android:textStyle="normal" />
 
+            <View
+                android:layout_width="@dimen/size_10dp"
+                android:layout_height="match_parent" />
+
             <TextView
                 android:layout_width="0dp"
                 android:layout_height="wrap_content"
@@ -50,22 +54,30 @@
             android:layout_height="wrap_content"
             android:orientation="horizontal">
 
-            <Button
+            <TextView
                 android:id="@+id/fromMonth"
                 android:layout_width="0dp"
                 android:layout_height="wrap_content"
                 android:layout_weight="1"
+                android:background="@color/black_overlay"
                 android:ems="6"
                 android:gravity="center"
+                android:padding="@dimen/size_5dp"
                 android:text="@string/any" />
 
-            <Button
+            <View
+                android:layout_width="@dimen/size_10dp"
+                android:layout_height="match_parent" />
+
+            <TextView
                 android:id="@+id/toMonth"
                 android:layout_width="0dp"
                 android:layout_height="wrap_content"
                 android:layout_weight="1"
+                android:background="@color/black_overlay"
                 android:ems="6"
                 android:gravity="center"
+                android:padding="@dimen/size_5dp"
                 android:text="@string/any" />
         </LinearLayout>
 
@@ -91,6 +103,10 @@
                 android:textColor="@color/black"
                 android:textSize="@dimen/text_size_12sp"
                 android:textStyle="normal" />
+
+            <View
+                android:layout_width="@dimen/size_10dp"
+                android:layout_height="match_parent" />
 
             <TextView
                 android:layout_width="0dp"
@@ -123,8 +139,12 @@
                 android:ems="6"
                 android:gravity="center"
                 android:hint="@string/min"
-                android:inputType="numberDecimal"
+                android:inputType="number"
                 android:maxLength="6" />
+
+            <View
+                android:layout_width="@dimen/size_10dp"
+                android:layout_height="match_parent" />
 
             <TextView
                 android:layout_width="wrap_content"
@@ -142,7 +162,7 @@
                 android:ems="6"
                 android:gravity="center"
                 android:hint="@string/max"
-                android:inputType="numberDecimal"
+                android:inputType="number"
                 android:maxLength="6" />
         </LinearLayout>
 

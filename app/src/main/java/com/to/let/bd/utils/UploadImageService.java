@@ -7,7 +7,6 @@ import android.os.IBinder;
 import android.support.annotation.NonNull;
 import android.support.annotation.Nullable;
 import android.support.v4.content.LocalBroadcastManager;
-import android.util.Log;
 
 import com.google.android.gms.tasks.OnFailureListener;
 import com.google.android.gms.tasks.OnSuccessListener;
@@ -43,29 +42,33 @@ public class UploadImageService extends BaseTaskService {
         return null;
     }
 
+    private int imageIndex = -1;
+    private int saveIndex = -1;
+    private int type = -1;
+    private String adId = "";
+
     @Override
     public int onStartCommand(Intent intent, int flags, int startId) {
-        Log.d(TAG, "onStartCommand:" + intent + ":" + startId);
-
         if (AppConstants.actionUpload.equals(intent.getAction())) {
-            int type = intent.getIntExtra(AppConstants.keyType, -1);
-            String adId = intent.getStringExtra(DBConstants.adId);
-            int imageIndex = intent.getIntExtra(AppConstants.imageIndex, -1);
-            uploadFromUri(intent, type, adId, imageIndex);
+            type = intent.getIntExtra(AppConstants.keyType, -1);
+            adId = intent.getStringExtra(DBConstants.adId);
+            imageIndex = intent.getIntExtra(AppConstants.imageIndex, -1);
+            saveIndex = intent.getIntExtra(AppConstants.saveIndex, -1);
+            uploadImage(intent);
         }
 
         return START_REDELIVER_INTENT;
     }
 
     // [START upload_from_uri]
-    private void uploadFromUri(final Intent intent, final int type, final String adId, final int imageIndex) {
+    private void uploadImage(final Intent intent) {
         // [START_EXCLUDE]
         taskStarted();
         // [END_EXCLUDE]
 
         // [START get_child_ref]
         // Get a reference to store file at photos/<FILENAME>.jpg
-        StorageReference storageReference = null;
+        StorageReference storageReference;
         UploadTask uploadTask = null;
         if (type == AppConstants.adImageType) {
             final Uri fileUri = intent.getParcelableExtra(AppConstants.fileUri);
@@ -73,21 +76,20 @@ public class UploadImageService extends BaseTaskService {
                     .child(AppConstants.photos)
                     .child(AppConstants.adPhotos)
                     .child(adId)
-                    .child(String.valueOf(imageIndex) + ".jpg");
+                    .child(String.valueOf(saveIndex) + ".jpg");
             uploadTask = storageReference.putFile(fileUri);
         } else if (type == AppConstants.adMapImageType) {
             storageReference = mStorageRef
                     .child(AppConstants.photos)
                     .child(AppConstants.adPhotos)
                     .child(adId)
-                    .child(getString(R.string.map) + ".jpg");
-
+                    .child(getString(R.string.name_map_image) + ".jpg");
             final byte[] fileUri = intent.getByteArrayExtra(AppConstants.fileUri);
             uploadTask = storageReference.putBytes(fileUri);
         }
 
         if (uploadTask == null) {
-            broadcastUploadFinished(type, adId, imageIndex, null);
+            broadcastUploadFinished(null);
             taskCompleted();
             return;
         }
@@ -104,8 +106,7 @@ public class UploadImageService extends BaseTaskService {
                 imageContents[2] = taskSnapshot.getMetadata() == null ? null : taskSnapshot.getMetadata().getPath();
 
                 // [START_EXCLUDE]
-//                broadcastUploadFinished(imageContents, type, imageIndex);
-                broadcastUploadFinished(type, adId, imageIndex, imageContents);
+                broadcastUploadFinished(imageContents);
                 taskCompleted();
                 // [END_EXCLUDE]
             }
@@ -113,7 +114,7 @@ public class UploadImageService extends BaseTaskService {
             @Override
             public void onFailure(@NonNull Exception exception) {
                 // [START_EXCLUDE]
-                broadcastUploadFinished(type, adId, imageIndex, null);
+                broadcastUploadFinished(null);
                 taskCompleted();
                 // [END_EXCLUDE]
             }
@@ -125,7 +126,7 @@ public class UploadImageService extends BaseTaskService {
                 double progress = ((double) transferredByte / totalByte) * 100;
                 if (progress > lastProgress + 1) {
                     lastProgress = progress;
-                    broadcastUploadingProgress(type, adId, imageIndex, progress);
+                    broadcastUploadingProgress(progress);
                 }
             }
         });
@@ -136,47 +137,31 @@ public class UploadImageService extends BaseTaskService {
 
     /**
      * Broadcast uploading progress
-     *
-     * @return true if a running receiver received the broadcast.
-     */
-    private boolean broadcastUploadingProgress(int type, String adId, int imageIndex, double progress) {
+     **/
+    private void broadcastUploadingProgress(double progress) {
         Intent broadcast = new Intent(AppConstants.uploadProgress)
                 .putExtra(AppConstants.keyType, type)
                 .putExtra(DBConstants.adId, adId)
                 .putExtra(AppConstants.imageIndex, imageIndex)
+                .putExtra(AppConstants.saveIndex, saveIndex)
                 .putExtra(AppConstants.progress, (int) progress);
-        return LocalBroadcastManager.getInstance(getApplicationContext()).sendBroadcast(broadcast);
+        LocalBroadcastManager.getInstance(getApplicationContext()).sendBroadcast(broadcast);
     }
 
     /**
      * Broadcast finished upload (success or failure).
-     *
-     * @return true if a running receiver received the broadcast.
-     */
-    private boolean broadcastUploadFinished(int type, String adId, int imageIndex, String[] imageContents) {
+     **/
+    private void broadcastUploadFinished(String[] imageContents) {
         boolean success = imageContents != null && imageContents[0] != null;
         String action = success ? AppConstants.uploadComplete : AppConstants.uploadError;
         Intent broadcast = new Intent(action)
                 .putExtra(AppConstants.keyType, type)
                 .putExtra(DBConstants.adId, adId)
                 .putExtra(AppConstants.imageIndex, imageIndex)
+                .putExtra(AppConstants.saveIndex, saveIndex)
                 .putExtra(AppConstants.imageContents, imageContents);
-        return LocalBroadcastManager.getInstance(getApplicationContext()).sendBroadcast(broadcast);
+        LocalBroadcastManager.getInstance(getApplicationContext()).sendBroadcast(broadcast);
     }
-
-//    /**
-//     * Show a notification for a finished upload.
-//     */
-//    private void uploadFinished(@Nullable Uri downloadUrl, @Nullable Uri fileUri) {
-//        // Set message and icon based on success or failure
-//        boolean success = downloadUrl != null;
-//        String message = success ? "Upload finished" : "Upload failed";
-//        int icon = success ? R.drawable.ic_check_white_24 : R.drawable.ic_error_white_24dp;
-//    }
-
-    /**
-     * Show notification with an indeterminate upload progress bar.
-     */
 
     public static IntentFilter getIntentFilter() {
         IntentFilter filter = new IntentFilter();

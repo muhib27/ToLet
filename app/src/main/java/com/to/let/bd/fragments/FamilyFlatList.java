@@ -5,7 +5,6 @@ import android.support.v4.app.Fragment;
 
 import com.google.firebase.database.DatabaseReference;
 import com.google.firebase.database.Query;
-import com.to.let.bd.R;
 import com.to.let.bd.utils.DBConstants;
 import com.to.let.bd.utils.DateUtils;
 

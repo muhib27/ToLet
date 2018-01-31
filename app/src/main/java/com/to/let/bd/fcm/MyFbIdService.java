@@ -24,7 +24,6 @@ import com.google.firebase.database.DatabaseReference;
 import com.google.firebase.database.FirebaseDatabase;
 import com.google.firebase.iid.FirebaseInstanceId;
 import com.google.firebase.iid.FirebaseInstanceIdService;
-import com.to.let.bd.common.BaseActivity;
 import com.to.let.bd.utils.DBConstants;
 
 import java.util.HashMap;
@@ -63,21 +62,28 @@ public class MyFbIdService extends FirebaseInstanceIdService {
     private void sendRegistrationToServer(String token) {
         FirebaseUser firebaseUser = FirebaseAuth.getInstance().getCurrentUser();
         if (token != null && firebaseUser != null) {
-            writeNewUser(token, firebaseUser);
+            updateUserToken(token, firebaseUser);
         }
     }
 
-    private void writeNewUser(String fcmToken, FirebaseUser firebaseUser) {
+    private void updateUserToken(String fcmToken, FirebaseUser firebaseUser) {
         DatabaseReference databaseReference = FirebaseDatabase.getInstance().getReference();
         HashMap<String, Object> userValues = new HashMap<>();
         userValues.put(DBConstants.fcmToken, fcmToken);
 
-        HashMap<String, Object> childUpdates = new HashMap<>();
-        if (firebaseUser.isAnonymous())
-            childUpdates.put("/" + DBConstants.users + "/" + DBConstants.anonymousUsers + "/" + firebaseUser.getUid(), userValues);
-        else
-            childUpdates.put("/" + DBConstants.users + "/" + DBConstants.registeredUsers + "/" + firebaseUser.getUid(), userValues);
+        if (firebaseUser.isAnonymous()) {
+            databaseReference
+                    .child(DBConstants.users)
+                    .child(DBConstants.anonymousUsers)
+                    .child(firebaseUser.getUid())
+                    .updateChildren(userValues);
+        } else {
+            databaseReference
+                    .child(DBConstants.users)
+                    .child(DBConstants.registeredUsers)
+                    .child(firebaseUser.getUid())
+                    .updateChildren(userValues);
+        }
 
-        databaseReference.updateChildren(childUpdates);
     }
 }

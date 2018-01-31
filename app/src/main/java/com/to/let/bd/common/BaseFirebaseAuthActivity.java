@@ -19,7 +19,6 @@ import com.google.firebase.auth.AuthResult;
 import com.google.firebase.auth.FirebaseAuth;
 import com.google.firebase.auth.FirebaseUser;
 import com.google.firebase.auth.GoogleAuthProvider;
-import com.google.firebase.auth.PhoneAuthCredential;
 import com.google.firebase.auth.UserProfileChangeRequest;
 import com.google.firebase.database.DatabaseReference;
 import com.google.firebase.database.FirebaseDatabase;
@@ -219,31 +218,35 @@ public abstract class BaseFirebaseAuthActivity extends BaseActivity implements
         });
     }
 
-    private DatabaseReference mDatabase;
+    private DatabaseReference databaseReference;
 
     private void writeNewUser() {
-        if (mDatabase == null)
-            mDatabase = FirebaseDatabase.getInstance().getReference();
-
         firebaseUser = FirebaseAuth.getInstance().getCurrentUser();
+        if (firebaseUser == null)
+            return;
+
+        if (databaseReference == null)
+            databaseReference = FirebaseDatabase.getInstance().getReference();
+
         HashMap<String, Object> userValues = new HashMap<>();
         userValues.put(DBConstants.userId, getUid());
+        userValues.put(DBConstants.fcmToken, FirebaseInstanceId.getInstance().getToken());
 
-        if (!firebaseUser.isAnonymous() && firebaseUser.getEmail() != null) {
+        if (firebaseUser.isAnonymous()) {
+            databaseReference
+                    .child(DBConstants.users)
+                    .child(DBConstants.anonymousUsers)
+                    .child(firebaseUser.getUid())
+                    .updateChildren(userValues);
+        } else {
             userValues.put(DBConstants.userEmail, firebaseUser.getEmail());
             userValues.put(DBConstants.userDisplayName, firebaseUser.getDisplayName());
+            databaseReference
+                    .child(DBConstants.users)
+                    .child(DBConstants.registeredUsers)
+                    .child(firebaseUser.getUid())
+                    .updateChildren(userValues);
         }
-
-        String fcmToken = FirebaseInstanceId.getInstance().getToken();
-        userValues.put(DBConstants.fcmToken, fcmToken);
-
-        HashMap<String, Object> childUpdates = new HashMap<>();
-
-        if (firebaseUser.isAnonymous())
-            childUpdates.put("/" + DBConstants.users + "/" + DBConstants.anonymousUsers + "/" + getUid(), userValues);
-        else
-            childUpdates.put("/" + DBConstants.users + "/" + DBConstants.registeredUsers + "/" + getUid(), userValues);
-        mDatabase.updateChildren(childUpdates);
     }
 
     protected abstract void afterSuccessfulAnonymousLogin();

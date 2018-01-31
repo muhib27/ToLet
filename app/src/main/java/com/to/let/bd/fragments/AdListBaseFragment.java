@@ -37,6 +37,7 @@ import com.to.let.bd.utils.NetworkConnection;
 import java.util.ArrayList;
 import java.util.Collections;
 import java.util.Comparator;
+import java.util.HashMap;
 
 public abstract class AdListBaseFragment extends BaseFragment implements AdAdapter.ClickListener {
 
@@ -121,7 +122,7 @@ public abstract class AdListBaseFragment extends BaseFragment implements AdAdapt
         return rootView;
     }
 
-    private void reload() {
+    public void reload() {
         loadingLay.setVisibility(View.VISIBLE);
         loadingProgressBar.setVisibility(View.VISIBLE);
         loadingMessage.setText(R.string.loading_please_wait);
@@ -136,7 +137,10 @@ public abstract class AdListBaseFragment extends BaseFragment implements AdAdapt
             }
         }
         Query adQuery = getQuery(databaseReference);
-        loadData(adQuery);
+
+        if (adQuery != null) {
+            loadData(adQuery);
+        }
     }
 
     @Override
@@ -174,7 +178,7 @@ public abstract class AdListBaseFragment extends BaseFragment implements AdAdapt
             databaseReference.removeEventListener(valueEventListener);
     }
 
-    private ArrayList<AdInfo> adList = new ArrayList<>();
+    protected ArrayList<AdInfo> adList = new ArrayList<>();
 
     private ValueEventListener valueEventListener = new ValueEventListener() {
         @Override
@@ -189,19 +193,18 @@ public abstract class AdListBaseFragment extends BaseFragment implements AdAdapt
                 }
             }
 
-            if (getSubQuery() > -1) {
-                adList = filterList(getSubQuery(), adList);
-            }
+//            if (getSubQuery() > -1) {
+//                adList = filterList(getSubQuery(), adList);
+//            }
 
             if (adList.size() > 0) {
                 Collections.sort(adList, new Comparator<AdInfo>() {
                     @Override
                     public int compare(AdInfo o1, AdInfo o2) {
-                        return (int) (o1.createdTime - o2.createdTime);
+                        return (int) (o2.modifiedTime - o1.modifiedTime);
                     }
                 });
-
-                adList = addAdvertiseView(adList);
+//                adList = addAdvertiseView(adList);
                 displayAdList();
             } else {
                 loadingLay.setVisibility(View.VISIBLE);
@@ -239,41 +242,71 @@ public abstract class AdListBaseFragment extends BaseFragment implements AdAdapt
 
     @Override
     public void onFavClick(View view, int clickedPosition, AdInfo adInfo) {
-//        if (view instanceof ImageView) {
-//            ((ImageView) view).setImageResource(R.drawable.ic_fav_selected);
-//        }
+        String flatType = DBConstants.keyFamily;
+        if (adInfo.familyInfo != null) {
+            flatType = DBConstants.keyFamily;
+        } else if (adInfo.messInfo != null) {
+            flatType = DBConstants.keyMess;
+        } else if (adInfo.subletInfo != null) {
+            flatType = DBConstants.keySublet;
+        } else if (adInfo.othersInfo != null) {
+            flatType = DBConstants.keyOthers;
+        }
 
-        DatabaseReference userAdRef = databaseReference.child(DBConstants.adList).child(adInfo.adId);
-        onFavClicked(userAdRef, clickedPosition);
-        myAnalyticsUtil.favItem(adInfo, getUid());
+        DatabaseReference userFavAdRef = databaseReference
+                .child(DBConstants.userFavAdList)
+                .child(getUid())
+                .child(adInfo.adId);
+
+        if (view.isSelected()) {
+            userFavAdRef.removeValue();
+        } else {
+            AdInfo tmpAdInfo = adInfo;
+            tmpAdInfo.favCount++;
+            if (tmpAdInfo.fav == null) {
+                tmpAdInfo.fav = new HashMap<>();
+            }
+            tmpAdInfo.fav.put(getUid(), true);
+            userFavAdRef.setValue(tmpAdInfo);
+        }
+        view.setSelected(!view.isSelected());
+
+        DatabaseReference globalAdRef = databaseReference.child(DBConstants.adList).child(flatType).child(adInfo.adId);
+        DatabaseReference userAdRef = databaseReference.child(DBConstants.userAdList).child(adInfo.userId).child(adInfo.adId);
+
+        // Run two transactions
+        onFavClicked(globalAdRef, view, clickedPosition);
+        onFavClicked(userAdRef, view, clickedPosition);
     }
 
     // [START ad_stars_transaction]
-    private void onFavClicked(DatabaseReference adRef, final int clickedPosition) {
+    private void onFavClicked(DatabaseReference adRef, final View view, final int clickedPosition) {
+        view.setEnabled(false);
         adRef.runTransaction(new Transaction.Handler() {
             @Override
             public Transaction.Result doTransaction(MutableData mutableData) {
-                AdInfo p = mutableData.getValue(AdInfo.class);
-                if (p == null) {
+                AdInfo adInfo = mutableData.getValue(AdInfo.class);
+                if (adInfo == null) {
                     return Transaction.success(mutableData);
                 }
-                if (p.fav.containsKey(getUid())) {
-                    // Unstar the ad and remove self from stars
-                    p.favCount = p.favCount - 1;
-                    p.fav.remove(getUid());
+                if (adInfo.fav.containsKey(getUid())) {
+                    // UnFav the ad and remove self from stars
+                    adInfo.favCount = adInfo.favCount - 1;
+                    adInfo.fav.remove(getUid());
                 } else {
-                    // Star the ad and add self to stars
-                    p.favCount = p.favCount + 1;
-                    p.fav.put(getUid(), true);
+                    // Fav the ad and add self to stars
+                    adInfo.favCount = adInfo.favCount + 1;
+                    adInfo.fav.put(getUid(), true);
                 }
 
                 // Set value and report transaction success
-                mutableData.setValue(p);
+                mutableData.setValue(adInfo);
                 return Transaction.success(mutableData);
             }
 
             @Override
             public void onComplete(DatabaseError databaseError, boolean b, DataSnapshot dataSnapshot) {
+                view.setEnabled(true);
                 if (databaseError == null) {
                     AdInfo adInfo = dataSnapshot.getValue(AdInfo.class);
                     adList.set(clickedPosition, adInfo);
@@ -282,6 +315,7 @@ public abstract class AdListBaseFragment extends BaseFragment implements AdAdapt
             }
         });
     }
+    // [END ad_fav_transaction]
 
     @Override
     public void onStart() {
@@ -314,23 +348,23 @@ public abstract class AdListBaseFragment extends BaseFragment implements AdAdapt
         return finalList;
     }
 
-    private ArrayList<AdInfo> filterList(int type, ArrayList<AdInfo> foundList) {
-        if (type == AppConstants.subQueryFav) {
-            ArrayList<AdInfo> filterList = new ArrayList<>();
-            filterList.clear();
-
-            String userId = BaseActivity.getUid();
-            for (AdInfo adInfo : foundList) {
-                if (adInfo.fav == null)
-                    continue;
-                if (adInfo.fav.containsKey(userId) && adInfo.fav.get(userId)) {
-                    filterList.add(adInfo);
-                }
-            }
-            return filterList;
-        }
-        return foundList;
-    }
+//    private ArrayList<AdInfo> filterList(int type, ArrayList<AdInfo> foundList) {
+//        if (type == AppConstants.subQueryFav) {
+//            ArrayList<AdInfo> filterList = new ArrayList<>();
+//            filterList.clear();
+//
+//            String userId = BaseActivity.getUid();
+//            for (AdInfo adInfo : foundList) {
+//                if (adInfo.fav == null)
+//                    continue;
+//                if (adInfo.fav.containsKey(userId) && adInfo.fav.get(userId)) {
+//                    filterList.add(adInfo);
+//                }
+//            }
+//            return filterList;
+//        }
+//        return foundList;
+//    }
 
     public abstract int getSubQuery();
 

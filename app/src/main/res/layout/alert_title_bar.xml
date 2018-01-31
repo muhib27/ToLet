@@ -17,7 +17,7 @@
         android:layout_height="match_parent"
         android:contentDescription="@string/title_bar_icon"
         android:scaleType="fitStart"
-        android:src="@mipmap/ic_launcher" />
+        android:src="@mipmap/ic_launcher_round" />
 
     <TextView
         android:id="@+id/title"

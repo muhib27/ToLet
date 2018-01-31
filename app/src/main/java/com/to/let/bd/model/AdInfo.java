@@ -38,7 +38,7 @@ public class AdInfo implements Serializable {
     public long createdTime;
     public long modifiedTime;
 
-    public ArrayList<ImageInfo> images;
+    public HashMap<String, ImageInfo> images;
     public ImageInfo map;
 
     public String houseNameOrNumber;

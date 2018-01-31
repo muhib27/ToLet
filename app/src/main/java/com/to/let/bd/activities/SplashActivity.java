@@ -131,7 +131,7 @@ public class SplashActivity extends BaseActivity {
                     finish();
                     return;
                 }
-                writeNewUser();
+                writeNewAnonymousUser();
                 startHomeActivity();
             }
         });
@@ -139,19 +139,22 @@ public class SplashActivity extends BaseActivity {
 
     private DatabaseReference mDatabase;
 
-    private void writeNewUser() {
+    private void writeNewAnonymousUser() {
+        if (firebaseUser == null)
+            return;
+
         if (mDatabase == null)
             mDatabase = FirebaseDatabase.getInstance().getReference();
 
         HashMap<String, Object> userValues = new HashMap<>();
-        userValues.put(DBConstants.userId, getUid());
+        userValues.put(DBConstants.userId, firebaseUser.getUid());
+        userValues.put(DBConstants.fcmToken, FirebaseInstanceId.getInstance().getToken());
 
-        String fcmToken = FirebaseInstanceId.getInstance().getToken();
-        userValues.put(DBConstants.fcmToken, fcmToken);
-        HashMap<String, Object> childUpdates = new HashMap<>();
-        childUpdates.put("/" + DBConstants.users + "/" + DBConstants.anonymousUsers + "/" + getUid(), userValues);
-
-        mDatabase.updateChildren(childUpdates);
+        mDatabase
+                .child(DBConstants.users)
+                .child(DBConstants.anonymousUsers)
+                .child(firebaseUser.getUid())
+                .updateChildren(userValues);
     }
 
     private void startHomeActivity() {

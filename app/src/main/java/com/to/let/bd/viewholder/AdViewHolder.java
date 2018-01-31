@@ -31,6 +31,9 @@ import com.to.let.bd.model.ImageInfo;
 import com.to.let.bd.utils.AppConstants;
 import com.to.let.bd.utils.DateUtils;
 
+import java.util.SortedSet;
+import java.util.TreeSet;
+
 public class AdViewHolder extends RecyclerView.ViewHolder {
 
     public LinearLayout mainLay;
@@ -117,14 +120,13 @@ public class AdViewHolder extends RecyclerView.ViewHolder {
                 imagePath = adInfo.map.downloadUrl;
             }
         } else {
-            imageCount = adInfo.images.size();
-
-            ImageInfo imageInfo;
-            for (int i = 0; i < adInfo.images.size(); i++) {
-                imageInfo = adInfo.images.get(i);
+            SortedSet<String> keys = new TreeSet<>(adInfo.images.keySet());
+            for (String key : keys) {
+                ImageInfo imageInfo = adInfo.images.get(key);
                 if (imageInfo != null) {
-                    imagePath = imageInfo.downloadUrl;
-                    break;
+                    imageCount++;
+                    if (imagePath == null)
+                        imagePath = imageInfo.downloadUrl;
                 }
             }
         }
@@ -158,8 +160,6 @@ public class AdViewHolder extends RecyclerView.ViewHolder {
         favAd.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View view) {
-                favAd.setSelected(!favAd.isSelected());
-
                 if (clickListener != null)
                     clickListener.onFavClick(favAd, clickedPosition, adInfo);
             }

@@ -5,6 +5,7 @@ import android.support.v7.app.ActionBar;
 import android.support.v7.widget.Toolbar;
 import android.view.Menu;
 import android.view.MenuItem;
+import android.view.View;
 
 import com.to.let.bd.R;
 import com.to.let.bd.common.BaseActivity;
@@ -26,13 +27,18 @@ public class SubAdListActivity extends BaseActivity {
         if (actionBar != null) {
             actionBar.setDisplayHomeAsUpEnabled(true);
             actionBar.setDisplayShowTitleEnabled(true);
-            actionBar.setTitle(R.string.ad_details);
         }
 
         iniView();
     }
 
     private void iniView() {
+        findViewById(R.id.postYourAdd).setOnClickListener(new View.OnClickListener() {
+            @Override
+            public void onClick(View v) {
+                startNewAdActivity();
+            }
+        });
         showSubAdListFragment();
     }
 
@@ -55,13 +61,6 @@ public class SubAdListActivity extends BaseActivity {
                 fragment, R.id.fragmentContainer, SubAdList.TAG);
     }
 
-    private void updateTitle(String title) {
-        ActionBar actionBar = getSupportActionBar();
-        if (actionBar != null) {
-            actionBar.setTitle(title);
-        }
-    }
-
     @Override
     public boolean onCreateOptionsMenu(Menu menu) {
         getMenuInflater().inflate(R.menu.share, menu);
@@ -77,7 +76,7 @@ public class SubAdListActivity extends BaseActivity {
     public boolean onOptionsItemSelected(MenuItem item) {
         switch (item.getItemId()) {
             case android.R.id.home:
-                finish();
+                onBackPressed();
                 return true;
             case R.id.shareAction:
                 shareAction();
