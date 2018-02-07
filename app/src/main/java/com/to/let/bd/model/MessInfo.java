@@ -17,6 +17,8 @@ public class MessInfo implements Serializable {
     public boolean maidServant;
     public boolean twentyFourWater;
     public boolean nonSmoker;
+    public boolean attachedBath;
+    public boolean attachedBalcony;
     public boolean wifi;
     public boolean fridge;
     public boolean onlyStudents;

@@ -22,6 +22,7 @@
     <string name="nearest_ads">Nearest Ads</string>
     <string name="logout">Logout</string>
     <string name="smart_ads">Smart Ads</string>
+    <string name="smart_ad_title">Smart advertisement!!!</string>
     <string name="default_user_name">Makinul Hasan</string>
     <string name="default_user_email">md.makinul.nasim@gmail.com</string>
     <string name="default_contact_info">md.makinul.nasim@gmail.com</string>
@@ -110,10 +111,12 @@
     <string name="is_everything_ok">Is Everything OK?</string>
     <string name="summary">Summary</string>
     <string name="please_pick_a_location_into_the_map">Please pick a location into the map.</string>
-    <string name="ad_published_successfully">Ad published successfully</string>
-    <string name="ad_updated_successfully">Ad updated successfully</string>
-    <string name="your_ad_published_successfully_would_u_like">Your ad published successfully, would you like to add some picture/image, that represent your flat type?</string>
-    <string name="your_ad_updated_successfully_would_u_like">Your ad updated successfully, would you like to change your previously set picture/image?</string>
+    <string name="ad_published_successfully">Your Ad published successfully</string>
+    <string name="ad_published_again_successfully">Your Ad published again successfully</string>
+    <string name="ad_updated_successfully">Your Ad updated successfully</string>
+    <string name="ad_deleted_successfully">Your Ad deleted successfully</string>
+    <string name="your_ad_published_successfully_would_u_like">Your advertisement published successfully, would you like to add some picture/image, that represent your flat type?</string>
+    <string name="your_ad_updated_successfully_would_u_like">Your advertisement updated successfully, would you like to change your previously set picture/image?</string>
     <string name="dummy_photo_count">0 Photo</string>
     <string name="ad_details">Ad Details</string>
     <string name="call">Call</string>
@@ -125,9 +128,10 @@
     <string name="school_college">School College</string>
     <string name="grocery_store">Grocery Store</string>
     <string name="privacy_policy_note" formatted="false">We value your privacy.\nOur %s and %s</string>
+    <string name="we_value_your_policy" formatted="false">We value your privacy</string>
     <string name="terms_of_use">Terms Of Use</string>
     <string name="privacy_policy">Privacy Policy</string>
-    <string name="submit_your_ad">Submit your ad</string>
+    <string name="submit_your_ad">Submit your Ad</string>
     <string name="mess_member_type">Mess member type: </string>
     <string name="male">Male</string>
     <string name="female">Female</string>
@@ -212,7 +216,7 @@
     <string name="please_select_rent_type">Please select rent type</string>
     <string name="search">Search</string>
     <string name="lorem">lorem</string>
-    <string name="ad_list">Ad List</string>
+    <string name="ad_list">Advertisement List</string>
     <string name="no_network_connection_available">No network connection available</string>
     <string name="retry">tap to retry</string>
     <string name="internal_server_error">Internal server error</string>
@@ -231,7 +235,7 @@
     <string name="FACEBOOK_APP_ID">1193242097486888</string>
     <string name="ACCOUNT_KIT_CLIENT_TOKEN">d22bfc9edb912ff7aa5bd1e111464608</string>
 
-    <string name="report_fake">Fake ad</string>
+    <string name="report_fake">Fake advertisement</string>
     <string name="report_fraud">Fraud user</string>
     <string name="report_already_rented">Already rented</string>
     <string name="report_mismatch">Mismatch with description</string>
@@ -279,7 +283,7 @@
     <string name="login">Login</string>
     <string name="title_activity_sub_ad_list">SubAdListActivity</string>
     <string name="my_favorite_list">My Favorite List</string>
-    <string name="my_ad_list">My Ad List</string>
+    <string name="my_ad_list">My List</string>
     <string name="my_nearest_list">My Nearest List</string>
 
 
@@ -318,7 +322,7 @@
     <string name="click_here_for_change_location_long_text">Click here first for change location. Click here first for change location. Click here first for change location.</string>
     <string name="click_here_for_change_location">Click here first for change location.</string>
     <string name="dummy_long_message">If you want to add or update images, please tap here. If you want to add or update images, please tap here. If you want to add or update images, please tap here. If you want to add or update images, please tap here.</string>
-    <string name="do_you_want_to_delete_this_image_you_can_not_undo_this">You can\'t undo this operation.\nDo you want to delete this image now?</string>
+    <string name="do_you_want_to_delete_this_image_you_can_not_undo_this">You can\'t undo this operation, this image will be delete permanently.\nDo you want to delete this image now?</string>
     <string name="delete_photo">Delete photo</string>
     <string name="next">Next</string>
     <string name="previous">Previous</string>
@@ -335,7 +339,7 @@
     <string name="user">User</string>
     <string name="login_alert">Login required, please login first.\nDo you want login now?</string>
     <string name="cancel">Cancel</string>
-    <string name="logout_alert">Your all personal data will be remove from this device, and you can\'t customize personal data.\nDo you want logout now?</string>
+    <string name="logout_alert">Your all personal data will be remove from this device.\nDo you want logout now?</string>
     <string name="exit_alert">Do you want exit app now?</string>
     <string name="sort">Sort</string>
     <string name="sort_by_rent">Sort by rent price</string>
@@ -344,5 +348,19 @@
 
     <string name="name_map_image">map</string>
     <string name="working_progress">Working progress…</string>
+    <string name="coming_soon">Coming soon…</string>
     <string name="title_home">Home</string>
+    <string name="message">Message</string>
+    <string name="this_is_deleted_ad_please_tap_here_for_re_publish">Your advertisement is hidden, please tap here for republish/show</string>
+    <string name="republish_your_ad_message">Do you want to republish your advertisement again?</string>
+    <string name="please_update_your_rent_date">Please update your rent date</string>
+    <string name="our">Our</string>
+    <string name="and">And</string>
+    <string name="please_select_valid_seat_or_room">Please select valid seat number OR room number, it\'s important to publish your advertisement</string>
+    <string name="attached_bathroom">Attached Bath</string>
+    <string name="attached_balcony">Attached Balcony</string>
+    <string name="filtered_list">Filtered list</string>
+    <string name="republish">Republish</string>
+    <string name="booking">Booking</string>
+    <string name="booking_ad">Booking advertisement!!!</string>
 </resources>

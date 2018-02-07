@@ -508,18 +508,16 @@ public class MediaActivity extends BaseActivity {
         imageValues.put(AppConstants.imageName, imageContents[1]);
         imageValues.put(AppConstants.imagePath, imageContents[2]);
 
-        databaseReference
-                .child(DBConstants.adList)
-                .child(flatType)
-                .child(adId)
-                .child(DBConstants.images)
-                .child(DBConstants.imageKeyForDatabase + String.valueOf(imageIndex))
-                .updateChildren(imageValues, new DatabaseReference.CompletionListener() {
-                    @Override
-                    public void onComplete(DatabaseError databaseError, DatabaseReference databaseReference) {
+        HashMap<String, Object> hashMap = new HashMap<>();
+        hashMap.put("/" + DBConstants.adList + "/" + flatType + "/" + adId + "/" + DBConstants.images + "/" + DBConstants.imageKeyForDatabase + String.valueOf(imageIndex), imageValues);
+        hashMap.put("/" + DBConstants.userAdList + "/" + getUid() + "/" + adId + "/" + DBConstants.images + "/" + DBConstants.imageKeyForDatabase + String.valueOf(imageIndex), imageValues);
 
-                    }
-                });
+        databaseReference.updateChildren(hashMap, new DatabaseReference.CompletionListener() {
+            @Override
+            public void onComplete(DatabaseError databaseError, DatabaseReference databaseReference) {
+
+            }
+        });
     }
 
     private DatabaseReference databaseReference;
@@ -602,9 +600,10 @@ public class MediaActivity extends BaseActivity {
                 }
                 Glide.with(MediaActivity.this)
                         .load(Uri.parse(imageUri))
+                        .apply(new RequestOptions().placeholder(R.drawable.image_loading).error(R.drawable.image_error))
                         .into(holder.previewPhoto);
             } else
-                holder.previewPhoto.setImageResource(R.drawable.dummy_flat_image);
+                holder.previewPhoto.setImageResource(R.drawable.no_image_available);
         }
 
         @Override
@@ -805,10 +804,10 @@ public class MediaActivity extends BaseActivity {
             }
             Glide.with(this)
                     .load(Uri.parse(imageUri))
-                    .apply(new RequestOptions().placeholder(R.mipmap.ic_launcher).error(R.mipmap.ic_launcher))
+                    .apply(new RequestOptions().placeholder(R.drawable.image_loading).error(R.drawable.image_error))
                     .into(zoomableImageView);
         } else {
-            zoomableImageView.setImageResource(R.drawable.dummy_flat_image);
+            zoomableImageView.setImageResource(R.drawable.no_image_available);
         }
     }
 }

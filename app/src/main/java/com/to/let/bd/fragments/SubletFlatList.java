@@ -35,9 +35,4 @@ public class SubletFlatList extends AdListBaseFragment {
         subletFlatList.setArguments(bundle);
         return subletFlatList;
     }
-
-    @Override
-    public int getSubQuery() {
-        return -1;
-    }
 }

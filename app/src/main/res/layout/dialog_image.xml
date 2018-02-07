@@ -49,7 +49,5 @@
             android:textColor="@color/white"
             android:textStyle="bold"
             android:visibility="gone" />
-
     </RelativeLayout>
-
 </RelativeLayout>

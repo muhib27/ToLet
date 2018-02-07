@@ -49,9 +49,9 @@ public class MessFlatAd extends BaseFragment {
     }
 
     private final String[] messTypes = {"Seat", "Room", "Total Member"};
-    private final int[] startPositions = {1, 1, 1};
-    private final int[] endPositions = {7, 4, 12};
-    private final int[] defaultPositions = {1, 0, 5};
+    private final int[] startPositions = {0, 0, 0};
+    private final int[] endPositions = {8, 5, 12};
+    private final int[] defaultPositions = {2, 1, 1};
 
     private final int[] messInfoArray = new int[3];//0=Seat, 1=Room, 2=Total Member
 
@@ -89,6 +89,7 @@ public class MessFlatAd extends BaseFragment {
     private RadioButton messMemberMale, messMemberFemale,
             circulateEveryMonth, manageByIndividual, manageByOffice;
     private CheckBox mealFacilityCB, maidServantCB, twentyFourWaterCB,
+            attachedBathCB, attachedBalconyCB,
             nonSmokerCB, onlyStudentsCB, onlyJobHoldersCB, wifiCB, fridgeCB;
     private EditText mealRate;
 
@@ -105,9 +106,12 @@ public class MessFlatAd extends BaseFragment {
 
         mealFacilityCB = rootView.findViewById(R.id.mealFacilityCB);
         maidServantCB = rootView.findViewById(R.id.maidServantCB);
-        twentyFourWaterCB = rootView.findViewById(R.id.twentyFourWaterCB);
 
+        twentyFourWaterCB = rootView.findViewById(R.id.twentyFourWaterCB);
         nonSmokerCB = rootView.findViewById(R.id.nonSmokerCB);
+
+        attachedBathCB = rootView.findViewById(R.id.attachedBathCB);
+        attachedBalconyCB = rootView.findViewById(R.id.attachedBalconyCB);
 
         onlyStudentsCB = rootView.findViewById(R.id.onlyStudentsCB);
         onlyJobHoldersCB = rootView.findViewById(R.id.onlyJobHoldersCB);
@@ -119,7 +123,40 @@ public class MessFlatAd extends BaseFragment {
     }
 
     public String getRoomSummary() {
-        return messInfoArray[0] + " seat with " + messInfoArray[1] + " room, " + messInfoArray[2] + " total mess member.";
+        StringBuilder stringBuilder = new StringBuilder();
+        if (messInfoArray[0] > 0) {
+            stringBuilder
+                    .append(messInfoArray[0])
+                    .append("seat");
+        }
+
+        if (messInfoArray[1] > 0) {
+            if (messInfoArray[0] > 0) {
+                stringBuilder.append(" in ");
+            }
+            stringBuilder
+                    .append(messInfoArray[1])
+                    .append("room ");
+        }
+
+        if (attachedBathCB.isChecked() || attachedBalconyCB.isChecked()) {
+            if (attachedBathCB.isChecked() && attachedBalconyCB.isChecked()) {
+                stringBuilder.append(" with attached bath and balcony.");
+            } else if (attachedBathCB.isChecked()) {
+                stringBuilder.append(" with attached bathroom.");
+            } else {
+                stringBuilder.append(" with attached balcony.");
+            }
+        }
+
+        if (messInfoArray[2] > 0) {
+            stringBuilder
+                    .append(" may have")
+                    .append(messInfoArray[1])
+                    .append(" total mess member.");
+        }
+
+        return stringBuilder.toString().trim();
     }
 
     public String getRoomOthersFacility() {
@@ -190,6 +227,8 @@ public class MessFlatAd extends BaseFragment {
         messInfo.maidServant = maidServantCB.isChecked();
         messInfo.twentyFourWater = twentyFourWaterCB.isChecked();
         messInfo.nonSmoker = nonSmokerCB.isChecked();
+        messInfo.attachedBath = attachedBathCB.isChecked();
+        messInfo.attachedBalcony = attachedBalconyCB.isChecked();
         messInfo.onlyStudents = onlyStudentsCB.isChecked();
         messInfo.onlyJobHolders = onlyJobHoldersCB.isChecked();
         messInfo.wifi = wifiCB.isChecked();
@@ -243,5 +282,14 @@ public class MessFlatAd extends BaseFragment {
                 AppConstants.updatePickerView(roomNumberLay.getChildAt(i), title, subTitle);
             }
         }
+    }
+
+    public boolean isSeatOrRoomSelected() {
+        if (messInfoArray[0] > 0 || messInfoArray[1] > 0) {
+            return true;
+        }
+
+        roomNumberLay.requestFocus();
+        return false;
     }
 }

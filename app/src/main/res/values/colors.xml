@@ -19,6 +19,7 @@
     <color name="white_light">#66ffffff</color>
 
     <color name="progress_gray">#FFD8D8D8</color>
+    <color name="deletedAd">#dd3d9ce5</color>
 
     <color name="pick_black">#191919</color>
     <color name="pick_light">#E6E7EB</color>

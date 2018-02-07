@@ -18,7 +18,6 @@ import android.support.annotation.NonNull;
 import android.support.design.widget.TabLayout;
 import android.support.v4.app.Fragment;
 import android.support.v4.content.LocalBroadcastManager;
-import android.support.v7.app.ActionBar;
 import android.support.v7.app.AlertDialog;
 import android.support.v7.widget.PopupMenu;
 import android.text.Editable;
@@ -219,37 +218,35 @@ public class NewAdActivity2 extends BaseMapActivity implements View.OnClickListe
         placeAutocompleteView.setClickable(true);
     }
 
-    private void completeSingleImageUpload(int type, String adId, String[] imageContents) {
-        updateDatabaseForImage(type, adId, imageContents);
+    private void completeMapImageUpload(int type, String adId, String[] imageContents) {
+        updateDatabaseForMapImage(type, adId, imageContents);
     }
 
-    private void updateDatabaseForImage(final int type, final String adId, final String[] imageContents) {
+    private void updateDatabaseForMapImage(final int type, final String adId, final String[] imageContents) {
         HashMap<String, Object> mapImageValue = new HashMap<>();
         if (type == AppConstants.adMapImageType) {
-            mapImageValue.put(AppConstants.downloadUrl, imageContents[0]);
-            mapImageValue.put(AppConstants.imageName, imageContents[1]);
-            mapImageValue.put(AppConstants.imagePath, imageContents[2]);
-        }
+            mapImageValue.put("/" + DBConstants.adList + "/" + flatType + "/" + adId + "/" + DBConstants.map + "/" + AppConstants.downloadUrl, imageContents[0]);
+            mapImageValue.put("/" + DBConstants.adList + "/" + flatType + "/" + adId + "/" + DBConstants.map + "/" + AppConstants.imageName, imageContents[1]);
+            mapImageValue.put("/" + DBConstants.adList + "/" + flatType + "/" + adId + "/" + DBConstants.map + "/" + AppConstants.imagePath, imageContents[2]);
+            mapImageValue.put("/" + DBConstants.adList + "/" + flatType + "/" + adId + "/" + DBConstants.modifiedTime, ServerValue.TIMESTAMP);
 
-        HashMap<String, Object> adValues = new HashMap<>();
-        adValues.put(DBConstants.modifiedTime, ServerValue.TIMESTAMP);
-        adValues.put(DBConstants.map, mapImageValue);
+            mapImageValue.put("/" + DBConstants.userAdList + "/" + getUid() + "/" + adId + "/" + DBConstants.map + "/" + AppConstants.downloadUrl, imageContents[0]);
+            mapImageValue.put("/" + DBConstants.userAdList + "/" + getUid() + "/" + adId + "/" + DBConstants.map + "/" + AppConstants.imageName, imageContents[1]);
+            mapImageValue.put("/" + DBConstants.userAdList + "/" + getUid() + "/" + adId + "/" + DBConstants.map + "/" + AppConstants.imagePath, imageContents[2]);
+            mapImageValue.put("/" + DBConstants.userAdList + "/" + getUid() + "/" + adId + "/" + DBConstants.modifiedTime, ServerValue.TIMESTAMP);
 
-        databaseReference
-                .child(DBConstants.adList)
-                .child(flatType)
-                .child(adId)
-                .updateChildren(adValues, new DatabaseReference.CompletionListener() {
-                    @Override
-                    public void onComplete(DatabaseError databaseError, DatabaseReference databaseReference) {
-                        if (databaseError == null) {
-                            mediaAlertDialog(adId);
-                        } else {
-                            updateDatabaseForImage(type, adId, imageContents);
-                        }
-                        closeProgressDialog();
+            databaseReference.updateChildren(mapImageValue, new DatabaseReference.CompletionListener() {
+                @Override
+                public void onComplete(DatabaseError databaseError, DatabaseReference databaseReference) {
+                    if (databaseError == null) {
+                        mediaAlertDialog(adId);
+                    } else {
+                        updateDatabaseForMapImage(type, adId, imageContents);
                     }
-                });
+                    closeProgressDialog();
+                }
+            });
+        }
     }
 
     private void mediaAlertDialog(final String adId) {
@@ -320,7 +317,7 @@ public class NewAdActivity2 extends BaseMapActivity implements View.OnClickListe
                         String adId = intent.getStringExtra(DBConstants.adId);
                         int imageIndex = intent.getIntExtra(AppConstants.imageIndex, 0);
                         String[] imageContents = intent.getStringArrayExtra(AppConstants.imageContents);
-                        completeSingleImageUpload(type, adId, imageContents);
+                        completeMapImageUpload(type, adId, imageContents);
                     }
                     break;
                     case AppConstants.uploadProgress: {
@@ -802,6 +799,21 @@ public class NewAdActivity2 extends BaseMapActivity implements View.OnClickListe
             return;
         }
 
+        Fragment fragment = getSupportFragmentManager().findFragmentById(R.id.fragmentContainer);
+        if (fragment != null && fragment instanceof OthersFlatAd && fragment.isVisible()) {
+            String rentType = ((OthersFlatAd) fragment).getRentType();
+            if (rentType.equals(getString(R.string.others)) && description.getText().length() <= 0) {
+                description.setError(getString(R.string.error_field_required));
+                description.requestFocus();
+                return;
+            }
+        } else if (fragment != null && fragment instanceof MessFlatAd && fragment.isVisible()) {
+            if (!((MessFlatAd) fragment).isSeatOrRoomSelected()) {
+                showSimpleDialog(R.string.please_select_valid_seat_or_room);
+                return;
+            }
+        }
+
         if (houseInfo.getText().length() == 0) {
             houseInfo.setError(getString(R.string.error_field_required));
             houseInfo.requestFocus();
@@ -827,16 +839,6 @@ public class NewAdActivity2 extends BaseMapActivity implements View.OnClickListe
 
         if (summary == null || othersFacility == null) {
             return;
-        }
-
-        Fragment fragment = getSupportFragmentManager().findFragmentById(R.id.fragmentContainer);
-        if (fragment != null && fragment instanceof OthersFlatAd && fragment.isVisible()) {
-            String rentType = ((OthersFlatAd) fragment).getRentType();
-            if (rentType.equals(getString(R.string.others)) && description.getText().length() <= 0) {
-                description.setError(getString(R.string.error_field_required));
-                description.requestFocus();
-                return;
-            }
         }
 
         AppSharedPrefs.setMobileNumber(phoneNumber.getText().toString());
@@ -892,8 +894,8 @@ public class NewAdActivity2 extends BaseMapActivity implements View.OnClickListe
         addressString += "\nHouse number/name: " + houseInfo.getText().toString()
                 + " Floor: " + whichFloor.getText().toString();
 
-        if (description.getText().length() > 0)
-            addressString += "\n" + description.getText().toString();
+        if (description.getText().toString().trim().length() > 0)
+            addressString += "\n" + description.getText().toString().trim();
         address.setText(addressString);
 
         long totalR = Long.parseLong(this.totalRent.getText().toString());
@@ -997,7 +999,7 @@ public class NewAdActivity2 extends BaseMapActivity implements View.OnClickListe
                 flatSpace, flatRent, othersFee,
                 houseInfo.getText().toString(),
                 whichFloor.getText().toString().trim().isEmpty() ? -1 : Integer.parseInt(whichFloor.getText().toString()),
-                roomFaceArray[flatFaceSelection], description.getText().toString(),
+                roomFaceArray[flatFaceSelection], description.getText().toString().trim(),
                 flatTypesArray.get(tabLayout.getSelectedTabPosition()),
                 familyInfo, messInfo, subletInfo, othersInfo,
                 getUid(), mobileNumber, emailAddress);
@@ -1050,6 +1052,9 @@ public class NewAdActivity2 extends BaseMapActivity implements View.OnClickListe
                     showSimpleDialog(databaseError.getMessage());
                     closeProgressDialog();
                 }
+
+                AdListActivity2.needToRefreshData = true;
+                SubAdListActivity.needToRefreshData = true;
             }
         });
     }
@@ -1078,7 +1083,7 @@ public class NewAdActivity2 extends BaseMapActivity implements View.OnClickListe
         userValues.put(DBConstants.userEmail, firebaseUser.getEmail());
         userValues.put(DBConstants.userDisplayName, firebaseUser.getDisplayName());
 
-        if (firebaseUser.getPhoneNumber() != null && firebaseUser.getPhoneNumber().isEmpty())
+        if (firebaseUser.getPhoneNumber() != null && !firebaseUser.getPhoneNumber().isEmpty())
             userValues.put(DBConstants.userPhoneNumber, firebaseUser.getPhoneNumber());
 
         if (firebaseUser.getPhotoUrl() != null)

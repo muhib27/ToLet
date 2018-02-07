@@ -63,6 +63,7 @@ public class AdInfo implements Serializable {
     public String emailAddress;
 
     public boolean isActive = true;
+    public long deleteReason = -1;
 
     public AdInfo() {
 

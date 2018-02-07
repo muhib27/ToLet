@@ -24,7 +24,6 @@ import com.google.firebase.database.Query;
 import com.google.firebase.database.Transaction;
 import com.google.firebase.database.ValueEventListener;
 import com.to.let.bd.R;
-import com.to.let.bd.activities.AdDetailsActivity;
 import com.to.let.bd.adapters.AdAdapter;
 import com.to.let.bd.common.BaseActivity;
 import com.to.let.bd.common.BaseFragment;
@@ -156,10 +155,6 @@ public abstract class AdListBaseFragment extends BaseFragment implements AdAdapt
     @Override
     public void onResume() {
         super.onResume();
-
-        if (AdDetailsActivity.needToRefreshData) {
-            reload();
-        }
     }
 
     private void loadData(Query adQuery) {
@@ -185,17 +180,44 @@ public abstract class AdListBaseFragment extends BaseFragment implements AdAdapt
         public void onDataChange(DataSnapshot dataSnapshot) {
             adList.clear();
 
+            int subQueryValue = getSubQueryType();
+
             for (DataSnapshot adSnapshot : dataSnapshot.getChildren()) {
                 AdInfo adInfo = adSnapshot.getValue(AdInfo.class);
 
-                if (adInfo != null && adInfo.isActive) {
-                    adList.add(adInfo);
+                if (adInfo != null) {
+                    if (subQueryValue == AppConstants.subQueryMy && adInfo.deleteReason >= 0 && adInfo.deleteReason != 3) {
+                        adList.add(adInfo);
+                    } else if (adInfo.isActive) {
+                        if (subQueryValue == AppConstants.subQueryQuery) {
+                            Bundle bundle = getArguments();
+                            long fromDate = 0, toDate = 0;
+                            if (bundle != null) {
+                                fromDate = bundle.getLong(AppConstants.keyFromDateTime, 0);
+                                toDate = bundle.getLong(AppConstants.keyToDateTime, 0);
+                            }
+
+                            if (fromDate > 0 || toDate > 0) {
+                                if (fromDate > 0 && toDate > 0) {
+                                    if (adInfo.startingFinalDate >= fromDate && adInfo.startingFinalDate <= toDate)
+                                        adList.add(adInfo);
+                                } else if (fromDate > 0) {
+                                    if (adInfo.startingFinalDate >= fromDate)
+                                        adList.add(adInfo);
+                                } else {//toDate > 0
+                                    if (adInfo.startingFinalDate <= toDate)
+                                        adList.add(adInfo);
+                                }
+                            } else {
+                                adList.add(adInfo);
+                            }
+                            showLog();
+                        } else {
+                            adList.add(adInfo);
+                        }
+                    }
                 }
             }
-
-//            if (getSubQuery() > -1) {
-//                adList = filterList(getSubQuery(), adList);
-//            }
 
             if (adList.size() > 0) {
                 Collections.sort(adList, new Comparator<AdInfo>() {
@@ -227,8 +249,11 @@ public abstract class AdListBaseFragment extends BaseFragment implements AdAdapt
 
     private void displayAdList() {
         loadingLay.setVisibility(View.GONE);
-        adAdapter = new AdAdapter(getActivity(), this);
-        adRecyclerView.setAdapter(adAdapter);
+
+        if (adAdapter == null) {
+            adAdapter = new AdAdapter(getActivity(), this);
+            adRecyclerView.setAdapter(adAdapter);
+        }
 
         adAdapter.setData(adList);
         adAdapter.notifyDataSetChanged();
@@ -334,6 +359,14 @@ public abstract class AdListBaseFragment extends BaseFragment implements AdAdapt
         return firebaseUser.getUid();
     }
 
+    public int getSubQueryType() {
+        Bundle bundle = getArguments();
+        if (bundle != null) {
+            return bundle.getInt(AppConstants.keySubAdListType);
+        }
+        return -1;
+    }
+
     private ArrayList<AdInfo> addAdvertiseView(ArrayList<AdInfo> foundList) {
         ArrayList<AdInfo> finalList = new ArrayList<>();
         finalList.clear();
@@ -365,8 +398,6 @@ public abstract class AdListBaseFragment extends BaseFragment implements AdAdapt
 //        }
 //        return foundList;
 //    }
-
-    public abstract int getSubQuery();
 
     public abstract Query getQuery(DatabaseReference databaseReference);
 

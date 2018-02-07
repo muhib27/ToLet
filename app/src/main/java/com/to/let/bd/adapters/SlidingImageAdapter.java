@@ -58,10 +58,10 @@ public class SlidingImageAdapter extends PagerAdapter {
         if (images.get(position) != null)
             Glide.with(context)
                     .load(Uri.parse(images.get(position)))
-                    .apply(new RequestOptions().placeholder(R.drawable.image_loading).error(R.drawable.no_image_available))
+                    .apply(new RequestOptions().placeholder(R.drawable.image_loading).error(R.drawable.image_error))
                     .into(imageView);
         else
-            imageView.setImageResource(R.drawable.dummy_flat_image);
+            imageView.setImageResource(R.drawable.no_image_available);
 
         imageView.setOnClickListener(new View.OnClickListener() {
             @Override

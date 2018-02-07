@@ -19,7 +19,7 @@
             android:background="@color/grey_dark"
             android:contentDescription="@string/mainImage"
             android:scaleType="centerCrop"
-            android:src="@drawable/dummy_flat_image" />
+            android:src="@drawable/image_loading" />
 
         <include layout="@layout/photo_count_lay" />
 
@@ -47,7 +47,6 @@
                 android:layout_width="wrap_content"
                 android:layout_height="wrap_content"
                 android:ellipsize="none"
-                android:maxLines="1"
                 android:singleLine="true"
                 android:text="@string/app_name"
                 android:textColor="@color/ad_list_text_color"

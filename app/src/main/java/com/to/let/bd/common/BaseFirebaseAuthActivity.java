@@ -241,6 +241,13 @@ public abstract class BaseFirebaseAuthActivity extends BaseActivity implements
         } else {
             userValues.put(DBConstants.userEmail, firebaseUser.getEmail());
             userValues.put(DBConstants.userDisplayName, firebaseUser.getDisplayName());
+
+            if (firebaseUser.getPhoneNumber() != null && !firebaseUser.getPhoneNumber().isEmpty())
+                userValues.put(DBConstants.userPhoneNumber, firebaseUser.getPhoneNumber());
+
+            if (firebaseUser.getPhotoUrl() != null)
+                userValues.put(DBConstants.userProfilePic, firebaseUser.getPhotoUrl().toString());
+
             databaseReference
                     .child(DBConstants.users)
                     .child(DBConstants.registeredUsers)

@@ -32,12 +32,10 @@ import com.google.gson.JsonObject;
 import com.to.let.bd.R;
 import com.to.let.bd.common.BaseMapActivity;
 import com.to.let.bd.model.AdInfo;
-import com.to.let.bd.model.FamilyInfo;
 import com.to.let.bd.model.google_place.GooglePlace;
 import com.to.let.bd.model.google_place.GooglePlaceResult;
 import com.to.let.bd.utils.AppConstants;
 import com.to.let.bd.utils.DBConstants;
-import com.to.let.bd.utils.DateUtils;
 import com.to.let.bd.utils.JsonUtils;
 import com.to.let.bd.utils.retrofit.RetrofitConstants;
 

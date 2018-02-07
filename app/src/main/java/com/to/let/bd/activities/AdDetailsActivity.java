@@ -11,6 +11,8 @@ import android.support.v4.view.ViewPager;
 import android.support.v7.app.ActionBar;
 import android.support.v7.app.AlertDialog;
 import android.support.v7.widget.Toolbar;
+import android.text.SpannableStringBuilder;
+import android.text.Spanned;
 import android.view.Gravity;
 import android.view.Menu;
 import android.view.MenuItem;
@@ -40,6 +42,8 @@ import com.google.firebase.database.ValueEventListener;
 import com.to.let.bd.R;
 import com.to.let.bd.adapters.SlidingImageAdapter;
 import com.to.let.bd.common.BaseActivity;
+import com.to.let.bd.common.MyClickableSpan;
+import com.to.let.bd.common.MyClickableSpanListener;
 import com.to.let.bd.components.ImageViewZoomT;
 import com.to.let.bd.model.AdInfo;
 import com.to.let.bd.model.FamilyInfo;
@@ -60,8 +64,6 @@ import java.util.TreeSet;
 
 public class AdDetailsActivity extends BaseActivity implements View.OnClickListener {
 
-    public static boolean needToRefreshData = false;
-
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
@@ -76,8 +78,6 @@ public class AdDetailsActivity extends BaseActivity implements View.OnClickListe
         }
 
         updateTitle(getString(R.string.ad_details));
-
-        needToRefreshData = false;
 
         myAnalyticsUtil = new MyAnalyticsUtil(this);
         databaseReference = FirebaseDatabase.getInstance().getReference();
@@ -171,7 +171,7 @@ public class AdDetailsActivity extends BaseActivity implements View.OnClickListe
 
     private TextView rentDate, totalRent, roomDetails, addressDetails, houseInfo,
             rentType, othersFacility, othersFacilityDetails,
-            reportThis, photoCount, privacyPolicy, imageAddOrEdit;
+            reportThis, photoCount, imageAddOrEdit;
     private Button callBtn, emailBtn, editBtn;
     private LinearLayout showInMapView, reportLay, contactLay;
     private ImageView noImageView, favAd;
@@ -189,8 +189,6 @@ public class AdDetailsActivity extends BaseActivity implements View.OnClickListe
         othersFacilityDetails = findViewById(R.id.othersFacilityDetails);
 
         reportLay = findViewById(R.id.reportLay);
-        privacyPolicy = findViewById(R.id.privacyPolicy);
-        privacyPolicy.setText(getString(R.string.privacy_policy_note, getString(R.string.terms_of_use), getString(R.string.privacy_policy)));
         reportThis = findViewById(R.id.reportThis);
 
         favAd = findViewById(R.id.favAd);
@@ -214,14 +212,15 @@ public class AdDetailsActivity extends BaseActivity implements View.OnClickListe
         editBtn.setOnClickListener(this);
         reportThis.setOnClickListener(this);
         noImageView.setOnClickListener(this);
-
+        preparePrivacyPolicyView();
         updateFullView();
     }
 
     private void onFavClicked() {
         if (getUid() == null)
             return;
-
+        AdListActivity2.needToRefreshData = true;
+        SubAdListActivity.needToRefreshData = true;
         DatabaseReference userFavAdRef = databaseReference
                 .child(DBConstants.userFavAdList)
                 .child(getUid())
@@ -449,6 +448,10 @@ public class AdDetailsActivity extends BaseActivity implements View.OnClickListe
         } else if (view == reportThis) {
             showReportAlert();
         } else if (view == favAd) {
+            if (adInfo.userId.equals(BaseActivity.getUid())) {
+                showToast(R.string.this_is_your_own_post);
+                return;
+            }
             onFavClicked();
         } else if (view == editBtn) {
             editAd();
@@ -526,7 +529,8 @@ public class AdDetailsActivity extends BaseActivity implements View.OnClickListe
 
         if (databaseReference == null)
             databaseReference = FirebaseDatabase.getInstance().getReference();
-
+        AdListActivity2.needToRefreshData = true;
+        SubAdListActivity.needToRefreshData = true;
         databaseReference
                 .child(DBConstants.adList)
                 .child(flatType)
@@ -559,8 +563,8 @@ public class AdDetailsActivity extends BaseActivity implements View.OnClickListe
         reportThis.setEnabled(true);
         if (adInfo.reportCount > 0) {
             if (adInfo.report.containsKey(BaseActivity.getUid())) {
-                reportThis.setEnabled(false);
                 reportThis.setText(R.string.already_reported);
+                reportThis.setEnabled(false);
             }
         }
 
@@ -604,8 +608,8 @@ public class AdDetailsActivity extends BaseActivity implements View.OnClickListe
 
             houseInfo.setText(stringBuilder.toString());
 
-            String[] dateArray = DateUtils.splittedDate(adInfo.startingFinalDate);
-            Date date = DateUtils.getDate(dateArray, DateUtils.format4);
+            int[] dateArray = DateUtils.splittedDate(String.valueOf(adInfo.startingFinalDate));
+            Date date = DateUtils.getDate(dateArray);
             String dateAsString = DateUtils.getFormattedDateString(date, DateUtils.format2);
             long elapsedDays = DateUtils.differenceBetweenToday(date.getTime());
 
@@ -628,7 +632,7 @@ public class AdDetailsActivity extends BaseActivity implements View.OnClickListe
             if (adInfo.map != null && adInfo.map.downloadUrl != null) {
                 Glide.with(this)
                         .load(Uri.parse(adInfo.map.downloadUrl))
-                        .apply(new RequestOptions().placeholder(R.mipmap.ic_launcher).error(R.mipmap.ic_launcher))
+                        .apply(new RequestOptions().placeholder(R.drawable.image_loading).error(R.drawable.image_error))
                         .into(noImageView);
             }
         }
@@ -663,7 +667,8 @@ public class AdDetailsActivity extends BaseActivity implements View.OnClickListe
             public void onClick(DialogInterface dialog, int which) {
                 String strName = arrayAdapter.getItem(which);
                 onReportClicked(strName);
-                needToRefreshData = true;
+                AdListActivity2.needToRefreshData = true;
+                SubAdListActivity.needToRefreshData = true;
             }
         });
         builderSingle.show();
@@ -772,10 +777,10 @@ public class AdDetailsActivity extends BaseActivity implements View.OnClickListe
         if (imagePath != null)
             Glide.with(this)
                     .load(Uri.parse(imagePath))
-                    .apply(new RequestOptions().placeholder(R.drawable.image_loading).error(R.drawable.no_image_available))
+                    .apply(new RequestOptions().placeholder(R.drawable.image_loading).error(R.drawable.image_error))
                     .into(imageView);
         else
-            imageView.setImageResource(R.drawable.dummy_flat_image);
+            imageView.setImageResource(R.drawable.no_image_available);
     }
 
     @Override
@@ -788,27 +793,74 @@ public class AdDetailsActivity extends BaseActivity implements View.OnClickListe
     public boolean onOptionsItemSelected(MenuItem item) {
         switch (item.getItemId()) {
             case android.R.id.home:
-                finish();
+                onBackPressed();
                 return true;
             case R.id.shareAction:
                 shareAction();
                 return true;
             case R.id.deleteAction:
-                if (adInfo.userId.equals(BaseActivity.getUid()))
-                    showDeleteAdDialog();
+                if (adInfo.userId.equals(BaseActivity.getUid())) {
+                    if (adInfo.deleteReason >= 0) {
+                        republishAlertDialog();
+                    } else {
+                        showDeleteAdDialog();
+                    }
+                } else {
+                    showSimpleDialog(R.string.booking_ad, R.string.coming_soon);
+                }
                 return true;
             default:
                 return super.onOptionsItemSelected(item);
         }
     }
 
+    private void republishAlertDialog() {
+        AlertDialog.Builder builder = new AlertDialog.Builder(this);
+        builder.setTitle(R.string.alert);
+        builder.setIcon(R.mipmap.ic_launcher_round);
+        builder.setMessage(R.string.republish_your_ad_message);
+
+        builder.setPositiveButton(getString(R.string.yes), new DialogInterface.OnClickListener() {
+            @Override
+            public void onClick(DialogInterface dialogInterface, int i) {
+                long difference = adInfo.startingFinalDate - DateUtils.todayYearMonthDate();
+
+                if (difference <= 0) {
+                    showSimpleDialog(R.string.please_update_your_rent_date);
+                    return;
+                }
+
+                deleteAd(-1, true);
+            }
+        });
+        builder.setNegativeButton(getString(R.string.no), new DialogInterface.OnClickListener() {
+            @Override
+            public void onClick(DialogInterface dialog, int which) {
+                finish();
+            }
+        });
+        final AlertDialog dialog = builder.create();
+        dialog.show();
+    }
+
     @Override
     public boolean onPrepareOptionsMenu(Menu menu) {
         MenuItem deleteMenuItem = menu.findItem(R.id.deleteAction);
         if (deleteMenuItem != null) {
-            deleteMenuItem.setVisible(false);
-            if (adInfo.userId.equals(BaseActivity.getUid()))
+            if (adInfo.userId.equals(BaseActivity.getUid())) {
                 deleteMenuItem.setVisible(true);
+                if (adInfo.deleteReason >= 0) {
+                    deleteMenuItem.setIcon(R.drawable.ic_menu_republish);
+                    deleteMenuItem.setTitle(R.string.republish);
+                } else {
+                    deleteMenuItem.setIcon(R.drawable.ic_menu_delete);
+                    deleteMenuItem.setTitle(R.string.delete);
+                }
+            } else {
+                deleteMenuItem.setVisible(true);
+                deleteMenuItem.setIcon(R.drawable.ic_menu_booking);
+                deleteMenuItem.setTitle(R.string.booking);
+            }
         }
         return super.onPrepareOptionsMenu(menu);
     }
@@ -850,7 +902,7 @@ public class AdDetailsActivity extends BaseActivity implements View.OnClickListe
                     deleteReasonValue = 3;
                 }
 
-                deleteAd(deleteReasonValue);
+                deleteAd(deleteReasonValue, false);
                 deleteAdDialog.dismiss();
             }
         });
@@ -861,10 +913,9 @@ public class AdDetailsActivity extends BaseActivity implements View.OnClickListe
                 deleteAdDialog.dismiss();
             }
         });
-
     }
 
-    private void deleteAd(int deleteReasonValue) {
+    private void deleteAd(final int deleteReasonValue, final boolean isActive) {
         showProgressDialog();
 
         if (flatType == null || adInfo.adId == null) {
@@ -872,49 +923,143 @@ public class AdDetailsActivity extends BaseActivity implements View.OnClickListe
             return;
         }
 
-        HashMap<String, Object> adValues = new HashMap<>();
-        adValues.put(DBConstants.deleteReason, deleteReasonValue);
-        adValues.put(DBConstants.isActive, false);
-        adValues.put(DBConstants.modifiedTime, ServerValue.TIMESTAMP);
+        HashMap<String, Object> hashMap = new HashMap<>();
+        hashMap.put("/" + DBConstants.adList + "/" + flatType + "/" + adInfo.adId + "/" + DBConstants.deleteReason, deleteReasonValue);
+        hashMap.put("/" + DBConstants.adList + "/" + flatType + "/" + adInfo.adId + "/" + DBConstants.isActive, isActive);
+        hashMap.put("/" + DBConstants.adList + "/" + flatType + "/" + adInfo.adId + "/" + DBConstants.modifiedTime, ServerValue.TIMESTAMP);
 
-        databaseReference
-                .child(DBConstants.adList)
-                .child(flatType)
-                .child(adInfo.adId)
-                .updateChildren(adValues, new DatabaseReference.CompletionListener() {
-                    @Override
-                    public void onComplete(DatabaseError databaseError, DatabaseReference databaseReference) {
-                        closeProgressDialog();
-                    }
-                });
+        hashMap.put("/" + DBConstants.userAdList + "/" + getUid() + "/" + adInfo.adId + "/" + DBConstants.deleteReason, deleteReasonValue);
+        hashMap.put("/" + DBConstants.userAdList + "/" + getUid() + "/" + adInfo.adId + "/" + DBConstants.isActive, isActive);
+        hashMap.put("/" + DBConstants.userAdList + "/" + getUid() + "/" + adInfo.adId + "/" + DBConstants.modifiedTime, ServerValue.TIMESTAMP);
+
+        databaseReference.updateChildren(hashMap, new DatabaseReference.CompletionListener() {
+            @Override
+            public void onComplete(DatabaseError databaseError, DatabaseReference databaseReference) {
+                closeProgressDialog();
+                adInfo.deleteReason = deleteReasonValue;
+                adInfo.isActive = isActive;
+                invalidateOptionsMenu();
+                if (isActive)
+                    showToast(R.string.ad_published_again_successfully);
+                else
+                    showToast(R.string.ad_deleted_successfully);
+            }
+        });
+
+        AdListActivity2.needToRefreshData = true;
+        SubAdListActivity.needToRefreshData = true;
     }
 
     // [START ad_stars_transaction]
     private void onReportClicked(final String reportType) {
-        DatabaseReference userAdRef = databaseReference.child(DBConstants.adList).child(adInfo.adId);
-        userAdRef.runTransaction(new Transaction.Handler() {
+        DatabaseReference adRef = databaseReference.child(DBConstants.adList).child(flatType).child(adInfo.adId);
+        onReportClicked(adRef, reportType);
+        DatabaseReference userAdRef = databaseReference.child(DBConstants.userAdList).child(adInfo.userId).child(adInfo.adId);
+        onReportClicked(userAdRef, reportType);
+    }
+
+    private void onReportClicked(DatabaseReference databaseReference, final String reportType) {
+        databaseReference.runTransaction(new Transaction.Handler() {
             @Override
             public Transaction.Result doTransaction(MutableData mutableData) {
-                AdInfo p = mutableData.getValue(AdInfo.class);
-                if (p == null) {
+                AdInfo adInfo = mutableData.getValue(AdInfo.class);
+                if (adInfo == null) {
                     return Transaction.success(mutableData);
                 }
-                if (!p.report.containsKey(getUid())) {
-                    p.reportCount = p.reportCount + 1;
-                    p.report.put(getUid(), reportType);
+                if (!adInfo.report.containsKey(getUid())) {
+                    adInfo.reportCount = adInfo.reportCount + 1;
+                    adInfo.report.put(getUid(), reportType);
                 }
 
                 // Set value and report transaction success
-                mutableData.setValue(p);
+                mutableData.setValue(adInfo);
                 return Transaction.success(mutableData);
             }
 
             @Override
             public void onComplete(DatabaseError databaseError, boolean b, DataSnapshot dataSnapshot) {
                 if (databaseError == null) {
+                    reportThis.setText(R.string.already_reported);
                     reportThis.setEnabled(false);
+                } else {
+                    showSimpleDialog(databaseError.getMessage());
                 }
             }
         });
+    }
+
+    @Override
+    public void onBackPressed() {
+        if (adInfo != null && adInfo.deleteReason >= 0) {
+            republishAlertDialog();
+            return;
+        }
+        super.onBackPressed();
+    }
+
+    private void preparePrivacyPolicyView() {
+        TextView privacyPolicyTextView = findViewById(R.id.privacyPolicy);
+
+        // make sure TextView can receive click events:
+        MyClickableSpan.makeClickable(privacyPolicyTextView);
+        final ClickableTextListener clickAbleTextListener = new ClickableTextListener();
+
+        // build the clickable string:
+        final SpannableStringBuilder spannableText = new SpannableStringBuilder();
+        spannableText
+                .append(getString(R.string.we_value_your_policy))
+                .append(".")
+                .append("\n")
+                .append(getString(R.string.our))
+                .append(" ");
+
+        // terms of uses
+        final String termsOfUse = getString(R.string.terms_of_use);
+        spannableText.append(termsOfUse);
+
+        MyClickableSpan clickSpan = new MyClickableSpan(termsOfUse, 1, true);
+        clickSpan.setOnClickListener(clickAbleTextListener);
+
+        int end = spannableText.length();
+        int start = end - termsOfUse.length();
+
+        spannableText.setSpan(clickSpan, start, end, Spanned.SPAN_EXCLUSIVE_EXCLUSIVE);
+        spannableText
+                .append(" ")
+                .append(getString(R.string.and).toLowerCase())
+                .append(" ");
+
+        // privacy policy
+        final String privacyPolicy = getString(R.string.privacy_policy);
+        spannableText
+                .append(privacyPolicy);
+
+        clickSpan = new MyClickableSpan(privacyPolicy, 2, true);
+        clickSpan.setOnClickListener(clickAbleTextListener);
+
+        end = spannableText.length();
+        start = end - privacyPolicy.length();
+
+        spannableText.setSpan(clickSpan, start, end, Spanned.SPAN_EXCLUSIVE_EXCLUSIVE);
+        privacyPolicyTextView.setText(spannableText);
+    }
+
+    private class ClickableTextListener implements MyClickableSpanListener {
+        @Override
+        public void onClick(String spanText, int id) {
+            if (id == 1) {
+                showTermsOfUse();
+            } else if (id == 2) {
+                showPrivacyPolicy();
+            }
+        }
+    }
+
+    private void showTermsOfUse() {
+
+    }
+
+    private void showPrivacyPolicy() {
+
     }
 }

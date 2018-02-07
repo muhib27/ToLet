@@ -1,26 +1,49 @@
 package com.to.let.bd.common;
 
+import android.annotation.SuppressLint;
+import android.app.DatePickerDialog;
+import android.app.Dialog;
 import android.app.ProgressDialog;
 import android.content.DialogInterface;
 import android.content.Intent;
+import android.graphics.Color;
+import android.graphics.drawable.ColorDrawable;
+import android.os.Bundle;
 import android.support.v7.app.ActionBar;
 import android.support.v7.app.AlertDialog;
 import android.support.v7.app.AppCompatActivity;
 import android.support.v7.widget.Toolbar;
 import android.util.Log;
 import android.util.Patterns;
+import android.view.Gravity;
+import android.view.View;
+import android.view.ViewGroup;
+import android.view.Window;
+import android.widget.DatePicker;
+import android.widget.EditText;
 import android.widget.TextView;
 import android.widget.Toast;
 
 import com.google.firebase.auth.FirebaseAuth;
 import com.google.firebase.auth.FirebaseUser;
+import com.google.firebase.database.DataSnapshot;
+import com.google.firebase.database.DatabaseError;
+import com.google.firebase.database.DatabaseReference;
+import com.google.firebase.database.FirebaseDatabase;
+import com.google.firebase.database.Query;
+import com.google.firebase.database.ValueEventListener;
 import com.to.let.bd.R;
 import com.to.let.bd.activities.AdDetailsActivity;
 import com.to.let.bd.activities.NewAdActivity2;
+import com.to.let.bd.activities.SubAdListActivity;
 import com.to.let.bd.model.AdInfo;
 import com.to.let.bd.utils.AppConstants;
 import com.to.let.bd.utils.DBConstants;
+import com.to.let.bd.utils.DateUtils;
 
+import java.util.ArrayList;
+
+@SuppressLint("Registered")
 public class BaseActivity extends AppCompatActivity {
 
     private static final String TAG = BaseActivity.class.getSimpleName();
@@ -251,9 +274,13 @@ public class BaseActivity extends AppCompatActivity {
     }
 
     public void showSimpleDialog(String message) {
+        showSimpleDialog("Alert", message);
+    }
+
+    public void showSimpleDialog(String title, String message) {
         AlertDialog alertDialog = new AlertDialog.Builder(this).create();
         alertDialog.setIcon(R.mipmap.ic_launcher_round);
-        alertDialog.setTitle("Alert");
+        alertDialog.setTitle(title);
         alertDialog.setMessage(message);
         alertDialog.setButton(AlertDialog.BUTTON_POSITIVE, "OK",
                 new DialogInterface.OnClickListener() {
@@ -267,4 +294,266 @@ public class BaseActivity extends AppCompatActivity {
     public void showSimpleDialog(int messageResourceId) {
         showSimpleDialog(getString(messageResourceId));
     }
+
+    public void showSimpleDialog(int titleResourceId, int messageResourceId) {
+        showSimpleDialog(getString(titleResourceId), getString(messageResourceId));
+    }
+
+    private Dialog searchDialog;
+    public static String[] childArray;
+    public static long fromDateTime = 0;
+    public static long toDateTime = 0;
+    public static long rentMinLong = 0;
+    public static long rentMaxLong = 0;
+
+    public void showFilterWindow() {
+        if (searchDialog == null) {
+            searchDialog = new Dialog(this);
+            searchDialog.requestWindowFeature(Window.FEATURE_NO_TITLE);
+            searchDialog.setContentView(R.layout.dialog_search_date_price_range);
+            Window window = searchDialog.getWindow();
+            if (window != null) {
+                window.setBackgroundDrawable(new ColorDrawable(Color.TRANSPARENT));
+                window.setLayout(ViewGroup.LayoutParams.MATCH_PARENT, ViewGroup.LayoutParams.WRAP_CONTENT);
+                window.setGravity(Gravity.CENTER_HORIZONTAL | Gravity.TOP);
+            }
+        }
+        searchDialog.show();
+
+        TextView title = searchDialog.findViewById(R.id.title);
+        title.setText(getString(R.string.filter_the_selected_list));
+
+        final TextView fromMonth, toMonth;
+        fromMonth = searchDialog.findViewById(R.id.fromMonth);
+        if (fromDateTime > 0) {
+            String formattedDate = DateUtils.getFormattedDateString(DateUtils.getDateIncreaseMonth(fromDateTime), DateUtils.format2);
+            fromMonth.setText(formattedDate);
+        }
+        toMonth = searchDialog.findViewById(R.id.toMonth);
+        if (toDateTime > 0) {
+            String formattedDate = DateUtils.getFormattedDateString(DateUtils.getDateIncreaseMonth(toDateTime), DateUtils.format2);
+            toMonth.setText(formattedDate);
+        }
+
+        final int[] fromDateAsArray = DateUtils.getTodayDateAsArray();
+        final int[] toDateAsArray = DateUtils.getTodayDateAsArray();
+
+        fromMonth.setOnClickListener(new View.OnClickListener() {
+            @Override
+            public void onClick(View view) {
+                if (fromMonth.getText().toString().equalsIgnoreCase(getString(R.string.any))) {
+                    showDatePickerDialog(fromMonth, fromDateAsArray[0], fromDateAsArray[1], fromDateAsArray[2]);
+                } else {
+                    int[] dateAsArray = DateUtils.getDateAsArray(DateUtils.getDate(fromMonth.getText().toString(), DateUtils.format2));
+                    showDatePickerDialog(fromMonth, dateAsArray[0], dateAsArray[1], dateAsArray[2]);
+                }
+            }
+        });
+
+        fromMonth.setOnLongClickListener(new View.OnLongClickListener() {
+            @Override
+            public boolean onLongClick(View v) {
+                fromMonth.setText(R.string.any);
+                return true;
+            }
+        });
+
+        toMonth.setOnClickListener(new View.OnClickListener() {
+            @Override
+            public void onClick(View view) {
+                if (toMonth.getText().toString().equalsIgnoreCase(getString(R.string.any))) {
+                    showDatePickerDialog(toMonth, toDateAsArray[0], toDateAsArray[1], toDateAsArray[2]);
+                } else {
+                    int[] dateAsArray = DateUtils.getDateAsArray(DateUtils.getDate(toMonth.getText().toString(), DateUtils.format2));
+                    showDatePickerDialog(toMonth, dateAsArray[0], dateAsArray[1], dateAsArray[2]);
+                }
+            }
+        });
+
+        toMonth.setOnLongClickListener(new View.OnLongClickListener() {
+            @Override
+            public boolean onLongClick(View v) {
+                toMonth.setText(R.string.any);
+                return true;
+            }
+        });
+
+        final EditText rentMin, rentMax;
+        rentMin = searchDialog.findViewById(R.id.rentMin);
+        if (rentMinLong > 0) {
+            rentMin.setText(String.valueOf(rentMinLong));
+            rentMin.setSelection(rentMin.getText().length());
+        }
+        rentMin.requestFocus();
+
+        rentMax = searchDialog.findViewById(R.id.rentMax);
+        if (rentMaxLong > 0) {
+            rentMax.setText(String.valueOf(rentMaxLong));
+            rentMax.setSelection(rentMax.getText().length());
+        }
+
+        searchDialog.findViewById(R.id.okBtn).setOnClickListener(new View.OnClickListener() {
+            @Override
+            public void onClick(View view) {
+                fromDateTime = DateUtils.getDate(fromMonth.getText().toString(), DateUtils.format2).getTime();
+                if (fromDateTime > 0) {
+                    fromDateTime = DateUtils.getDateForQuery(fromDateTime);
+                }
+                toDateTime = DateUtils.getDate(toMonth.getText().toString(), DateUtils.format2).getTime();
+                if (toDateTime > 0) {
+                    toDateTime = DateUtils.getDateForQuery(toDateTime);
+                }
+
+                rentMinLong = 0;
+                if (!rentMin.getText().toString().trim().isEmpty()) {
+                    rentMinLong = Long.parseLong(rentMin.getText().toString());
+                }
+
+                rentMaxLong = 0;
+                if (!rentMax.getText().toString().trim().isEmpty()) {
+                    rentMaxLong = Long.parseLong(rentMax.getText().toString());
+                }
+
+                if (fromDateTime == 0 && toDateTime == 0 && rentMinLong == 0 && rentMaxLong == 0) {
+                    showSimpleDialog(R.string.please_insert_valid_data);
+                    return;
+                }
+
+                if (fromDateTime > 0 && toDateTime > 0 && fromDateTime > toDateTime &&
+                        rentMinLong > 0 && rentMaxLong > 0 && rentMinLong > rentMaxLong) {
+                    showSimpleDialog(R.string.please_insert_valid_date_range_and_rent_range);
+                    return;
+                } else {
+                    if (fromDateTime > 0 && toDateTime > 0 && fromDateTime > toDateTime) {
+                        showSimpleDialog(R.string.please_insert_valid_date_range);
+                        return;
+                    } else if (rentMinLong > 0 && rentMaxLong > 0 && rentMinLong > rentMaxLong) {
+                        showSimpleDialog(R.string.please_insert_valid_rent_range);
+                        return;
+                    } else {
+                        startSubAdListActivity(AppConstants.subQueryQuery);
+                        searchDialog.dismiss();
+                    }
+                }
+                showLog();
+            }
+        });
+
+        searchDialog.findViewById(R.id.cancelBtn).setOnClickListener(new View.OnClickListener() {
+            @Override
+            public void onClick(View view) {
+                searchDialog.dismiss();
+            }
+        });
+    }
+
+//    private void updateSearchedData(long fromDateTime, long toDateTime, long rentMinLong, long rentMaxLong) {
+//        int selectedTabPosition = tabLayout.getSelectedTabPosition();
+//        String flatType;
+//        if (selectedTabPosition == 1) {
+//            flatType = DBConstants.keyMess;
+//        } else if (selectedTabPosition == 2) {
+//            flatType = DBConstants.keySublet;
+//        } else if (selectedTabPosition == 3) {
+//            flatType = DBConstants.keyOthers;
+//        } else {
+//            flatType = DBConstants.keyFamily;
+//        }
+//
+//        DatabaseReference databaseReference = FirebaseDatabase.getInstance().getReference();
+//        Query query = databaseReference.child(DBConstants.adList)
+//                .child(flatType)
+//                .orderByChild(DBConstants.flatRent);
+//
+//        query.startAt(rentMinLong)
+//                .endAt(rentMaxLong)
+//                .addListenerForSingleValueEvent(new ValueEventListener() {
+//                    @Override
+//                    public void onDataChange(DataSnapshot dataSnapshot) {
+//
+//                    }
+//
+//                    @Override
+//                    public void onCancelled(DatabaseError databaseError) {
+//
+//                    }
+//                });
+//    }
+
+//    private void loadData(Query query, final long fromDateTime, final long toDateTime) {
+//        query.addListenerForSingleValueEvent(new ValueEventListener() {
+//            @Override
+//            public void onDataChange(DataSnapshot dataSnapshot) {
+//                ArrayList<AdInfo> adList = new ArrayList<>();
+//                adList.clear();
+//                for (DataSnapshot ad : dataSnapshot.getChildren()) {
+//                    AdInfo adInfo = ad.getValue(AdInfo.class);
+//
+//                    if (adInfo == null)
+//                        continue;
+//
+//                    if (fromDateTime > 0 || toDateTime > 0) {
+//                        if (fromDateTime > 0 && toDateTime > 0) {
+//                            if (adInfo.startingFinalDate >= fromDateTime && adInfo.startingFinalDate <= toDateTime)
+//                                adList.add(adInfo);
+//                        } else {
+//                            if (toDateTime > 0) {
+//                                if (adInfo.startingFinalDate <= toDateTime)
+//                                    adList.add(adInfo);
+//                            } else {// fromDateTime > 0
+//                                if (adInfo.startingFinalDate >= fromDateTime)
+//                                    adList.add(adInfo);
+//                            }
+//                        }
+//                    } else {
+//                        adList.add(adInfo);
+//                    }
+//                }
+//
+//                showLog("adList size: " + adList.size());
+//            }
+//
+//            @Override
+//            public void onCancelled(DatabaseError databaseError) {
+//
+//            }
+//        });
+//    }
+
+    private void showDatePickerDialog(final TextView view, int year, int month, int dayOfMonth) {
+        DatePickerDialog datePickerDialog = new DatePickerDialog(this, new DatePickerDialog.OnDateSetListener() {
+            @Override
+            public void onDateSet(DatePicker datePicker, int year, int monthOfYear, int dayOfMonth) {
+                String dateAsString = year + "-" + AppConstants.twoDigitIntFormatter(monthOfYear + 1)
+                        + "-" + AppConstants.twoDigitIntFormatter(dayOfMonth);
+                String formattedDate = DateUtils.getFormattedDateString(DateUtils.getDate(dateAsString, DateUtils.format4), DateUtils.format2);
+                view.setText(formattedDate);
+            }
+        }, year, month, dayOfMonth);
+        datePickerDialog.getDatePicker().setMinDate(System.currentTimeMillis());
+        datePickerDialog.show();
+    }
+
+    public void startSubAdListActivity(int subAdListType) {
+        Intent subAdListIntent = new Intent(this, SubAdListActivity.class);
+        subAdListIntent.putExtra(AppConstants.keySubAdListType, subAdListType);
+        subAdListIntent.addFlags(Intent.FLAG_ACTIVITY_CLEAR_TASK);
+        startActivity(subAdListIntent);
+    }
+
+//    public void startSubAdListActivity(String[] childArray, long fromDateTime, long toDateTime, long rentMinLong, long rentMaxLong) {
+//        Intent subAdListIntent = new Intent(this, SubAdListActivity.class);
+//        Bundle bundle = new Bundle();
+//        bundle.putInt(AppConstants.keySubAdListType, AppConstants.subQueryQuery);
+//
+//        bundle.putStringArray(AppConstants.keyChildArray, childArray);
+//        bundle.putLong(AppConstants.keyFromDateTime, fromDateTime);
+//        bundle.putLong(AppConstants.keyToDateTime, toDateTime);
+//        bundle.putLong(AppConstants.keyRentMinLong, rentMinLong);
+//        bundle.putLong(AppConstants.keyRentMaxLong, rentMaxLong);
+//
+//        subAdListIntent.putExtras(bundle);
+//        subAdListIntent.addFlags(Intent.FLAG_ACTIVITY_CLEAR_TOP | Intent.FLAG_ACTIVITY_NEW_TASK);
+//        startActivity(subAdListIntent);
+//    }
 }

@@ -168,6 +168,34 @@
         android:orientation="horizontal">
 
         <CheckBox
+            android:id="@+id/attachedBathCB"
+            android:layout_width="0dp"
+            android:layout_height="wrap_content"
+            android:layout_weight="1"
+            android:ellipsize="end"
+            android:singleLine="true"
+            android:text="@string/attached_bathroom"
+            android:textColor="@color/black" />
+
+        <CheckBox
+            android:id="@+id/attachedBalconyCB"
+            android:layout_width="0dp"
+            android:layout_height="wrap_content"
+            android:layout_weight="1"
+            android:ellipsize="end"
+            android:singleLine="true"
+            android:text="@string/attached_balcony"
+            android:textColor="@color/black" />
+    </LinearLayout>
+
+    <LinearLayout
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:layout_marginBottom="@dimen/new_post_common_padding"
+        android:layout_marginTop="@dimen/new_post_common_padding"
+        android:orientation="horizontal">
+
+        <CheckBox
             android:id="@+id/onlyStudentsCB"
             android:layout_width="0dp"
             android:layout_height="wrap_content"

@@ -44,6 +44,7 @@ public class AdViewHolder extends RecyclerView.ViewHolder {
     private TextView rentDate;
     private TextView address;
     private ImageView favAd;
+    private TextView message;
 
     private View itemView;
     private Context context;
@@ -61,6 +62,7 @@ public class AdViewHolder extends RecyclerView.ViewHolder {
         rentDate = itemView.findViewById(R.id.rentDate);
         address = itemView.findViewById(R.id.address);
         favAd = itemView.findViewById(R.id.favAd);
+        message = itemView.findViewById(R.id.message);
     }
 
     public void bindToAd(final AdInfo adInfo, final int clickedPosition, final AdAdapter.ClickListener clickListener) {
@@ -105,8 +107,7 @@ public class AdViewHolder extends RecyclerView.ViewHolder {
         String adRent = "Rent per month: TK " + AppConstants.rentFormatter(adInfo.flatRent);
         this.adRent.setText(adRent);
 
-        String adDescription = AppConstants.flatDescription(context, adInfo);
-        this.adDescription.setText(adDescription);
+        this.adDescription.setText(AppConstants.flatDescription(context, adInfo));
 
         String rentDate = "Rent from: " + DateUtils.getRentDateString(adInfo.startingFinalDate);
         this.rentDate.setText(rentDate);
@@ -134,10 +135,10 @@ public class AdViewHolder extends RecyclerView.ViewHolder {
         if (imagePath != null)
             Glide.with(adMainPhoto.getContext())
                     .load(Uri.parse(imagePath))
-                    .apply(new RequestOptions().placeholder(R.mipmap.ic_launcher).error(R.mipmap.ic_launcher))
+                    .apply(new RequestOptions().placeholder(R.drawable.image_loading).error(R.drawable.image_error))
                     .into(adMainPhoto);
         else
-            adMainPhoto.setImageResource(R.mipmap.ic_launcher);
+            adMainPhoto.setImageResource(R.drawable.no_image_available);
 
         String photoCount = imageCount > 1 ? imageCount + " Photo's" : imageCount + " Photo";
         this.photoCount.setText(photoCount);
@@ -160,10 +161,26 @@ public class AdViewHolder extends RecyclerView.ViewHolder {
         favAd.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View view) {
+                if (adInfo.userId.equals(BaseActivity.getUid())) {
+                    showToast(R.string.this_is_your_own_post);
+                    return;
+                }
                 if (clickListener != null)
                     clickListener.onFavClick(favAd, clickedPosition, adInfo);
             }
         });
+
+        message.setVisibility(View.GONE);
+        if (adInfo.deleteReason >= 0) {
+            message.setVisibility(View.VISIBLE);
+            message.setOnClickListener(new View.OnClickListener() {
+                @Override
+                public void onClick(View v) {
+                    if (clickListener != null)
+                        clickListener.onItemClick(adInfo);
+                }
+            });
+        }
     }
 
     private void showToast(int resourceId) {

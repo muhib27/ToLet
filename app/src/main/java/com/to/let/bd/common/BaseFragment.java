@@ -41,4 +41,14 @@ public class BaseFragment extends Fragment {
         if (getActivity() instanceof BaseActivity)
             ((BaseActivity) getActivity()).closeProgressDialog();
     }
+
+    public void showSimpleDialog(String message) {
+        if (getActivity() instanceof BaseActivity)
+            ((BaseActivity) getActivity()).showSimpleDialog(message);
+    }
+
+    public void showSimpleDialog(int messageResourceId) {
+        if (getActivity() instanceof BaseActivity)
+            ((BaseActivity) getActivity()).showSimpleDialog(messageResourceId);
+    }
 }

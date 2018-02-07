@@ -56,6 +56,7 @@ public class AppConstants {
     public static final int subQueryMy = 1;
     public static final int subQueryNearest = 2;
     public static final int subQuerySmart = 3;
+    public static final int subQueryQuery = 99;
     public static final int subQueryAll = 100;
 
     // maximum image you can upload for single ad
@@ -77,9 +78,13 @@ public class AppConstants {
     public static final String progress = "progress";
 
     public static final String keyAdInfo = "adInfo";
-
-    // predefined rent type
     public static final long textWatcherDelay = 2000;
+
+    public static final String keyChildArray = "keyChildArray";
+    public static final String keyFromDateTime = "keyFromDateTime";
+    public static final String keyToDateTime = "keyToDateTime";
+    public static final String keyRentMinLong = "keyRentMinLong";
+    public static final String keyRentMaxLong = "keyRentMaxLong";
 
     //-------------methods-----------
     public static Bitmap writeOnDrawable(Context context, int drawableId, String smallText) {
@@ -211,7 +216,10 @@ public class AppConstants {
         for (int numberOfView = startPosition; numberOfView < endPosition; numberOfView++) {
             String s;
             if (numberOfView < 1) {
-                s = "No " + viewType;
+                if (viewType.equals("Seat") || viewType.equals("Room") || viewType.equals("Total Member"))
+                    s = "N/A";
+                else
+                    s = "No " + viewType;
             } else if (numberOfView < 2) {
                 s = numberOfView + " " + viewType;
             } else {
@@ -273,12 +281,32 @@ public class AppConstants {
             MessInfo messInfo = adInfo.messInfo;
             String[] messTypeArray = context.getResources().getStringArray(R.array.mess_member_type_array);
             if (!(context instanceof AdDetailsActivity))
-                adDescription = messTypeArray[messInfo.memberType] + " member ";
-            adDescription += messInfo.numberOfSeat + "seat-" +
-                    messInfo.numberOfRoom + "room";
+                adDescription = messTypeArray[messInfo.memberType] + " ";
 
-            if (messInfo.totalMember > 0)
-                adDescription += " with " + messInfo.totalMember + " total members";
+            if (messInfo.numberOfSeat > 0) {
+                adDescription += messInfo.numberOfSeat + "seat";
+            }
+
+            if (messInfo.numberOfRoom > 0) {
+                if (messInfo.numberOfSeat > 0) {
+                    adDescription += " in ";
+                }
+                adDescription += messInfo.numberOfRoom + "room";
+            }
+
+            if (messInfo.attachedBath || messInfo.attachedBalcony) {
+                if (messInfo.attachedBath && messInfo.attachedBalcony) {
+                    adDescription += " with attached bath and balcony";
+                } else if (messInfo.attachedBath) {
+                    adDescription += " with attached bath";
+                } else {
+                    adDescription += " with attached balcony";
+                }
+            }
+
+            if (context instanceof AdDetailsActivity)
+                if (messInfo.totalMember > 0)
+                    adDescription += " may have " + messInfo.totalMember + " total members";
         } else if (adInfo.subletInfo != null) {
             SubletInfo subletInfo = adInfo.subletInfo;
             String[] subletTypeArray = context.getResources().getStringArray(R.array.sublet_type_details_array);

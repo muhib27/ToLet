@@ -16,12 +16,8 @@
 
 package com.to.let.bd.activities;
 
-import android.app.DatePickerDialog;
-import android.app.Dialog;
 import android.content.DialogInterface;
 import android.content.Intent;
-import android.graphics.Color;
-import android.graphics.drawable.ColorDrawable;
 import android.support.annotation.NonNull;
 import android.support.design.widget.NavigationView;
 import android.support.design.widget.TabLayout;
@@ -34,15 +30,10 @@ import android.support.v4.widget.DrawerLayout;
 import android.support.v7.app.ActionBarDrawerToggle;
 import android.support.v7.app.AlertDialog;
 import android.support.v7.widget.Toolbar;
-import android.view.Gravity;
 import android.view.Menu;
 import android.view.MenuItem;
 import android.view.View;
-import android.view.ViewGroup;
-import android.view.Window;
 import android.widget.Button;
-import android.widget.DatePicker;
-import android.widget.EditText;
 import android.widget.ImageView;
 import android.widget.LinearLayout;
 import android.widget.TextView;
@@ -52,25 +43,16 @@ import com.bumptech.glide.request.RequestOptions;
 import com.google.android.gms.ads.AdListener;
 import com.google.android.gms.ads.AdRequest;
 import com.google.android.gms.ads.InterstitialAd;
-import com.google.firebase.database.DataSnapshot;
-import com.google.firebase.database.DatabaseError;
-import com.google.firebase.database.DatabaseReference;
-import com.google.firebase.database.FirebaseDatabase;
-import com.google.firebase.database.Query;
-import com.google.firebase.database.ValueEventListener;
 import com.to.let.bd.R;
+import com.to.let.bd.common.BaseActivity;
 import com.to.let.bd.common.BaseFirebaseAuthActivity;
 import com.to.let.bd.fragments.AdListBaseFragment;
 import com.to.let.bd.fragments.FamilyFlatList;
 import com.to.let.bd.fragments.MessFlatList;
 import com.to.let.bd.fragments.OthersFlatList;
 import com.to.let.bd.fragments.SubletFlatList;
-import com.to.let.bd.model.AdInfo;
 import com.to.let.bd.utils.AppConstants;
 import com.to.let.bd.utils.DBConstants;
-import com.to.let.bd.utils.DateUtils;
-
-import java.util.ArrayList;
 
 public class AdListActivity2 extends BaseFirebaseAuthActivity implements
         NavigationView.OnNavigationItemSelectedListener {
@@ -130,16 +112,20 @@ public class AdListActivity2 extends BaseFirebaseAuthActivity implements
         navigationView.setCheckedItem(R.id.navAllAds);
     }
 
-    @Override
-    public void onActivityResult(int requestCode, int resultCode, Intent data) {
-        super.onActivityResult(requestCode, resultCode, data);
-    }
+    public static boolean needToRefreshData = false;
 
     @Override
     protected void onResume() {
         super.onResume();
         updateNavHeader();
         navigationView.setCheckedItem(R.id.navAllAds);
+
+        if (needToRefreshData) {
+            updateListItem();
+        }
+
+        needToRefreshData = false;
+        SubAdListActivity.needToRefreshData = false;
     }
 
     private void updateNavHeader() {
@@ -187,11 +173,14 @@ public class AdListActivity2 extends BaseFirebaseAuthActivity implements
     @Override
     protected void setEmailAddress() {
         updateNavHeader();
+        updateListItem();
+    }
 
+    private void updateListItem() {
         int pagerSelection = mViewPager.getCurrentItem();
 
         for (int i = pagerSelection - 1; i < pagerSelection + 1; i++) {
-            if (i == 0)
+            if (i == -1)
                 continue;
             if (i >= mViewPager.getChildCount())
                 continue;
@@ -255,7 +244,7 @@ public class AdListActivity2 extends BaseFirebaseAuthActivity implements
             startNearestActivity();
         } else if (id == R.id.navSmartAds) {
 //            startSubAdListActivity(AppConstants.subQuerySmart);
-            showSimpleDialog(R.string.working_progress);
+            showSimpleDialog(R.string.smart_ad_title, R.string.coming_soon);
             return true;
         } else if (id == R.id.navMyAds) {
             if (firebaseUser.isAnonymous()) {
@@ -309,13 +298,6 @@ public class AdListActivity2 extends BaseFirebaseAuthActivity implements
         startActivity(mapIntent);
     }
 
-    private void startSubAdListActivity(int subAdListType) {
-        Intent subAdListIntent = new Intent(this, SubAdListActivity.class);
-        subAdListIntent.putExtra(AppConstants.keySubAdListType, subAdListType);
-        subAdListIntent.addFlags(Intent.FLAG_ACTIVITY_CLEAR_TASK);
-        startActivity(subAdListIntent);
-    }
-
     @Override
     protected void afterSuccessfulAnonymousLogin() {
         closeProgressDialog();
@@ -362,6 +344,22 @@ public class AdListActivity2 extends BaseFirebaseAuthActivity implements
     public boolean onOptionsItemSelected(MenuItem item) {
         switch (item.getItemId()) {
             case R.id.filterAction:
+                int selectedTabPosition = tabLayout.getSelectedTabPosition();
+                String flatType;
+                if (selectedTabPosition == 1) {
+                    flatType = DBConstants.keyMess;
+                } else if (selectedTabPosition == 2) {
+                    flatType = DBConstants.keySublet;
+                } else if (selectedTabPosition == 3) {
+                    flatType = DBConstants.keyOthers;
+                } else {
+                    flatType = DBConstants.keyFamily;
+                }
+                BaseActivity.childArray = new String[]{DBConstants.adList, flatType};
+                BaseActivity.fromDateTime = 0;
+                BaseActivity.toDateTime = 0;
+                BaseActivity.rentMinLong = 0;
+                BaseActivity.rentMaxLong = 0;
                 showFilterWindow();
                 return true;
             default:
@@ -410,274 +408,5 @@ public class AdListActivity2 extends BaseFirebaseAuthActivity implements
                 showLog("Code to be executed when when the interstitial ad is closed.");
             }
         });
-    }
-
-    private Dialog searchDialog;
-
-    private void showFilterWindow() {
-        if (searchDialog == null) {
-            searchDialog = new Dialog(this);
-            searchDialog.requestWindowFeature(Window.FEATURE_NO_TITLE);
-            searchDialog.setContentView(R.layout.dialog_search_date_price_range);
-            Window window = searchDialog.getWindow();
-            if (window != null) {
-                window.setBackgroundDrawable(new ColorDrawable(Color.TRANSPARENT));
-                window.setLayout(ViewGroup.LayoutParams.MATCH_PARENT, ViewGroup.LayoutParams.WRAP_CONTENT);
-                window.setGravity(Gravity.CENTER_HORIZONTAL | Gravity.TOP);
-            }
-        }
-        searchDialog.show();
-
-        TextView title = searchDialog.findViewById(R.id.title);
-        title.setText(getString(R.string.filter_the_selected_list));
-
-        final TextView fromMonth, toMonth;
-        fromMonth = searchDialog.findViewById(R.id.fromMonth);
-        toMonth = searchDialog.findViewById(R.id.toMonth);
-
-        final int[] fromDateAsArray = DateUtils.getTodayDateAsArray();
-        final int[] toDateAsArray = DateUtils.getTodayDateAsArray();
-
-        fromMonth.setOnClickListener(new View.OnClickListener() {
-            @Override
-            public void onClick(View view) {
-                if (fromMonth.getText().toString().equalsIgnoreCase(getString(R.string.any))) {
-                    showDatePickerDialog(fromMonth, fromDateAsArray[0], fromDateAsArray[1], fromDateAsArray[2]);
-                } else {
-                    int[] dateAsArray = DateUtils.getDateAsArray(DateUtils.getDate(fromMonth.getText().toString(), DateUtils.format2));
-                    showDatePickerDialog(fromMonth, dateAsArray[0], dateAsArray[1], dateAsArray[2]);
-                }
-            }
-        });
-
-        fromMonth.setOnLongClickListener(new View.OnLongClickListener() {
-            @Override
-            public boolean onLongClick(View v) {
-                fromMonth.setText(R.string.any);
-                return true;
-            }
-        });
-
-        toMonth.setOnClickListener(new View.OnClickListener() {
-            @Override
-            public void onClick(View view) {
-                if (toMonth.getText().toString().equalsIgnoreCase(getString(R.string.any))) {
-                    showDatePickerDialog(toMonth, toDateAsArray[0], toDateAsArray[1], toDateAsArray[2]);
-                } else {
-                    int[] dateAsArray = DateUtils.getDateAsArray(DateUtils.getDate(toMonth.getText().toString(), DateUtils.format2));
-                    showDatePickerDialog(toMonth, dateAsArray[0], dateAsArray[1], dateAsArray[2]);
-                }
-            }
-        });
-
-        toMonth.setOnLongClickListener(new View.OnLongClickListener() {
-            @Override
-            public boolean onLongClick(View v) {
-                toMonth.setText(R.string.any);
-                return true;
-            }
-        });
-
-        final EditText rentMin, rentMax;
-        rentMin = searchDialog.findViewById(R.id.rentMin);
-        rentMax = searchDialog.findViewById(R.id.rentMax);
-
-        searchDialog.findViewById(R.id.okBtn).setOnClickListener(new View.OnClickListener() {
-            @Override
-            public void onClick(View view) {
-                long fromDateTime = DateUtils.getDate(fromMonth.getText().toString(), DateUtils.format2).getTime();
-                if (fromDateTime > 0) {
-                    fromDateTime = DateUtils.getDateForQuery(fromDateTime);
-                }
-                long toDateTime = DateUtils.getDate(toMonth.getText().toString(), DateUtils.format2).getTime();
-                if (toDateTime > 0) {
-                    toDateTime = DateUtils.getDateForQuery(toDateTime);
-                }
-
-                long rentMinLong = 0;
-                if (!rentMin.getText().toString().trim().isEmpty()) {
-                    rentMinLong = Long.parseLong(rentMin.getText().toString());
-                }
-
-                long rentMaxLong = 0;
-                if (!rentMax.getText().toString().trim().isEmpty()) {
-                    rentMaxLong = Long.parseLong(rentMax.getText().toString());
-                }
-
-                if (fromDateTime == 0 && toDateTime == 0 && rentMinLong == 0 && rentMaxLong == 0) {
-                    showSimpleDialog(R.string.please_insert_valid_data);
-                    return;
-                }
-
-                if (fromDateTime > 0 && toDateTime > 0 && fromDateTime > toDateTime &&
-                        rentMinLong > 0 && rentMaxLong > 0 && rentMinLong > rentMaxLong) {
-                    showSimpleDialog(R.string.please_insert_valid_date_range_and_rent_range);
-                    return;
-                } else {
-                    if (fromDateTime > 0 && toDateTime > 0 && fromDateTime > toDateTime) {
-                        showSimpleDialog(R.string.please_insert_valid_date_range);
-                        return;
-                    } else if (rentMinLong > 0 && rentMaxLong > 0 && rentMinLong > rentMaxLong) {
-                        showSimpleDialog(R.string.please_insert_valid_rent_range);
-                        return;
-                    } else {
-                        int selectedTabPosition = tabLayout.getSelectedTabPosition();
-                        String flatType;
-                        if (selectedTabPosition == 1) {
-                            flatType = DBConstants.keyMess;
-                        } else if (selectedTabPosition == 2) {
-                            flatType = DBConstants.keySublet;
-                        } else if (selectedTabPosition == 3) {
-                            flatType = DBConstants.keyOthers;
-                        } else {
-                            flatType = DBConstants.keyFamily;
-                        }
-
-                        DatabaseReference databaseReference = FirebaseDatabase.getInstance().getReference();
-                        Query query = databaseReference.child(DBConstants.adList)
-                                .child(flatType);
-                        if ((fromDateTime == 0 && toDateTime == 0) || (rentMinLong == 0 && rentMaxLong == 0)) {
-                            if (fromDateTime == 0 && toDateTime == 0) {
-                                query = query.orderByChild(DBConstants.flatRent);
-                                if (rentMinLong > 0 && rentMaxLong > 0) {
-                                    query = query.startAt(rentMinLong).endAt(rentMaxLong);
-                                } else {
-                                    if (rentMinLong == 0) {
-                                        query = query.endAt(rentMaxLong);
-                                    } else {
-                                        query = query.startAt(rentMinLong);
-                                    }
-                                }
-                            } else {
-                                query = query.orderByChild(DBConstants.startingFinalDate);
-                                if (fromDateTime > 0 && toDateTime > 0) {
-                                    query = query.startAt(fromDateTime).endAt(toDateTime);
-                                } else {
-                                    if (fromDateTime == 0) {
-                                        query = query.endAt(toDateTime);
-                                    } else {
-                                        query = query.startAt(fromDateTime);
-                                    }
-                                }
-                            }
-                            loadData(query, 0, 0);
-                            searchDialog.dismiss();
-                            return;
-                        } else {
-                            query = query.orderByChild(DBConstants.flatRent);
-                            if (rentMinLong > 0 && rentMaxLong > 0) {
-                                query = query.startAt(rentMinLong).endAt(rentMaxLong);
-                            } else {
-                                if (rentMinLong == 0) {
-                                    query = query.endAt(rentMaxLong);
-                                } else {
-                                    query = query.startAt(rentMinLong);
-                                }
-                            }
-                            loadData(query, fromDateTime, toDateTime);
-                            searchDialog.dismiss();
-                            return;
-                        }
-                    }
-                }
-//                updateSearchedData(fromDateLong, toDateLong, rentMinLong, rentMaxLong);
-//                searchDialog.dismiss();
-//                showLog();
-            }
-        });
-
-        searchDialog.findViewById(R.id.cancelBtn).setOnClickListener(new View.OnClickListener() {
-            @Override
-            public void onClick(View view) {
-                searchDialog.dismiss();
-            }
-        });
-    }
-
-    private void updateSearchedData(long fromDateTime, long toDateTime, long rentMinLong, long rentMaxLong) {
-        int selectedTabPosition = tabLayout.getSelectedTabPosition();
-        String flatType;
-        if (selectedTabPosition == 1) {
-            flatType = DBConstants.keyMess;
-        } else if (selectedTabPosition == 2) {
-            flatType = DBConstants.keySublet;
-        } else if (selectedTabPosition == 3) {
-            flatType = DBConstants.keyOthers;
-        } else {
-            flatType = DBConstants.keyFamily;
-        }
-
-        DatabaseReference databaseReference = FirebaseDatabase.getInstance().getReference();
-        Query query = databaseReference.child(DBConstants.adList)
-                .child(flatType)
-                .orderByChild(DBConstants.flatRent);
-
-        query.startAt(rentMinLong)
-                .endAt(rentMaxLong)
-                .addListenerForSingleValueEvent(new ValueEventListener() {
-                    @Override
-                    public void onDataChange(DataSnapshot dataSnapshot) {
-
-                    }
-
-                    @Override
-                    public void onCancelled(DatabaseError databaseError) {
-
-                    }
-                });
-    }
-
-    private void loadData(Query query, final long fromDateTime, final long toDateTime) {
-        query.addListenerForSingleValueEvent(new ValueEventListener() {
-            @Override
-            public void onDataChange(DataSnapshot dataSnapshot) {
-                ArrayList<AdInfo> adList = new ArrayList<>();
-                adList.clear();
-                for (DataSnapshot ad : dataSnapshot.getChildren()) {
-                    AdInfo adInfo = ad.getValue(AdInfo.class);
-
-                    if (adInfo == null)
-                        continue;
-
-                    if (fromDateTime > 0 || toDateTime > 0) {
-                        if (fromDateTime > 0 && toDateTime > 0) {
-                            if (adInfo.startingFinalDate >= fromDateTime && adInfo.startingFinalDate <= toDateTime)
-                                adList.add(adInfo);
-                        } else {
-                            if (toDateTime > 0) {
-                                if (adInfo.startingFinalDate <= toDateTime)
-                                    adList.add(adInfo);
-                            } else {// fromDateTime > 0
-                                if (adInfo.startingFinalDate >= fromDateTime)
-                                    adList.add(adInfo);
-                            }
-                        }
-                    } else {
-                        adList.add(adInfo);
-                    }
-                }
-
-                showLog("adList size: " + adList.size());
-            }
-
-            @Override
-            public void onCancelled(DatabaseError databaseError) {
-
-            }
-        });
-    }
-
-    private void showDatePickerDialog(final TextView view, int year, int month, int dayOfMonth) {
-        DatePickerDialog datePickerDialog = new DatePickerDialog(this, new DatePickerDialog.OnDateSetListener() {
-            @Override
-            public void onDateSet(DatePicker datePicker, int year, int monthOfYear, int dayOfMonth) {
-                String dateAsString = year + "-" + AppConstants.twoDigitIntFormatter(monthOfYear + 1)
-                        + "-" + AppConstants.twoDigitIntFormatter(dayOfMonth);
-                String formattedDate = DateUtils.getFormattedDateString(DateUtils.getDate(dateAsString, DateUtils.format4), DateUtils.format2);
-                view.setText(formattedDate);
-            }
-        }, year, month, dayOfMonth);
-        datePickerDialog.getDatePicker().setMinDate(System.currentTimeMillis());
-        datePickerDialog.show();
     }
 }

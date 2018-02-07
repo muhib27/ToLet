@@ -35,9 +35,4 @@ public class OthersFlatList extends AdListBaseFragment {
         othersFlatList.setArguments(bundle);
         return othersFlatList;
     }
-
-    @Override
-    public int getSubQuery() {
-        return -1;
-    }
 }
