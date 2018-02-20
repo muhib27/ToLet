@@ -70,9 +70,18 @@ public class MessFlatAd extends BaseFragment {
                     }
                 }
                 messInfoArray[index] = startPositions[index] + selectedPosition;
+                if (messInfoArray[0] > 0) {
+                    setMessageForRentPrice(getString(R.string.rent_per_seat));
+                } else if (messInfoArray[1] > 0) {
+                    if (messInfoArray[1] == 1)
+                        setMessageForRentPrice(getString(R.string.rent_per_room));
+                    else
+                        setMessageForRentPrice(getString(R.string.rent_per_month) + " (" + messInfoArray[1] + " rooms)");
+                }
             }
         });
         defaultCheck();
+        setMessageForRentPrice(getString(R.string.rent_per_seat));
         updateData();
     }
 
@@ -136,7 +145,7 @@ public class MessFlatAd extends BaseFragment {
             }
             stringBuilder
                     .append(messInfoArray[1])
-                    .append("room ");
+                    .append("room");
         }
 
         if (attachedBathCB.isChecked() || attachedBalconyCB.isChecked()) {
@@ -201,6 +210,13 @@ public class MessFlatAd extends BaseFragment {
         }
         if (wifiCB.isChecked()) {
             stringBuilder.append(getString(R.string.have_wifi_facility));
+            stringBuilder.append("\n");
+        }
+        if (onlyStudentsCB.isChecked() && !onlyJobHoldersCB.isChecked()) {
+            stringBuilder.append(getString(R.string.only_students));
+            stringBuilder.append("\n");
+        } else if (!onlyStudentsCB.isChecked() && onlyJobHoldersCB.isChecked()) {
+            stringBuilder.append(getString(R.string.only_job_holders));
             stringBuilder.append("\n");
         }
 
@@ -272,11 +288,23 @@ public class MessFlatAd extends BaseFragment {
                 String title = roomNumberLay.getChildAt(i).getTag().toString();
                 String subTitle = "";
                 if (roomNumberLay.getChildAt(i).getTag().toString().equalsIgnoreCase(messTypes[0])) {
-                    subTitle = messInfo.numberOfSeat + " " + title + (messInfo.numberOfSeat > 1 ? "'s" : "");
+                    if (messInfo.numberOfSeat == 0)
+                        subTitle = "N/A";
+                    else
+                        subTitle = messInfo.numberOfSeat + " " + title + (messInfo.numberOfSeat > 1 ? "'s" : "");
+                    messInfoArray[0] = messInfo.numberOfSeat;
                 } else if (roomNumberLay.getChildAt(i).getTag().toString().equalsIgnoreCase(messTypes[1])) {
-                    subTitle = messInfo.numberOfRoom + " " + title + (messInfo.numberOfRoom > 1 ? "'s" : "");
+                    if (messInfo.numberOfRoom == 0)
+                        subTitle = "N/A";
+                    else
+                        subTitle = messInfo.numberOfRoom + " " + title + (messInfo.numberOfRoom > 1 ? "'s" : "");
+                    messInfoArray[1] = messInfo.numberOfRoom;
                 } else if (roomNumberLay.getChildAt(i).getTag().toString().equalsIgnoreCase(messTypes[2])) {
-                    subTitle = messInfo.totalMember + " " + title + (messInfo.totalMember > 1 ? "'s" : "");
+                    if (messInfo.totalMember == 0)
+                        subTitle = "N/A";
+                    else
+                        subTitle = messInfo.totalMember + " " + title + (messInfo.totalMember > 1 ? "'s" : "");
+                    messInfoArray[2] = messInfo.totalMember;
                 }
 
                 AppConstants.updatePickerView(roomNumberLay.getChildAt(i), title, subTitle);
@@ -291,5 +319,21 @@ public class MessFlatAd extends BaseFragment {
 
         roomNumberLay.requestFocus();
         return false;
+    }
+
+    public void setMessageForRentPrice(String message) {
+        if (myListener != null) {
+            myListener.onItemSelect(message);
+        }
+    }
+
+    public void setListener(MyListener myListener) {
+        this.myListener = myListener;
+    }
+
+    public MyListener myListener;
+
+    public interface MyListener {
+        void onItemSelect(String message);
     }
 }

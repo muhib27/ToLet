@@ -41,6 +41,7 @@ public class AppConstants {
     public static final int phoneCall = 1010;
     public static final int sendEmail = 1011;
     public static final int newAdType = 1012;
+    public static final int shareApp = 1013;
 
     public static final double defaultLatitude = 23.8103d;
     public static final double defaultLongitude = 90.4125d;
@@ -52,10 +53,10 @@ public class AppConstants {
     public static final String keySubAdListType = "keySubAdListType";
     public static final String keyImageList = "keyImageList";
 
-    public static final int subQueryFav = 0;
-    public static final int subQueryMy = 1;
-    public static final int subQueryNearest = 2;
-    public static final int subQuerySmart = 3;
+    public static final int subQueryFav = 1;
+    public static final int subQueryMy = 2;
+    public static final int subQueryNearest = 3;
+    public static final int subQuerySmart = 4;
     public static final int subQueryQuery = 99;
     public static final int subQueryAll = 100;
 
@@ -355,7 +356,6 @@ public class AppConstants {
         }
 
         mapMarkerTitle += " TK " + rentFormatter(adInfo.flatRent) + "(" + DateUtils.getRentDateAsSmallFormat(adInfo.startingFinalDate) + ")";
-
         return mapMarkerTitle;
     }
 }

@@ -53,6 +53,7 @@ import com.to.let.bd.model.pick_photo.GroupImage;
 import com.to.let.bd.model.pick_photo.PickData;
 import com.to.let.bd.utils.AppConstants;
 import com.to.let.bd.utils.DBConstants;
+import com.to.let.bd.utils.MyAnalyticsUtil;
 import com.to.let.bd.utils.UploadImageService;
 import com.to.let.bd.utils.pick_photo.PickConfig;
 import com.to.let.bd.utils.pick_photo.PickPhotoHelper;
@@ -68,11 +69,14 @@ import java.util.TreeSet;
 
 public class MediaActivity extends BaseActivity {
 
+    private MyAnalyticsUtil myAnalyticsUtil;
+
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_media);
 
+        myAnalyticsUtil = new MyAnalyticsUtil(this);
         Toolbar toolbar = findViewById(R.id.toolbar);
         setSupportActionBar(toolbar);
 
@@ -156,6 +160,7 @@ public class MediaActivity extends BaseActivity {
                 if (grantResults.length > 0 && permissions[0].equals(Manifest.permission.WRITE_EXTERNAL_STORAGE) && grantResults[0] == PackageManager.PERMISSION_GRANTED) {
                     executeStorageAction();
                 } else {
+                    myAnalyticsUtil.sendEvent(MyAnalyticsUtil.keyStoragePermissionEvent, "PERMISSION_DENIED");
                     finish();
                 }
             default:
@@ -284,6 +289,7 @@ public class MediaActivity extends BaseActivity {
     private void submitImages() {
         if (pickGridAdapter.getSelectPath().isEmpty()) {
             showSimpleDialog(getString(R.string.please_select_photo));
+            myAnalyticsUtil.sendEvent(MyAnalyticsUtil.keySubmitTryMediaEvent, "no media");
             return;
         }
 
@@ -302,6 +308,7 @@ public class MediaActivity extends BaseActivity {
 
             if (similarityFlag) {
                 showSimpleDialog(getString(R.string.there_has_no_new_photo_to_publish));
+                myAnalyticsUtil.sendEvent(MyAnalyticsUtil.keySubmitTryMediaEvent, "no new media");
                 return;
             }
         }
@@ -350,6 +357,7 @@ public class MediaActivity extends BaseActivity {
             return;
         }
 
+        myAnalyticsUtil.sendEvent(MyAnalyticsUtil.keyMediaUploadEvent, "start");
         int saveIndex = imageIndex;
 
         if (restrictedIndexArrayList.contains(saveIndex)) {
@@ -483,6 +491,7 @@ public class MediaActivity extends BaseActivity {
     private void completeImageUpload() {
         closeImageUploadProgressDialog();
         imageUploadSuccess();
+        myAnalyticsUtil.sendEvent(MyAnalyticsUtil.keyMediaUploadEvent, "succeed");
     }
 
     private void closeImageUploadProgressDialog() {
@@ -500,6 +509,8 @@ public class MediaActivity extends BaseActivity {
 
     private void imageUploadFailed() {
         closeImageUploadProgressDialog();
+        showSimpleDialog(R.string.image_upload_failed_unknown_error);
+        myAnalyticsUtil.sendEvent(MyAnalyticsUtil.keyMediaUploadEvent, "failed");
     }
 
     private void updateDatabase(int type, String adId, int imageIndex, String[] imageContents) {
@@ -512,12 +523,7 @@ public class MediaActivity extends BaseActivity {
         hashMap.put("/" + DBConstants.adList + "/" + flatType + "/" + adId + "/" + DBConstants.images + "/" + DBConstants.imageKeyForDatabase + String.valueOf(imageIndex), imageValues);
         hashMap.put("/" + DBConstants.userAdList + "/" + getUid() + "/" + adId + "/" + DBConstants.images + "/" + DBConstants.imageKeyForDatabase + String.valueOf(imageIndex), imageValues);
 
-        databaseReference.updateChildren(hashMap, new DatabaseReference.CompletionListener() {
-            @Override
-            public void onComplete(DatabaseError databaseError, DatabaseReference databaseReference) {
-
-            }
-        });
+        databaseReference.updateChildren(hashMap);
     }
 
     private DatabaseReference databaseReference;
@@ -562,12 +568,11 @@ public class MediaActivity extends BaseActivity {
         progressStatus.setText(imageUploadStatus);
     }
 
-    private RecyclerView previewPhotos;
     private TextView previewMessage;
 
     private void initPreviewPhoto() {
         previewMessage = findViewById(R.id.previewMessage);
-        previewPhotos = findViewById(R.id.previewPhotos);
+        RecyclerView previewPhotos = findViewById(R.id.previewPhotos);
         previewPhotos.setItemAnimator(new DefaultItemAnimator());
         LinearLayoutManager layoutManager = new LinearLayoutManager(this, LinearLayoutManager.HORIZONTAL, false);
         previewPhotos.setLayoutManager(layoutManager);
@@ -664,6 +669,7 @@ public class MediaActivity extends BaseActivity {
     }
 
     private void deleteSingleImage(String imagePath, final int deleteImageIndex) {
+        myAnalyticsUtil.sendEvent(MyAnalyticsUtil.keyMediaDeleteEvent, adId);
         initStorageRef();
         showProgressDialog();
         storageReference
@@ -680,7 +686,7 @@ public class MediaActivity extends BaseActivity {
                     @Override
                     public void onFailure(@NonNull Exception exception) {
                         String message = exception.getMessage();
-                        if (message != null && message.contains("not found")) {
+                        if (message != null && message.toLowerCase().contains("not exist")) {
                             removeContentFromDatabase(deleteImageIndex);
                         }
                         closeProgressDialog();
@@ -691,13 +697,21 @@ public class MediaActivity extends BaseActivity {
     private void removeContentFromDatabase(int deleteImageIndex) {
         int processImageIndex = processImagePathIndex(deleteImageIndex);
         if (processImageIndex > -1) {
-            databaseReference
-                    .child(DBConstants.adList)
-                    .child(flatType)
-                    .child(adId)
-                    .child(DBConstants.images)
-                    .child(DBConstants.imageKeyForDatabase + String.valueOf(processImageIndex))
-                    .removeValue();
+//            databaseReference
+//                    .child(DBConstants.adList)
+//                    .child(flatType)
+//                    .child(adId)
+//                    .child(DBConstants.images)
+//                    .child(DBConstants.imageKeyForDatabase + String.valueOf(processImageIndex))
+//                    .removeValue();
+
+            HashMap<String, Object> removeImage = new HashMap<>();
+            removeImage.put("/" + DBConstants.adList + "/" + flatType + "/" + adId + "/" + DBConstants.images
+                    + "/" + DBConstants.imageKeyForDatabase + String.valueOf(processImageIndex), null);
+            removeImage.put("/" + DBConstants.userAdList + "/" + getUid() + "/" + adId + "/" + DBConstants.images
+                    + "/" + DBConstants.imageKeyForDatabase + String.valueOf(processImageIndex), null);
+
+            databaseReference.updateChildren(removeImage);
         }
         updateList(deleteImageIndex);
         isImageDeleted = true;

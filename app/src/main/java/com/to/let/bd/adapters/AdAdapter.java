@@ -57,7 +57,7 @@ public class AdAdapter extends RecyclerView.Adapter<AdViewHolder> {
     }
 
     public interface ClickListener {
-        void onItemClick(AdInfo adInfo);
+        void onItemClick(int clickedPosition);
 
         void onFavClick(View view, int clickedPosition, AdInfo adInfo);
     }

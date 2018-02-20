@@ -37,6 +37,7 @@ import com.to.let.bd.model.google_place.GooglePlaceResult;
 import com.to.let.bd.utils.AppConstants;
 import com.to.let.bd.utils.DBConstants;
 import com.to.let.bd.utils.JsonUtils;
+import com.to.let.bd.utils.MyAnalyticsUtil;
 import com.to.let.bd.utils.retrofit.RetrofitConstants;
 
 import java.util.HashMap;
@@ -134,6 +135,13 @@ public class MapActivity extends BaseMapActivity implements BottomNavigationView
             @Override
             public void onClick(View v) {
                 selectedCenterLatLng = googleMap.getCameraPosition().target;
+
+                Bundle bundle = new Bundle();
+                bundle.putString(MyAnalyticsUtil.keySearchType, MyAnalyticsUtil.searchTypeGoogleMap);
+                bundle.putDouble(MyAnalyticsUtil.keySearchLat, selectedCenterLatLng.latitude);
+                bundle.putDouble(MyAnalyticsUtil.keySearchLng, selectedCenterLatLng.longitude);
+                myAnalyticsUtil.searchEvent(bundle);
+
                 loadNearestData();
             }
         });
@@ -151,6 +159,13 @@ public class MapActivity extends BaseMapActivity implements BottomNavigationView
                 googleMap.moveCamera(CameraUpdateFactory.newLatLngZoom(place.getLatLng(), DEFAULT_ZOOM));
                 selectedCenterLatLng = place.getLatLng();
                 loadNearestData();
+
+                Bundle bundle = new Bundle();
+                bundle.putString(MyAnalyticsUtil.keySearchType, MyAnalyticsUtil.placePickerMapView);
+                bundle.putDouble(MyAnalyticsUtil.keySearchLat, selectedCenterLatLng.latitude);
+                bundle.putDouble(MyAnalyticsUtil.keySearchLng, selectedCenterLatLng.longitude);
+                bundle.putCharSequence(MyAnalyticsUtil.keySearchName, place.getName());
+                myAnalyticsUtil.searchEvent(bundle);
             }
 
             @Override
@@ -231,6 +246,7 @@ public class MapActivity extends BaseMapActivity implements BottomNavigationView
         if (adInfo == null && selectedCenterLatLng == null)
             return;
 
+        showProgressDialog();
         this.googleMap.moveCamera(CameraUpdateFactory.newLatLngZoom(new LatLng(selectedCenterLatLng.latitude, selectedCenterLatLng.longitude), DEFAULT_ZOOM));
         DatabaseReference ref = FirebaseDatabase.getInstance().getReference(DBConstants.geoFire + "/" + flatType);
         GeoFire geoFire = new GeoFire(ref);
@@ -257,11 +273,14 @@ public class MapActivity extends BaseMapActivity implements BottomNavigationView
             @Override
             public void onGeoQueryReady() {
                 bottomNavigationView.setSelectedItemId(R.id.actionMap);
+                myAnalyticsUtil.sendEvent(MyAnalyticsUtil.keyGeoQuerySucceed, String.valueOf(nearbySimilar.size()));
+                closeProgressDialog();
             }
 
             @Override
             public void onGeoQueryError(DatabaseError databaseError) {
                 bottomNavigationView.setSelectedItemId(R.id.actionMap);
+                myAnalyticsUtil.sendEvent(MyAnalyticsUtil.keyGeoQueryFailed, databaseError.getDetails());
             }
         });
     }
@@ -285,6 +304,7 @@ public class MapActivity extends BaseMapActivity implements BottomNavigationView
     private void initPlacesRequest(int type) {
         String location = selectedCenterLatLng.latitude + "," + selectedCenterLatLng.longitude;
         googlePlaceCall = RetrofitConstants.getGooglePlaces(location, googlePlaceType[type]);
+        myAnalyticsUtil.sendEvent(MyAnalyticsUtil.keyMapFilterEvent, googlePlaceType[type]);
         startRequest(type);
     }
 
@@ -487,21 +507,25 @@ public class MapActivity extends BaseMapActivity implements BottomNavigationView
             case R.id.filterByFamily:
                 flatType = DBConstants.keyFamily;
                 invalidateOptionsMenu();
+                myAnalyticsUtil.sendEvent(MyAnalyticsUtil.keyMapFilterEvent, flatType);
                 loadNearestData();
                 return true;
             case R.id.filterByMess:
                 flatType = DBConstants.keyMess;
                 invalidateOptionsMenu();
+                myAnalyticsUtil.sendEvent(MyAnalyticsUtil.keyMapFilterEvent, flatType);
                 loadNearestData();
                 return true;
             case R.id.filterBySublet:
                 flatType = DBConstants.keySublet;
                 invalidateOptionsMenu();
+                myAnalyticsUtil.sendEvent(MyAnalyticsUtil.keyMapFilterEvent, flatType);
                 loadNearestData();
                 return true;
             case R.id.filterByOthers:
                 flatType = DBConstants.keyOthers;
                 invalidateOptionsMenu();
+                myAnalyticsUtil.sendEvent(MyAnalyticsUtil.keyMapFilterEvent, flatType);
                 loadNearestData();
                 return true;
             default:

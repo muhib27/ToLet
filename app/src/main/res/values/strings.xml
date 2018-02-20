@@ -39,8 +39,9 @@
     <string name="mess">Mess</string>
     <string name="others">Others</string>
     <string name="total_space">Total space</string>
-    <string name="rent">Rent: </string>
-    <string name="bed_room">Bed Room: </string>
+    <string name="rent">Rent</string>
+    <string name="rent_per_month">Rent per month</string>
+    <string name="bed_room">Bed Room</string>
     <string name="drawing_dining">Drawing Dining</string>
     <string name="drawing_dining_facility">Have drawing dining facility?</string>
     <string name="include_utility">Include utility bill?</string>
@@ -55,7 +56,7 @@
     <string name="generator">Generator</string>
     <string name="emailAddress">Email Address</string>
     <string name="phone_number">Phone Number</string>
-    <string name="houseInfo">House number/name:</string>
+    <string name="houseInfo">House number/name</string>
     <string name="title">Title</string>
     <string name="sub_title">Sub Title</string>
     <string name="google_login_failed">Login failed please try again later.</string>
@@ -84,13 +85,12 @@
     <string name="exit">Exit</string>
     <string name="mainImage">Ad main image</string>
     <string name="adFavIcon">Ad favourite icon</string>
-    <string name="additional_info">Additional information:</string>
-    <string name="flat_info">Flat information:</string>
+    <string name="additional_info">Additional information</string>
+    <string name="flat_info">Flat information</string>
     <string name="dummy_full_address">Dummy full address</string>
-    <string name="full_address">Full address:</string>
-    <string name="full_address_hint">Full address</string>
+    <string name="full_address">Full address</string>
     <string name="security_guard">Security guard</string>
-    <string name="please_select_rent_date">Please select rent date:</string>
+    <string name="please_select_rent_date">Please select rent date</string>
     <string name="facing">Facing</string>
     <string name="flat_face">Flate face</string>
     <string name="flat">Flat</string>
@@ -132,7 +132,7 @@
     <string name="terms_of_use">Terms Of Use</string>
     <string name="privacy_policy">Privacy Policy</string>
     <string name="submit_your_ad">Submit your Ad</string>
-    <string name="mess_member_type">Mess member type: </string>
+    <string name="mess_member_type">Mess member type</string>
     <string name="male">Male</string>
     <string name="female">Female</string>
 
@@ -153,7 +153,7 @@
     <string name="description">Description</string>
     <string name="description_if_need">Description (if need)</string>
     <string name="twenty_four_water">Water 24 hr</string>
-    <string name="sublet_type">Sublet type:</string>
+    <string name="sublet_type">Sublet type</string>
 
     <string name="tiny_family">Tiny family</string>
     <string name="small_family">Small family</string>
@@ -183,19 +183,19 @@
         <item>@string/shared</item>
     </string-array>
 
-    <string name="bathroom_type">Bathroom/Toilet type:</string>
+    <string name="bathroom_type">Bathroom/Toilet type</string>
     <string name="mess_member">Mess member</string>
     <string name="title_activity_test">TestActivity</string>
     <string name="parking_garage">Parking garage</string>
     <string name="please_mention_your_desired_type">Please mention your desired type</string>
     <string name="kitchen_share">Kitchen Share</string>
     <string name="well_furnished">Well furnished</string>
-    <string name="mess_management_system">Mess management system: </string>
+    <string name="mess_management_system">Mess management system</string>
     <string name="manage_by_office">Manage by single man/office.</string>
     <string name="manage_by_group">Manage by few group member.</string>
     <string name="circulate_every_month">Circulate every month to corresponding member.</string>
-    <string name="approximate_total_space">Approximate total space: </string>
-    <string name="approximate_meal_rate">Approximate meal rate: </string>
+    <string name="approximate_total_space">Approximate total space</string>
+    <string name="approximate_meal_rate">Approximate meal rate</string>
     <string name="approximate_meal_rate_value">50</string>
     <string name="kitchen_cabinet">Kitchen cabinet</string>
     <string name="is_it_a_duplex">Is it a duplex house?</string>
@@ -296,8 +296,8 @@
     <string name="this_is_your_own_post">This is your own post, you don\'t need to add as favorite.</string>
     <string name="edit">Edit</string>
     <string name="update">Update</string>
-    <string name="please_select_rent_range">Please select rent range:</string>
-    <string name="please_select_date_range">Please select date range:</string>
+    <string name="please_select_rent_range">Please select rent range</string>
+    <string name="please_select_date_range">Please select date range</string>
     <string name="any">Any</string>
     <string name="please_enter_the_sms_code">Please enter the sms code</string>
     <string name="sms_code_empty_error">Sms code must be not empty</string>
@@ -330,7 +330,7 @@
     <string name="please_review_the_summary">Please review the summary</string>
     <string name="something_wrong_please_report_a_bug">Something wrong please report a bug</string>
     <string name="filter">Filter</string>
-    <string name="filter_the_selected_list">Filter the selected list</string>
+    <string name="filter_what_you_like_to_want">Filter what you like to want</string>
     <string name="please_insert_valid_rent_range">Please insert valid rent range</string>
     <string name="please_insert_valid_data">Please insert valid data</string>
     <string name="please_insert_valid_date_range_and_rent_range">Please insert valid date range and rent range</string>
@@ -338,6 +338,7 @@
     <string name="my_favorites">My favorites</string>
     <string name="user">User</string>
     <string name="login_alert">Login required, please login first.\nDo you want login now?</string>
+    <string name="login_alert_fav">Please login first to favourite an advertisement.</string>
     <string name="cancel">Cancel</string>
     <string name="logout_alert">Your all personal data will be remove from this device.\nDo you want logout now?</string>
     <string name="exit_alert">Do you want exit app now?</string>
@@ -363,4 +364,8 @@
     <string name="republish">Republish</string>
     <string name="booking">Booking</string>
     <string name="booking_ad">Booking advertisement!!!</string>
+    <string name="rent_per_seat">Rent for individual seat</string>
+    <string name="rent_per_room">Rent for room</string>
+    <string name="google_map">Google Map</string>
+    <string name="image_upload_failed_unknown_error">Image upload failed \"Unknown error!!!\"</string>
 </resources>

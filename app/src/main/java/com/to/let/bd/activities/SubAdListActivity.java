@@ -13,6 +13,7 @@ import com.to.let.bd.common.BaseActivity;
 import com.to.let.bd.fragments.SubAdList;
 import com.to.let.bd.utils.ActivityUtils;
 import com.to.let.bd.utils.AppConstants;
+import com.to.let.bd.utils.DBConstants;
 
 public class SubAdListActivity extends BaseActivity {
 
@@ -49,12 +50,22 @@ public class SubAdListActivity extends BaseActivity {
     protected void onResume() {
         super.onResume();
         if (needToRefreshData) {
-            FragmentManager fragmentManager = getSupportFragmentManager();
-            SubAdList subAdListFragment = (SubAdList) fragmentManager.findFragmentByTag(SubAdList.TAG);
-            subAdListFragment.reload();
+            reloadData();
         }
 
         needToRefreshData = false;
+    }
+
+//    @Override
+//    protected void reloadList(int i) {
+//        super.reloadList(i);
+//        reloadData();
+//    }
+
+    private void reloadData() {
+        FragmentManager fragmentManager = getSupportFragmentManager();
+        SubAdList subAdListFragment = (SubAdList) fragmentManager.findFragmentByTag(SubAdList.TAG);
+        subAdListFragment.reload();
     }
 
     private void showSubAdListFragment() {
@@ -105,10 +116,17 @@ public class SubAdListActivity extends BaseActivity {
             case R.id.filterAction:
                 Bundle bundle = getIntent().getExtras();
                 if (bundle != null && bundle.getInt(AppConstants.keySubAdListType, 0) > 0) {
-                    long fromDateTime = bundle.getLong(AppConstants.keyFromDateTime, 0);
-                    long toDateTime = bundle.getLong(AppConstants.keyToDateTime, 0);
-                    long rentMinLong = bundle.getLong(AppConstants.keyRentMinLong, 0);
-                    long rentMaxLong = bundle.getLong(AppConstants.keyRentMaxLong, 0);
+//                    long fromDateTime = bundle.getLong(AppConstants.keyFromDateTime, 0);
+//                    long toDateTime = bundle.getLong(AppConstants.keyToDateTime, 0);
+//                    long rentMinLong = bundle.getLong(AppConstants.keyRentMinLong, 0);
+//                    long rentMaxLong = bundle.getLong(AppConstants.keyRentMaxLong, 0);
+
+                    int subAdListType = bundle.getInt(AppConstants.keySubAdListType, 0);
+                    if (subAdListType == AppConstants.subQueryFav) {
+                        BaseActivity.childArray = new String[]{DBConstants.userFavAdList, getUid()};
+                    } else if (subAdListType == AppConstants.subQueryMy) {
+                        BaseActivity.childArray = new String[]{DBConstants.userAdList, getUid()};
+                    }
                     showFilterWindow();
                 }
                 return true;

@@ -17,6 +17,7 @@ import com.google.firebase.iid.FirebaseInstanceId;
 import com.to.let.bd.R;
 import com.to.let.bd.common.BaseActivity;
 import com.to.let.bd.utils.DBConstants;
+import com.to.let.bd.utils.MyAnalyticsUtil;
 
 import java.util.HashMap;
 

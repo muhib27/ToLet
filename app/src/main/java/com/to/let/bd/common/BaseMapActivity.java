@@ -47,6 +47,7 @@ import com.google.firebase.auth.GoogleAuthProvider;
 import com.google.firebase.auth.UserProfileChangeRequest;
 import com.to.let.bd.R;
 import com.to.let.bd.utils.AppConstants;
+import com.to.let.bd.utils.MyAnalyticsUtil;
 
 import java.io.IOException;
 import java.util.ArrayList;
@@ -80,10 +81,14 @@ public abstract class BaseMapActivity extends BaseActivity implements OnMapReady
 
     protected abstract int getLayoutResourceId();
 
+    protected MyAnalyticsUtil myAnalyticsUtil;
+
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         retrieveSavedInstanceState(savedInstanceState);
+
+        myAnalyticsUtil = new MyAnalyticsUtil(this);
 
         setContentView(getLayoutResourceId());
 

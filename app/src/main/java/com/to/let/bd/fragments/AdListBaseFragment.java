@@ -127,18 +127,41 @@ public abstract class AdListBaseFragment extends BaseFragment implements AdAdapt
         loadingMessage.setText(R.string.loading_please_wait);
         tapToRetry.setVisibility(View.GONE);
         hasNetwork = NetworkConnection.getInstance().isAvailable();
-        if (adList.isEmpty()) {
-            if (!hasNetwork) {
-                loadingProgressBar.setVisibility(View.GONE);
-                loadingMessage.setText(R.string.no_network_connection_available);
-                tapToRetry.setVisibility(View.VISIBLE);
-                return;
-            }
+        if (adList.isEmpty() && !hasNetwork) {
+            loadingProgressBar.setVisibility(View.GONE);
+            loadingMessage.setText(R.string.no_network_connection_available);
+            tapToRetry.setVisibility(View.VISIBLE);
+            myAnalyticsUtil.sendEvent(MyAnalyticsUtil.keyNoNetworkEvent, "no network, list is empty");
+            return;
         }
+
+        if (!hasNetwork)
+            myAnalyticsUtil.sendEvent(MyAnalyticsUtil.keyNoNetworkEvent, "no network, list is not empty." + adList.isEmpty());
         Query adQuery = getQuery(databaseReference);
 
         if (adQuery != null) {
             loadData(adQuery);
+        }
+    }
+
+    public void sort(final int sortType) {
+        if (!adList.isEmpty()) {
+            Collections.sort(adList, new Comparator<AdInfo>() {
+                @Override
+                public int compare(AdInfo o1, AdInfo o2) {
+                    if (sortType == 2) {
+                        return (int) (o1.startingFinalDate - o2.startingFinalDate);
+                    } else if (sortType == 3) {
+                        return (int) (o2.startingFinalDate - o1.startingFinalDate);
+                    } else if (sortType == 1) {
+                        return (int) (o1.flatRent - o2.flatRent);
+                    } else {
+                        return (int) (o2.flatRent - o1.flatRent);
+                    }
+                }
+            });
+
+            adAdapter.notifyDataSetChanged();
         }
     }
 
@@ -149,6 +172,8 @@ public abstract class AdListBaseFragment extends BaseFragment implements AdAdapt
         // Set up Layout Manager, reverse layout
         LinearLayoutManager mManager = new LinearLayoutManager(getActivity(), LinearLayoutManager.VERTICAL, false);
         adRecyclerView.setLayoutManager(mManager);
+        adAdapter = new AdAdapter(getActivity(), this);
+        adRecyclerView.setAdapter(adAdapter);
         reload();
     }
 
@@ -190,28 +215,20 @@ public abstract class AdListBaseFragment extends BaseFragment implements AdAdapt
                         adList.add(adInfo);
                     } else if (adInfo.isActive) {
                         if (subQueryValue == AppConstants.subQueryQuery) {
-                            Bundle bundle = getArguments();
-                            long fromDate = 0, toDate = 0;
-                            if (bundle != null) {
-                                fromDate = bundle.getLong(AppConstants.keyFromDateTime, 0);
-                                toDate = bundle.getLong(AppConstants.keyToDateTime, 0);
-                            }
-
-                            if (fromDate > 0 || toDate > 0) {
-                                if (fromDate > 0 && toDate > 0) {
-                                    if (adInfo.startingFinalDate >= fromDate && adInfo.startingFinalDate <= toDate)
+                            if (BaseActivity.fromDateTime > 0 || BaseActivity.toDateTime > 0) {
+                                if (BaseActivity.fromDateTime > 0 && BaseActivity.toDateTime > 0) {
+                                    if (adInfo.startingFinalDate >= BaseActivity.fromDateTime && adInfo.startingFinalDate <= BaseActivity.toDateTime)
                                         adList.add(adInfo);
-                                } else if (fromDate > 0) {
-                                    if (adInfo.startingFinalDate >= fromDate)
+                                } else if (BaseActivity.fromDateTime > 0) {
+                                    if (adInfo.startingFinalDate >= BaseActivity.fromDateTime)
                                         adList.add(adInfo);
                                 } else {//toDate > 0
-                                    if (adInfo.startingFinalDate <= toDate)
+                                    if (adInfo.startingFinalDate <= BaseActivity.toDateTime)
                                         adList.add(adInfo);
                                 }
                             } else {
                                 adList.add(adInfo);
                             }
-                            showLog();
                         } else {
                             adList.add(adInfo);
                         }
@@ -234,6 +251,8 @@ public abstract class AdListBaseFragment extends BaseFragment implements AdAdapt
                 loadingProgressBar.setVisibility(View.GONE);
                 tapToRetry.setVisibility(View.GONE);
             }
+
+            myAnalyticsUtil.sendEvent(MyAnalyticsUtil.keyFirebaseDatabaseQueryRefEvent, dataSnapshot.getRef().toString());
         }
 
         @Override
@@ -242,6 +261,8 @@ public abstract class AdListBaseFragment extends BaseFragment implements AdAdapt
             loadingMessage.setText(R.string.internal_server_error);
             loadingProgressBar.setVisibility(View.GONE);
             tapToRetry.setVisibility(View.VISIBLE);
+
+            myAnalyticsUtil.sendEvent(MyAnalyticsUtil.keyAdLoadedFailedEvent, databaseError.getDetails());
         }
     };
 
@@ -249,20 +270,14 @@ public abstract class AdListBaseFragment extends BaseFragment implements AdAdapt
 
     private void displayAdList() {
         loadingLay.setVisibility(View.GONE);
-
-        if (adAdapter == null) {
-            adAdapter = new AdAdapter(getActivity(), this);
-            adRecyclerView.setAdapter(adAdapter);
-        }
-
         adAdapter.setData(adList);
         adAdapter.notifyDataSetChanged();
     }
 
     @Override
-    public void onItemClick(AdInfo adInfo) {
+    public void onItemClick(int clickedPosition) {
         if (getActivity() instanceof BaseActivity)
-            ((BaseActivity) getActivity()).startAdDetailsActivity(adInfo);
+            ((BaseActivity) getActivity()).startAdDetailsActivity(clickedPosition < adList.size() ? adList.get(clickedPosition) : adList.get(0));
     }
 
     @Override
@@ -277,12 +292,12 @@ public abstract class AdListBaseFragment extends BaseFragment implements AdAdapt
         } else if (adInfo.othersInfo != null) {
             flatType = DBConstants.keyOthers;
         }
-
         DatabaseReference userFavAdRef = databaseReference
                 .child(DBConstants.userFavAdList)
                 .child(getUid())
                 .child(adInfo.adId);
 
+        myAnalyticsUtil.favItem(adInfo.adId, !view.isSelected());
         if (view.isSelected()) {
             userFavAdRef.removeValue();
         } else {
@@ -334,7 +349,8 @@ public abstract class AdListBaseFragment extends BaseFragment implements AdAdapt
                 view.setEnabled(true);
                 if (databaseError == null) {
                     AdInfo adInfo = dataSnapshot.getValue(AdInfo.class);
-                    adList.set(clickedPosition, adInfo);
+                    if (adInfo != null)
+                        adList.set(clickedPosition, adInfo);
 //                    adAdapter.notifyItemChanged(clickedPosition);
                 }
             }

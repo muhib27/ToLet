@@ -4,263 +4,94 @@ import android.content.Context;
 import android.os.Bundle;
 
 import com.google.firebase.analytics.FirebaseAnalytics;
-import com.to.let.bd.model.AdInfo;
+import com.to.let.bd.common.BaseActivity;
 
 public class MyAnalyticsUtil {
-    private static final String TAG = MyAnalyticsUtil.class.getName();
+    private FirebaseAnalytics firebaseAnalytics;
 
     public MyAnalyticsUtil(Context context) {
         firebaseAnalytics = FirebaseAnalytics.getInstance(context);
     }
 
-    private FirebaseAnalytics firebaseAnalytics;
-
-    public void sendScreen(final String screenName) {
-        Bundle bundle = new Bundle();
-        bundle.putString(FirebaseAnalytics.Param.LEVEL, screenName);
-        firebaseAnalytics.logEvent(FirebaseAnalytics.Event.VIEW_ITEM, bundle);
-    }
-
-    public static final String keyNameLogin = "Login";
-
     private static final String keyFavItem = "favItem";
-
     private static final String keyAdId = "adId";
     private static final String keyUserId = "userId";
+    private static final String keyFavourite = "favourite";
 
-    public void favItem(AdInfo adInfo, String firebaseUid) {
+    public void favItem(String adId, boolean isFav) {
         Bundle bundle = new Bundle();
-        bundle.putString(keyAdId, adInfo.adId);
-        bundle.putString(keyUserId, firebaseUid);
+        bundle.putString(keyAdId, adId);
+        bundle.putBoolean(keyFavourite, isFav);
+        bundle.putString(keyUserId, BaseActivity.getUid());
         firebaseAnalytics.logEvent(keyFavItem, bundle);
     }
 
-    private static final String keyShowAdDetails = "showAdDetails";
+    private static final String keyAdDetailsEvent = "adDetailsEvent";
 
-    public void showAdDetails(AdInfo adInfo, String firebaseUid) {
+    public void adDetailsEvent(String adId) {
         Bundle bundle = new Bundle();
-        bundle.putString(keyAdId, adInfo.adId);
-        bundle.putString(keyUserId, firebaseUid);
-        firebaseAnalytics.logEvent(keyShowAdDetails, bundle);
+        bundle.putString(keyAdId, adId);
+        bundle.putString(keyUserId, BaseActivity.getUid());
+        firebaseAnalytics.logEvent(keyAdDetailsEvent, bundle);
     }
 
-//    public static final String keyNameLogin = "Login";
-//    public static final String keyNameRegistration = "Registration";
-//    public static final String keyNameTour = "Tour";
-//    public static final String keyNamePaymentBrowserActivity = "Payment_Browser_Activity";
-//    public static final String keyNameTermsAndPolicy = "Terms_And_Policy";
-//
-//    public static final String DownloadBookEvent = "Download a book";
-//    public static final String RateBookEvent = "Rate a book";
-//    public static final String ViewReviewsEvent = "View Reviews";
-//    public static final String ViewSummaryEvent = "View Summary";
-//    public static final String ClickedOnDetailEvent = "Clicked on Detail";
-//    public static final String SearchBookEvent = "Search Book";
-//    public static final String GaveFeedbackEvent = "Gave Feedback";
-//    public static final String RegisteredEvent = "Registered";
-//    public static final String LogoutEvent = "Logout";
-//    public static final String GuestLoginEvent = "Guest Login";
-//    public static final String SignedInEvent = "Signed in";
-//    public static final String StartedReadingEvent = "Started Reading";
-//    public static final String CompletedPurchaseEvent = "Completed purchase";
-//    public static final String WalletRecharge = "WalletBalance Recharge";
-//    public static final String ChangeLanguage = "Change Language";
-//    public static final String EnglishLanguage = "English Language";
+    public static final String keySortEvent = "sortEvent";
+    public static final String keyShareEvent = "shareEvent";
+    public static final String keyBookingEvent = "bookingEvent";
+    public static final String keyCallEvent = "callEvent";
+    public static final String keyEmailEvent = "emailEvent";
+    public static final String keyLogoutEvent = "logoutEvent";
+    public static final String keySmartListEvent = "smartListEvent";
+    public static final String keyNearestAdEvent = "nearestAdEvent";
+    public static final String keyShowMapFromAdDetailsEvent = "showMapFromAdDetailsEvent";
+    public static final String keyMapFilterEvent = "mapFilterEvent";
+    public static final String keyGeoQueryFailed = "geoQueryFailed";
+    public static final String keyGeoQuerySucceed = "geoQuerySucceed";
+    public static final String keyFavFailed = "favFailed";
+    public static final String keyGoogleLogin = "googleLogin";
+    public static final String keyFirebaseLogin = "firebaseLogin";
+    public static final String keyEditAdEvent = "editAdEvent";
+    public static final String keyNewAdEvent = "newAdEvent";
+    public static final String keySubmitTryAdEvent = "submitTryAdEvent";
+    public static final String keyAdDeleteEvent = "adDeleteEvent";
+    public static final String keyAdRepublishEvent = "adRepublishEvent";
+    public static final String keyWantToAddMediaEvent = "wantToAddMediaEvent";
+    public static final String keyStoragePermissionEvent = "keyStoragePermissionEvent";
+    public static final String keySubmitTryMediaEvent = "submitTryMediaEvent";
+    public static final String keyMediaUploadEvent = "mediaUploadEvent";
+    public static final String keyMediaDeleteEvent = "mediaDeleteEvent";
+    public static final String keyPhoneNumberVerificationEvent = "phoneNumberVerificationEvent";
+    public static final String keyPhoneNumberAddedEvent = "phoneNumberAddedEvent";
+    public static final String keyAdLoadedFailedEvent = "adLoadedFailedEvent";
+    public static final String keyFirebaseDatabaseQueryRefEvent = "firebaseDatabaseQueryRefEvent";
+    public static final String keyNoNetworkEvent = "keyNoNetworkEvent";
 
-//    public static void sendScreen(final String screenName) {
-////		// Set screen name.
-////		SheiBoiApplication.getGoogleTracker().setScreenName(screenName);
-////
-////		// Send a screen view.
-////		SheiBoiApplication.getGoogleTracker().send(
-////				new HitBuilders.ScreenViewBuilder().build());
-////
-////		// Clear the screen name field when we're done.
-////		SheiBoiApplication.getGoogleTracker().setScreenName(null);
-//
-//        Bundle bundle = new Bundle();
-//        bundle.putString(FirebaseAnalytics.Param.LEVEL, screenName);
-//        SheiBoiApplication.getGoogleAnalytics().logEvent(FirebaseAnalytics.Event.VIEW_ITEM, bundle);
-//
-//        bundle = new Bundle();
-//        bundle.putString(AppEventsConstants.EVENT_PARAM_LEVEL, screenName);
-//        SheiBoiApplication.getFbAnalytics().logEvent(AppEventsConstants.EVENT_NAME_VIEWED_CONTENT, bundle);
-//    }
-//
-//    public static void sendEvent(final String action, final String category, final String label) {
-//        // Build and send an Event.
-////		SheiBoiApplication.getGoogleTracker().send(
-////				new HitBuilders.EventBuilder().setAction(action)
-////						.setCategory(category).setLabel(label).build());
-//
-//        Bundle bundle = new Bundle();
-//        bundle.putString(FirebaseAnalytics.Param.LEVEL, label);
-//        bundle.putString(FirebaseAnalytics.Param.ITEM_CATEGORY, category);
-//        bundle.putString(FirebaseAnalytics.Param.CONTENT_TYPE, action);
-//
-//        SheiBoiApplication.getGoogleAnalytics().logEvent(FirebaseAnalytics.Event.VIEW_ITEM, bundle);
-//        SheiBoiApplication.getFbAnalytics().logEvent(AppEventsConstants.EVENT_NAME_VIEWED_CONTENT, bundle);
-//    }
-//
-//    public static void sendTimeDuration(final String timingCategory,
-//                                        final long timingInterval, final String timingName,
-//                                        final String timingLabel) {
-//        // Build and send an Event.
-////		SheiBoiApplication.getGoogleTracker().send(
-////				new HitBuilders.TimingBuilder().setCategory(timingCategory)
-////						.setValue(timingInterval).setVariable(timingName)
-////						.setLabel(timingLabel).build());
-//
-//        Bundle bundle = new Bundle();
-//        bundle.putLong(timingCategory, timingInterval);
-//        bundle.putString(timingName, timingLabel);
-//
-//        SheiBoiApplication.getGoogleAnalytics().setSessionTimeoutDuration(timingInterval);
-//
-//        SheiBoiApplication.getGoogleAnalytics().logEvent("session", bundle);
-//        SheiBoiApplication.getFbAnalytics().logEvent(AppEventsConstants.EVENT_NAME_TIME_BETWEEN_SESSIONS, bundle);
-//    }
-//
-//    public static void registrationComplete() {
-//        Bundle bundle = new Bundle();
-//        bundle.putInt("Value", 1);
-//
-//        SheiBoiApplication.getGoogleAnalytics().logEvent(RegisteredEvent.replace(" ", "_"), bundle);
-//
-//        SheiBoiApplication.getFbAnalytics().logEvent(RegisteredEvent);
-//    }
-//
-//    public static void loginAsRegisteredUser() {
-//        Bundle bundle = new Bundle();
-//        bundle.putInt("Value", 1);
-//
-//        SheiBoiApplication.getGoogleAnalytics().logEvent(SignedInEvent.replace(" ", "_"), bundle);
-//
-//        SheiBoiApplication.getFbAnalytics().logEvent(SignedInEvent);
-//    }
-//
-//    public static void loginAsGuestUser() {
-//        Bundle bundle = new Bundle();
-//        bundle.putInt("Value", 1);
-//
-//        SheiBoiApplication.getGoogleAnalytics().logEvent(GuestLoginEvent.replace(" ", "_"), bundle);
-//
-//        SheiBoiApplication.getFbAnalytics().logEvent(GuestLoginEvent);
-//    }
-//
-//    public static void logoutUser() {
-//        Bundle bundle = new Bundle();
-//        bundle.putBoolean("Logout", true);
-//        SheiBoiApplication.getGoogleAnalytics().logEvent(LogoutEvent.replace(" ", "_"), bundle);
-//        SheiBoiApplication.getFbAnalytics().logEvent(LogoutEvent);
-//    }
-//
-//    public static void rateEvent(int rateValue, String bookId) {
-//        Bundle bundle = new Bundle();
-//
-//        bundle.putInt("rateValue", rateValue);
-//        bundle.putString("bookId", bookId);
-//
-//        SheiBoiApplication.getGoogleAnalytics().logEvent(RateBookEvent.replace(" ", "_"), bundle);
-//        SheiBoiApplication.getFbAnalytics().logEvent(RateBookEvent, bundle);
-//    }
-//
-//    public static void feedbackEvent(int rateValue, String rateTitle, String rateDescription, String bookId) {
-//        Bundle bundle = new Bundle();
-//
-//        bundle.putInt("rateValue", rateValue);
-//        bundle.putString("rateTitle", rateTitle);
-//        bundle.putString("rateDescription", rateDescription);
-//        bundle.putString("bookId", bookId);
-//
-//        SheiBoiApplication.getGoogleAnalytics().logEvent(GaveFeedbackEvent.replace(" ", "_"), bundle);
-//        SheiBoiApplication.getFbAnalytics().logEvent(GaveFeedbackEvent, bundle);
-//    }
-//
-//    public static void downloadBook(String authorName, String bookName, String publisher) {
-//        Bundle bundle = new Bundle();
-//        bundle.putString("authorName", authorName);
-//        bundle.putString("bookName", bookName);
-//        bundle.putString("publisher", publisher);
-//
-//        SheiBoiApplication.getGoogleAnalytics().logEvent(DownloadBookEvent.replace(" ", "_"), bundle);
-//
-//        SheiBoiApplication.getFbAnalytics().logEvent(DownloadBookEvent, bundle);
-//    }
-//
-//    public static void cartBook(String authorName, String bookName, String publisher) {
-//        Bundle bundle = new Bundle();
-//        bundle.putString("authorName", authorName);
-//        bundle.putString("bookName", bookName);
-//        bundle.putString("publisher", publisher);
-//
-//        SheiBoiApplication.getGoogleAnalytics().logEvent(FirebaseAnalytics.Event.ADD_TO_CART, bundle);
-//
-//        SheiBoiApplication.getFbAnalytics().logEvent(AppEventsConstants.EVENT_NAME_ADDED_TO_CART, bundle);
-//    }
-//
-//    public static void walletRechargeSuccessful() {
-//        Bundle bundle = new Bundle();
-//        bundle.putBoolean("rechargeSuccessful", true);
-//
-//        SheiBoiApplication.getGoogleAnalytics().logEvent("walletRecharge", bundle);
-//
-//        SheiBoiApplication.getFbAnalytics().logEvent("walletRecharge", bundle);
-//    }
-//
-//    public static void purchaseSuccessful(String authorName, String bookName, String publisher,
-//                                          String currency, String amount) {
-//        Bundle bundle = new Bundle();
-//        bundle.putString("authorName", authorName);
-//        bundle.putString("bookName", bookName);
-//        bundle.putString("publisher", publisher);
-//        bundle.putString(FirebaseAnalytics.Param.CURRENCY, currency);
-//        bundle.putString(FirebaseAnalytics.Param.PRICE, amount);
-//
-//        SheiBoiApplication.getGoogleAnalytics().logEvent(CompletedPurchaseEvent.replace(" ", "_"), bundle);
-//
-//        bundle = new Bundle();
-//        bundle.putString("authorName", authorName);
-//        bundle.putString("bookName", bookName);
-//        bundle.putString("publisher", publisher);
-//        bundle.putString(AppEventsConstants.EVENT_PARAM_CURRENCY, currency);
-//        bundle.putString("price", amount);
-//
-//        SheiBoiApplication.getFbAnalytics().logEvent(CompletedPurchaseEvent, bundle);
-//    }
-//
-//    public static void sendEventInfo(String eventName, String eventValue) {
-//        Bundle bundle = new Bundle();
-//        bundle.putInt(eventValue, 1);
-//
-//        SheiBoiApplication.getGoogleAnalytics().logEvent(eventName.replace(" ", "_"), bundle);
-//
-//        SheiBoiApplication.getFbAnalytics().logEvent(eventName, bundle);
-//    }
-//
-//    public static void startReadingBook(String authorName, String bookName, String publisher) {
-//        Bundle bundle = new Bundle();
-//        bundle.putString("authorName", authorName);
-//        bundle.putString("bookName", bookName);
-//        bundle.putString("publisher", publisher);
-//
-//        SheiBoiApplication.getGoogleAnalytics().logEvent(StartedReadingEvent.replace(" ", "_"), bundle);
-//
-//        SheiBoiApplication.getFbAnalytics().logEvent(StartedReadingEvent, bundle);
-//    }
-//
-//    public static void changeLanguage(String languageName, String userId) {
-//        Bundle bundle = new Bundle();
-//
-//        bundle.putString("languageName", languageName);
-//        bundle.putString("userId", userId);
-//
-//        SheiBoiApplication.getGoogleAnalytics().logEvent(ChangeLanguage.replace(" ", "_"), bundle);
-//
-//        SheiBoiApplication.getFbAnalytics().logEvent(ChangeLanguage, bundle);
-//
-//        if (languageName.equals("en")) {
-//            sendEventInfo(EnglishLanguage, "Value");
-//        }
-//    }
+    private static final String keyEventValue = "eventValue";
+
+    public void sendEvent(String eventKey, String eventValue) {
+        Bundle bundle = new Bundle();
+        bundle.putString(keyEventValue, eventValue);
+        bundle.putString(keyUserId, BaseActivity.getUid());
+        firebaseAnalytics.logEvent(eventKey, bundle);
+    }
+
+    public static final String searchTypeNormal = "searchTypeNormal";
+    public static final String searchTypeGoogleMap = "searchTypeGoogleMap";
+    public static final String placePickerMapView = "placePickerMapView";
+    public static final String placePickerNewAdView = "placePickerNewAdView";
+    public static final String keySearchType = "searchType";
+    public static final String keySearchLat = "searchLat";
+    public static final String keySearchLng = "searchLng";
+    public static final String keySearchName = "searchName";
+
+    public static final String keyFromDateTime = "fromDateTime";
+    public static final String keyToDateTime = "toDateTime";
+    public static final String keyRentMinLong = "rentMinLong";
+    public static final String keyRentMaxLong = "rentMaxLong";
+
+    private static final String keySearch = "search";
+
+    public void searchEvent(Bundle bundle) {
+        firebaseAnalytics.logEvent(keySearch, bundle);
+    }
 }

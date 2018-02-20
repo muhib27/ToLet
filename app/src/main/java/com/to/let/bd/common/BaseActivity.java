@@ -12,7 +12,6 @@ import android.os.Bundle;
 import android.support.v7.app.ActionBar;
 import android.support.v7.app.AlertDialog;
 import android.support.v7.app.AppCompatActivity;
-import android.support.v7.widget.Toolbar;
 import android.util.Log;
 import android.util.Patterns;
 import android.view.Gravity;
@@ -26,22 +25,14 @@ import android.widget.Toast;
 
 import com.google.firebase.auth.FirebaseAuth;
 import com.google.firebase.auth.FirebaseUser;
-import com.google.firebase.database.DataSnapshot;
-import com.google.firebase.database.DatabaseError;
-import com.google.firebase.database.DatabaseReference;
-import com.google.firebase.database.FirebaseDatabase;
-import com.google.firebase.database.Query;
-import com.google.firebase.database.ValueEventListener;
 import com.to.let.bd.R;
 import com.to.let.bd.activities.AdDetailsActivity;
 import com.to.let.bd.activities.NewAdActivity2;
 import com.to.let.bd.activities.SubAdListActivity;
 import com.to.let.bd.model.AdInfo;
 import com.to.let.bd.utils.AppConstants;
-import com.to.let.bd.utils.DBConstants;
 import com.to.let.bd.utils.DateUtils;
-
-import java.util.ArrayList;
+import com.to.let.bd.utils.MyAnalyticsUtil;
 
 @SuppressLint("Registered")
 public class BaseActivity extends AppCompatActivity {
@@ -208,6 +199,11 @@ public class BaseActivity extends AppCompatActivity {
         return user.getUid();
     }
 
+    public static boolean isRegisteredUser() {
+        FirebaseUser user = FirebaseAuth.getInstance().getCurrentUser();
+        return user != null && !user.isAnonymous();
+    }
+
     public FirebaseUser getCurrentUser() {
         return FirebaseAuth.getInstance().getCurrentUser();
     }
@@ -270,7 +266,7 @@ public class BaseActivity extends AppCompatActivity {
         sendIntent.putExtra(Intent.EXTRA_TEXT, "Hey check out the latest To-Let app:\nhttps://play.google.com/store/apps/details?id=" +
                 getPackageName());
         sendIntent.setType("text/plain");
-        startActivity(sendIntent);
+        startActivityForResult(sendIntent, AppConstants.shareApp);
     }
 
     public void showSimpleDialog(String message) {
@@ -321,7 +317,7 @@ public class BaseActivity extends AppCompatActivity {
         searchDialog.show();
 
         TextView title = searchDialog.findViewById(R.id.title);
-        title.setText(getString(R.string.filter_the_selected_list));
+        title.setText(getString(R.string.filter_what_you_like_to_want));
 
         final TextView fromMonth, toMonth;
         fromMonth = searchDialog.findViewById(R.id.fromMonth);
@@ -414,6 +410,15 @@ public class BaseActivity extends AppCompatActivity {
                     rentMaxLong = Long.parseLong(rentMax.getText().toString());
                 }
 
+                Bundle bundle = new Bundle();
+                bundle.putString(MyAnalyticsUtil.keySearchType, MyAnalyticsUtil.searchTypeNormal);
+                bundle.putDouble(MyAnalyticsUtil.keyFromDateTime, fromDateTime);
+                bundle.putDouble(MyAnalyticsUtil.keyToDateTime, toDateTime);
+                bundle.putDouble(MyAnalyticsUtil.keyRentMinLong, rentMinLong);
+                bundle.putDouble(MyAnalyticsUtil.keyRentMaxLong, rentMaxLong);
+                MyAnalyticsUtil myAnalyticsUtil = new MyAnalyticsUtil(BaseActivity.this);
+                myAnalyticsUtil.searchEvent(bundle);
+
                 if (fromDateTime == 0 && toDateTime == 0 && rentMinLong == 0 && rentMaxLong == 0) {
                     showSimpleDialog(R.string.please_insert_valid_data);
                     return;
@@ -442,6 +447,8 @@ public class BaseActivity extends AppCompatActivity {
         searchDialog.findViewById(R.id.cancelBtn).setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View view) {
+                MyAnalyticsUtil myAnalyticsUtil = new MyAnalyticsUtil(BaseActivity.this);
+                myAnalyticsUtil.sendEvent(MyAnalyticsUtil.searchTypeNormal, "canceled");
                 searchDialog.dismiss();
             }
         });
@@ -534,10 +541,18 @@ public class BaseActivity extends AppCompatActivity {
         datePickerDialog.show();
     }
 
+//    protected void reloadList(int i) {
+//
+//    }
+
     public void startSubAdListActivity(int subAdListType) {
+//        if (this instanceof SubAdListActivity) {
+//            reloadList(1);
+//            return;
+//        }
         Intent subAdListIntent = new Intent(this, SubAdListActivity.class);
         subAdListIntent.putExtra(AppConstants.keySubAdListType, subAdListType);
-        subAdListIntent.addFlags(Intent.FLAG_ACTIVITY_CLEAR_TASK);
+        subAdListIntent.addFlags(Intent.FLAG_ACTIVITY_CLEAR_TOP | Intent.FLAG_ACTIVITY_NEW_TASK);
         startActivity(subAdListIntent);
     }
 

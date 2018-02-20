@@ -104,11 +104,22 @@ public class AdViewHolder extends RecyclerView.ViewHolder {
 //            mainLay.addView(adView);
             return;
         }
-        String adRent = "Rent per month: TK " + AppConstants.rentFormatter(adInfo.flatRent);
+
+        String adRent;
+        if (adInfo.messInfo != null) {
+            if (adInfo.messInfo.numberOfSeat > 0) {
+                adRent = "Rent per seat: TK " + String.valueOf(AppConstants.rentFormatter(adInfo.flatRent));
+            } else {
+                if (adInfo.messInfo.numberOfRoom == 1)
+                    adRent = "Rent for room: TK " + String.valueOf(AppConstants.rentFormatter(adInfo.flatRent));
+                else
+                    adRent = "Rent for all room: TK " + String.valueOf(AppConstants.rentFormatter(adInfo.flatRent));
+            }
+        } else {
+            adRent = "Rent per month: TK " + String.valueOf(AppConstants.rentFormatter(adInfo.flatRent));
+        }
         this.adRent.setText(adRent);
-
         this.adDescription.setText(AppConstants.flatDescription(context, adInfo));
-
         String rentDate = "Rent from: " + DateUtils.getRentDateString(adInfo.startingFinalDate);
         this.rentDate.setText(rentDate);
         address.setText(adInfo.fullAddress);
@@ -147,20 +158,23 @@ public class AdViewHolder extends RecyclerView.ViewHolder {
             @Override
             public void onClick(View view) {
                 if (clickListener != null)
-                    clickListener.onItemClick(adInfo);
+                    clickListener.onItemClick(clickedPosition);
             }
         });
 
         favAd.setSelected(false);
-
         if (adInfo.favCount > 0) {
-            if (adInfo.fav.containsKey(BaseActivity.getUid())) {
+            if (adInfo.fav.get(BaseActivity.getUid()) != null && adInfo.fav.get(BaseActivity.getUid())) {
                 favAd.setSelected(true);
             }
         }
         favAd.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View view) {
+                if (!BaseActivity.isRegisteredUser()) {
+                    showToast(R.string.login_alert_fav);
+                    return;
+                }
                 if (adInfo.userId.equals(BaseActivity.getUid())) {
                     showToast(R.string.this_is_your_own_post);
                     return;
@@ -177,7 +191,7 @@ public class AdViewHolder extends RecyclerView.ViewHolder {
                 @Override
                 public void onClick(View v) {
                     if (clickListener != null)
-                        clickListener.onItemClick(adInfo);
+                        clickListener.onItemClick(clickedPosition);
                 }
             });
         }

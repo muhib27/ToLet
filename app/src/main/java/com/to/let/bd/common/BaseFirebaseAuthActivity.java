@@ -27,6 +27,7 @@ import com.to.let.bd.R;
 import com.to.let.bd.fcm.DeleteTokenService;
 import com.to.let.bd.utils.AppConstants;
 import com.to.let.bd.utils.DBConstants;
+import com.to.let.bd.utils.MyAnalyticsUtil;
 
 import java.util.HashMap;
 
@@ -38,13 +39,14 @@ public abstract class BaseFirebaseAuthActivity extends BaseActivity implements
 
     // The entry point to Google Play services, used by the Places API and Fused Location Provider.
     private GoogleApiClient mGoogleApiClient;
+    protected MyAnalyticsUtil myAnalyticsUtil;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
-
         setContentView(getLayoutResourceId());
 
+        myAnalyticsUtil = new MyAnalyticsUtil(this);
         initFirebase();
 
         // Configure Google Sign In
@@ -93,19 +95,17 @@ public abstract class BaseFirebaseAuthActivity extends BaseActivity implements
                 GoogleSignInAccount account = result.getSignInAccount();
 
                 if (account != null) {
-                    firebaseAuthWithGoogle(account);
+                    firebaseLoginWithCredential(account);
                 }
+                myAnalyticsUtil.sendEvent(MyAnalyticsUtil.keyGoogleLogin, "succeed");
             } else {
                 showToast(getString(R.string.google_login_failed));
+                myAnalyticsUtil.sendEvent(MyAnalyticsUtil.keyGoogleLogin, "failed");
             }
         }
         super.onActivityResult(requestCode, resultCode, data);
     }
     // [END onActivityResult]
-
-    private void firebaseAuthWithGoogle(GoogleSignInAccount acct) {
-        firebaseLoginWithCredential(acct);
-    }
 
     private void firebaseLoginWithCredential(final GoogleSignInAccount acct) {
         AuthCredential credential = GoogleAuthProvider.getCredential(acct.getIdToken(), null);
@@ -124,7 +124,9 @@ public abstract class BaseFirebaseAuthActivity extends BaseActivity implements
                         if (!task.isSuccessful()) {
                             String message = task.getException().getMessage();
                             showToast(message);
+                            myAnalyticsUtil.sendEvent(MyAnalyticsUtil.keyFirebaseLogin, "failed");
                         } else {
+                            myAnalyticsUtil.sendEvent(MyAnalyticsUtil.keyFirebaseLogin, "succeed");
                             updateFirebaseUser(acct);
                         }
                     }
@@ -136,13 +138,7 @@ public abstract class BaseFirebaseAuthActivity extends BaseActivity implements
                 .setDisplayName(acct.getDisplayName())
                 .setPhotoUri(acct.getPhotoUrl())
                 .build();
-        firebaseUser.updateProfile(profileUpdates)
-                .addOnCompleteListener(new OnCompleteListener<Void>() {
-                    @Override
-                    public void onComplete(@NonNull Task<Void> task) {
-                        showLog();
-                    }
-                });
+        firebaseUser.updateProfile(profileUpdates);
         writeNewUser();
         setEmailAddress();
     }

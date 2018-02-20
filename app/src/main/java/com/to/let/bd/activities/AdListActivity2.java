@@ -53,6 +53,7 @@ import com.to.let.bd.fragments.OthersFlatList;
 import com.to.let.bd.fragments.SubletFlatList;
 import com.to.let.bd.utils.AppConstants;
 import com.to.let.bd.utils.DBConstants;
+import com.to.let.bd.utils.MyAnalyticsUtil;
 
 public class AdListActivity2 extends BaseFirebaseAuthActivity implements
         NavigationView.OnNavigationItemSelectedListener {
@@ -244,6 +245,7 @@ public class AdListActivity2 extends BaseFirebaseAuthActivity implements
             startNearestActivity();
         } else if (id == R.id.navSmartAds) {
 //            startSubAdListActivity(AppConstants.subQuerySmart);
+            myAnalyticsUtil.sendEvent(MyAnalyticsUtil.keySmartListEvent, "try");
             showSimpleDialog(R.string.smart_ad_title, R.string.coming_soon);
             return true;
         } else if (id == R.id.navMyAds) {
@@ -275,24 +277,35 @@ public class AdListActivity2 extends BaseFirebaseAuthActivity implements
         alertDialog.setButton(AlertDialog.BUTTON_POSITIVE, getString(R.string.yes),
                 new DialogInterface.OnClickListener() {
                     public void onClick(DialogInterface dialog, int which) {
-                        if (type == 1)
+                        if (type == 1) {
                             navPostYourAdd.performClick();
-                        else if (type == 0)
+                        } else if (type == 0) {
                             logoutAndAnonymousLogin();
-                        else
+                            myAnalyticsUtil.sendEvent(MyAnalyticsUtil.keyLogoutEvent, "true");
+                        } else {
                             onBackPressed();
+                        }
                     }
                 });
         alertDialog.setButton(AlertDialog.BUTTON_NEGATIVE, getString(R.string.no),
                 new DialogInterface.OnClickListener() {
                     public void onClick(DialogInterface dialog, int which) {
-
+                        if (type == 0)
+                            myAnalyticsUtil.sendEvent(MyAnalyticsUtil.keyLogoutEvent, "false");
                     }
                 });
         alertDialog.show();
+        alertDialog.setOnDismissListener(new DialogInterface.OnDismissListener() {
+            @Override
+            public void onDismiss(DialogInterface dialog) {
+                if (type == 0)
+                    myAnalyticsUtil.sendEvent(MyAnalyticsUtil.keyLogoutEvent, "false");
+            }
+        });
     }
 
     private void startNearestActivity() {
+        myAnalyticsUtil.sendEvent(MyAnalyticsUtil.keyNearestAdEvent, "true");
         Intent mapIntent = new Intent(this, MapActivity.class);
         mapIntent.addFlags(Intent.FLAG_ACTIVITY_NEW_TASK);
         startActivity(mapIntent);
@@ -356,14 +369,37 @@ public class AdListActivity2 extends BaseFirebaseAuthActivity implements
                     flatType = DBConstants.keyFamily;
                 }
                 BaseActivity.childArray = new String[]{DBConstants.adList, flatType};
-                BaseActivity.fromDateTime = 0;
-                BaseActivity.toDateTime = 0;
-                BaseActivity.rentMinLong = 0;
-                BaseActivity.rentMaxLong = 0;
                 showFilterWindow();
+                return true;
+            case R.id.sortByRent:
+                if (sortType != 0)
+                    sortType = 0;
+                else
+                    sortType = 1;
+                sort();
+                return true;
+            case R.id.sortByDate:
+                if (sortType != 2)
+                    sortType = 2;
+                else
+                    sortType = 3;
+                sort();
                 return true;
             default:
                 return super.onOptionsItemSelected(item);
+        }
+    }
+
+    private int sortType = 0;
+
+    private void sort() {
+        int pagerSelection = mViewPager.getCurrentItem();
+        myAnalyticsUtil.sendEvent(MyAnalyticsUtil.keySortEvent,
+                "pager position: " + pagerSelection
+                        + " sort type: " + sortType);
+        Fragment fragment = getSupportFragmentManager().findFragmentByTag("android:switcher:" + R.id.pager + ":" + pagerSelection);
+        if (fragment != null && fragment instanceof AdListBaseFragment && fragment.isVisible()) {
+            ((AdListBaseFragment) fragment).sort(sortType);
         }
     }
 
@@ -408,5 +444,16 @@ public class AdListActivity2 extends BaseFirebaseAuthActivity implements
                 showLog("Code to be executed when when the interstitial ad is closed.");
             }
         });
+    }
+
+    @Override
+    public void onActivityResult(int requestCode, int resultCode, Intent data) {
+        super.onActivityResult(requestCode, resultCode, data);
+        if (requestCode == AppConstants.shareApp) {
+            if (resultCode == RESULT_OK)
+                myAnalyticsUtil.sendEvent(MyAnalyticsUtil.keyShareEvent, "true");
+            else
+                myAnalyticsUtil.sendEvent(MyAnalyticsUtil.keyShareEvent, "false");
+        }
     }
 }

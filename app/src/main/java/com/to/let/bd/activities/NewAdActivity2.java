@@ -16,6 +16,7 @@ import android.os.CountDownTimer;
 import android.os.Handler;
 import android.support.annotation.NonNull;
 import android.support.design.widget.TabLayout;
+import android.support.design.widget.TextInputLayout;
 import android.support.v4.app.Fragment;
 import android.support.v4.content.LocalBroadcastManager;
 import android.support.v7.app.AlertDialog;
@@ -88,6 +89,7 @@ import com.to.let.bd.utils.DBConstants;
 import com.to.let.bd.utils.DateUtils;
 import com.to.let.bd.utils.FirebaseAuthError;
 import com.to.let.bd.utils.GoogleApiHelper;
+import com.to.let.bd.utils.MyAnalyticsUtil;
 import com.to.let.bd.utils.PhoneNumberUtils;
 import com.to.let.bd.utils.UploadImageService;
 
@@ -100,7 +102,7 @@ import java.util.concurrent.TimeUnit;
 
 public class NewAdActivity2 extends BaseMapActivity implements View.OnClickListener, View.OnFocusChangeListener {
 
-    private static final String TAG = NewAdActivity2.class.getSimpleName();
+    public static final String TAG = NewAdActivity2.class.getSimpleName();
 
     @Override
     protected int getLayoutResourceId() {
@@ -160,11 +162,18 @@ public class NewAdActivity2 extends BaseMapActivity implements View.OnClickListe
                 onPlaceSelected = true;
                 addressDetails.setText(place.getAddress());
                 googleMap.moveCamera(CameraUpdateFactory.newLatLngZoom(place.getLatLng(), DEFAULT_ZOOM));
+
+                Bundle bundle = new Bundle();
+                bundle.putString(MyAnalyticsUtil.keySearchType, MyAnalyticsUtil.placePickerNewAdView);
+                bundle.putDouble(MyAnalyticsUtil.keySearchLat, place.getLatLng().latitude);
+                bundle.putDouble(MyAnalyticsUtil.keySearchLng, place.getLatLng().longitude);
+                bundle.putCharSequence(MyAnalyticsUtil.keySearchName, place.getName());
+                myAnalyticsUtil.searchEvent(bundle);
             }
 
             @Override
             public void onError(Status status) {
-                showLog("An error occurred: " + status);
+                showLog("An error occurred: " + status.getStatusMessage());
             }
         });
     }
@@ -173,9 +182,12 @@ public class NewAdActivity2 extends BaseMapActivity implements View.OnClickListe
 
     private void getAdInfo() {
         Bundle bundle = getIntent().getExtras();
-        if (bundle == null)
-            return;
-        adInfo = (AdInfo) bundle.getSerializable(AppConstants.keyAdInfo);
+        if (bundle == null) {
+            myAnalyticsUtil.sendEvent(MyAnalyticsUtil.keyNewAdEvent, "start");
+        } else {
+            myAnalyticsUtil.sendEvent(MyAnalyticsUtil.keyEditAdEvent, "start");
+            adInfo = (AdInfo) bundle.getSerializable(AppConstants.keyAdInfo);
+        }
     }
 
     private void updateViewForEdit() {
@@ -269,6 +281,8 @@ public class NewAdActivity2 extends BaseMapActivity implements View.OnClickListe
         builder.setPositiveButton(getString(R.string.yes), new DialogInterface.OnClickListener() {
             @Override
             public void onClick(DialogInterface dialogInterface, int i) {
+                myAnalyticsUtil.sendEvent(MyAnalyticsUtil.keyWantToAddMediaEvent, "true: " + adId);
+                finish();
                 startMediaActivity(adId);
             }
         });
@@ -276,6 +290,7 @@ public class NewAdActivity2 extends BaseMapActivity implements View.OnClickListe
         builder.setNegativeButton(getString(R.string.no), new DialogInterface.OnClickListener() {
             @Override
             public void onClick(DialogInterface dialogInterface, int i) {
+                myAnalyticsUtil.sendEvent(MyAnalyticsUtil.keyWantToAddMediaEvent, "false: " + adId);
                 finish();
             }
         });
@@ -284,7 +299,6 @@ public class NewAdActivity2 extends BaseMapActivity implements View.OnClickListe
     }
 
     private void startMediaActivity(String adId) {
-        finish();
         Intent intent = new Intent(this, MediaActivity.class);
         if (adInfo != null && adInfo.images != null && adInfo.images.size() > 0) {
             Bundle bundle = new Bundle();
@@ -355,6 +369,7 @@ public class NewAdActivity2 extends BaseMapActivity implements View.OnClickListe
     private EditText emailAddress, phoneNumber;
     private LinearLayout flatAdditionalInfoLay, googleMapLay;
     private EditText houseInfo, whichFloor, description, totalRent, totalUtility;
+    private TextInputLayout totalRentTIL;
     private ImageView fixedMarker;
     private ProgressBar locationLoaderProgressBar;
     private TextView editMap;
@@ -407,6 +422,9 @@ public class NewAdActivity2 extends BaseMapActivity implements View.OnClickListe
         description = findViewById(R.id.description);
         totalRent = findViewById(R.id.totalRent);
         totalUtility = findViewById(R.id.totalUtility);
+        totalRentTIL = findViewById(R.id.totalRentTIL);
+
+        totalRentTIL.setHint(getString(R.string.rent_per_month));
 
         totalUtility.setOnEditorActionListener(new TextView.OnEditorActionListener() {
             @Override
@@ -624,6 +642,7 @@ public class NewAdActivity2 extends BaseMapActivity implements View.OnClickListe
                 Fragment fragment;
                 String tag;
                 Bundle bundle = new Bundle();
+                totalRentTIL.setHint(getString(R.string.rent_per_month));
                 if (tab.getPosition() == 0) {
                     fragment = FamilyFlatAd.newInstance();
                     if (adInfo != null && adInfo.familyInfo != null) {
@@ -637,6 +656,12 @@ public class NewAdActivity2 extends BaseMapActivity implements View.OnClickListe
                         bundle.putSerializable(DBConstants.messInfo, adInfo.messInfo);
                     }
                     tag = MessFlatAd.TAG;
+                    ((MessFlatAd) fragment).setListener(new MessFlatAd.MyListener() {
+                        @Override
+                        public void onItemSelect(String message) {
+                            totalRentTIL.setHint(message);
+                        }
+                    });
                 } else if (tab.getPosition() == 2) {
                     fragment = SubletFlatAd.newInstance();
                     if (adInfo != null && adInfo.subletInfo != null) {
@@ -787,14 +812,17 @@ public class NewAdActivity2 extends BaseMapActivity implements View.OnClickListe
         phoneNumber.setError(null);
 
         if (firebaseUser == null || firebaseUser.isAnonymous()) {
+            myAnalyticsUtil.sendEvent(MyAnalyticsUtil.keySubmitTryAdEvent, "not registered");
             googleSignOut();
             return;
         }
 
         if (firebaseUser.getPhoneNumber() == null || firebaseUser.getPhoneNumber().isEmpty()) {
             if (!AppConstants.isMobileNumberValid(this, phoneNumber)) {
+                myAnalyticsUtil.sendEvent(MyAnalyticsUtil.keySubmitTryAdEvent, "invalid phone number");
                 return;
             }
+            myAnalyticsUtil.sendEvent(MyAnalyticsUtil.keySubmitTryAdEvent, "no phone number");
             needToVerifyPhoneNumberAlert();
             return;
         }
@@ -805,11 +833,13 @@ public class NewAdActivity2 extends BaseMapActivity implements View.OnClickListe
             if (rentType.equals(getString(R.string.others)) && description.getText().length() <= 0) {
                 description.setError(getString(R.string.error_field_required));
                 description.requestFocus();
+                myAnalyticsUtil.sendEvent(MyAnalyticsUtil.keySubmitTryAdEvent, "invalid description for other type ad");
                 return;
             }
         } else if (fragment != null && fragment instanceof MessFlatAd && fragment.isVisible()) {
             if (!((MessFlatAd) fragment).isSeatOrRoomSelected()) {
                 showSimpleDialog(R.string.please_select_valid_seat_or_room);
+                myAnalyticsUtil.sendEvent(MyAnalyticsUtil.keySubmitTryAdEvent, "no room/seat for mess type ad");
                 return;
             }
         }
@@ -817,18 +847,21 @@ public class NewAdActivity2 extends BaseMapActivity implements View.OnClickListe
         if (houseInfo.getText().length() == 0) {
             houseInfo.setError(getString(R.string.error_field_required));
             houseInfo.requestFocus();
+            myAnalyticsUtil.sendEvent(MyAnalyticsUtil.keySubmitTryAdEvent, "no house name/number");
             return;
         }
 
         if (whichFloor.getText().length() == 0) {
             whichFloor.setError(getString(R.string.error_field_required));
             whichFloor.requestFocus();
+            myAnalyticsUtil.sendEvent(MyAnalyticsUtil.keySubmitTryAdEvent, "no floor number");
             return;
         }
 
         if (totalRent.getText().length() == 0) {
             totalRent.setError(getString(R.string.error_field_required));
             totalRent.requestFocus();
+            myAnalyticsUtil.sendEvent(MyAnalyticsUtil.keySubmitTryAdEvent, "no rent");
             return;
         }
 
@@ -838,6 +871,7 @@ public class NewAdActivity2 extends BaseMapActivity implements View.OnClickListe
         getRoomDetails();
 
         if (summary == null || othersFacility == null) {
+            myAnalyticsUtil.sendEvent(MyAnalyticsUtil.keySubmitTryAdEvent, "invalid summary or others facility");
             return;
         }
 
@@ -899,7 +933,22 @@ public class NewAdActivity2 extends BaseMapActivity implements View.OnClickListe
         address.setText(addressString);
 
         long totalR = Long.parseLong(this.totalRent.getText().toString());
-        String tr = "Rent: TK " + String.valueOf(AppConstants.rentFormatter(totalR));
+        String tr;
+        Fragment fragment = getSupportFragmentManager().findFragmentById(R.id.fragmentContainer);
+        if (fragment != null && fragment instanceof MessFlatAd && fragment.isVisible()) {
+            MessInfo messInfo = ((MessFlatAd) fragment).getMessInfo();
+            if (messInfo.numberOfSeat > 0) {
+                tr = "Rent per seat: TK " + String.valueOf(AppConstants.rentFormatter(totalR));
+            } else {
+                if (messInfo.numberOfRoom == 1)
+                    tr = "Rent for room: TK " + String.valueOf(AppConstants.rentFormatter(totalR));
+                else
+                    tr = "Rent for all room: TK " + String.valueOf(AppConstants.rentFormatter(totalR));
+            }
+        } else {
+            tr = "Rent per month: TK " + String.valueOf(AppConstants.rentFormatter(totalR));
+        }
+
         long totalU = totalUtility.getText().length() > 0 ? Long.parseLong(totalUtility.getText().toString()) : 0;
         if (totalU > 0) tr += "\nOthers utility bill: TK" + AppConstants.rentFormatter(totalU);
         totalRent.setText(tr);
@@ -916,6 +965,7 @@ public class NewAdActivity2 extends BaseMapActivity implements View.OnClickListe
             @Override
             public void onClick(View view) {
                 summaryDialog.dismiss();
+                myAnalyticsUtil.sendEvent(MyAnalyticsUtil.keySubmitTryAdEvent, "only show summary");
             }
         });
     }
@@ -1049,6 +1099,7 @@ public class NewAdActivity2 extends BaseMapActivity implements View.OnClickListe
                         mediaAlertDialog(adId);
                     }
                 } else {
+                    myAnalyticsUtil.sendEvent(MyAnalyticsUtil.keySubmitTryAdEvent, "submission failed: " + databaseError.getDetails());
                     showSimpleDialog(databaseError.getMessage());
                     closeProgressDialog();
                 }
@@ -1174,11 +1225,20 @@ public class NewAdActivity2 extends BaseMapActivity implements View.OnClickListe
     public boolean onOptionsItemSelected(MenuItem item) {
         switch (item.getItemId()) {
             case android.R.id.home:
-                finish();
+                onBackPressed();
                 return true;
             default:
                 return super.onOptionsItemSelected(item);
         }
+    }
+
+    @Override
+    public void onBackPressed() {
+        if (adInfo == null)
+            myAnalyticsUtil.sendEvent(MyAnalyticsUtil.keyNewAdEvent, "canceled");
+        else
+            myAnalyticsUtil.sendEvent(MyAnalyticsUtil.keyEditAdEvent, "canceled");
+        super.onBackPressed();
     }
 
     @Override
@@ -1214,6 +1274,7 @@ public class NewAdActivity2 extends BaseMapActivity implements View.OnClickListe
                 new PhoneAuthProvider.OnVerificationStateChangedCallbacks() {
                     @Override
                     public void onVerificationCompleted(@NonNull PhoneAuthCredential phoneAuthCredential) {
+                        myAnalyticsUtil.sendEvent(MyAnalyticsUtil.keyPhoneNumberVerificationEvent, "succeed");
                         closeProgressDialog();
                         updateUserPhoneNumber(phoneAuthCredential);
                     }
@@ -1229,11 +1290,14 @@ public class NewAdActivity2 extends BaseMapActivity implements View.OnClickListe
                                 showSimpleDialog(ex.getLocalizedMessage());
                             }
                         }
+
+                        myAnalyticsUtil.sendEvent(MyAnalyticsUtil.keyPhoneNumberVerificationEvent, "failed: " + ex.getMessage());
                     }
 
                     @Override
                     public void onCodeSent(@NonNull String verificationId,
                                            @NonNull PhoneAuthProvider.ForceResendingToken forceResendingToken) {
+                        myAnalyticsUtil.sendEvent(MyAnalyticsUtil.keyPhoneNumberVerificationEvent, "code sent");
                         closeProgressDialog();
                         mVerificationId = verificationId;
                         mForceResendingToken = forceResendingToken;
@@ -1342,6 +1406,7 @@ public class NewAdActivity2 extends BaseMapActivity implements View.OnClickListe
             public void onComplete(@NonNull Task<Void> task) {
                 closeProgressDialog();
                 if (task.isSuccessful()) {
+                    myAnalyticsUtil.sendEvent(MyAnalyticsUtil.keyPhoneNumberAddedEvent, "succeed");
                     if (smsCodeDialog != null && smsCodeDialog.isShowing()) smsCodeDialog.dismiss();
                     phoneNumber.removeTextChangedListener(textWatcher);
                     phoneNumber.setText(firebaseUser.getPhoneNumber());
@@ -1359,6 +1424,7 @@ public class NewAdActivity2 extends BaseMapActivity implements View.OnClickListe
                     } else {
                         showSimpleDialog(getString(R.string.unknown_error));
                     }
+                    myAnalyticsUtil.sendEvent(MyAnalyticsUtil.keyPhoneNumberAddedEvent, "failed: " + task.getException().getMessage());
                 }
             }
         });

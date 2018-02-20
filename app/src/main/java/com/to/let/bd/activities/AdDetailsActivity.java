@@ -64,6 +64,8 @@ import java.util.TreeSet;
 
 public class AdDetailsActivity extends BaseActivity implements View.OnClickListener {
 
+    private static final String TAG = AdDetailsActivity.class.getSimpleName();
+
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
@@ -85,7 +87,7 @@ public class AdDetailsActivity extends BaseActivity implements View.OnClickListe
         getData();
         init();
         initSlider();
-        myAnalyticsUtil.showAdDetails(adInfo, getUid());
+        myAnalyticsUtil.adDetailsEvent(adInfo.adId);
         initInterstitialAd();
     }
 
@@ -226,6 +228,7 @@ public class AdDetailsActivity extends BaseActivity implements View.OnClickListe
                 .child(getUid())
                 .child(adInfo.adId);
 
+        myAnalyticsUtil.favItem(adInfo.adId, !favAd.isSelected());
         if (favAd.isSelected()) {
             favAd.setSelected(false);
             userFavAdRef.removeValue();
@@ -362,6 +365,13 @@ public class AdDetailsActivity extends BaseActivity implements View.OnClickListe
                 stringBuilder.append(getString(R.string.have_wifi_facility));
                 stringBuilder.append("\n");
             }
+            if (messInfo.onlyStudents && !messInfo.onlyJobHolders) {
+                stringBuilder.append(getString(R.string.only_students));
+                stringBuilder.append("\n");
+            } else if (!messInfo.onlyStudents && messInfo.onlyJobHolders) {
+                stringBuilder.append(getString(R.string.only_job_holders));
+                stringBuilder.append("\n");
+            }
         } else if (adInfo.subletInfo != null) {
             SubletInfo subletInfo = adInfo.subletInfo;
             String[] subletTypeArray = getResources().getStringArray(R.array.sublet_type_array);
@@ -448,8 +458,14 @@ public class AdDetailsActivity extends BaseActivity implements View.OnClickListe
         } else if (view == reportThis) {
             showReportAlert();
         } else if (view == favAd) {
+            if (!BaseActivity.isRegisteredUser()) {
+                showToast(R.string.login_alert_fav);
+                myAnalyticsUtil.sendEvent(MyAnalyticsUtil.keyFavFailed, "not registered");
+                return;
+            }
             if (adInfo.userId.equals(BaseActivity.getUid())) {
                 showToast(R.string.this_is_your_own_post);
+                myAnalyticsUtil.sendEvent(MyAnalyticsUtil.keyFavFailed, "own post");
                 return;
             }
             onFavClicked();
@@ -489,6 +505,7 @@ public class AdDetailsActivity extends BaseActivity implements View.OnClickListe
         String mobileNumber = adInfo.mobileNumber;
         if (mobileNumber == null || mobileNumber.trim().isEmpty()) {
             showSimpleDialog(R.string.mobile_number_not_found);
+            myAnalyticsUtil.sendEvent(MyAnalyticsUtil.keyCallEvent, "phone number not found " + adInfo.adId);
             return;
         }
         Intent intent = new Intent(Intent.ACTION_DIAL, Uri.fromParts("tel", mobileNumber, null));
@@ -508,12 +525,22 @@ public class AdDetailsActivity extends BaseActivity implements View.OnClickListe
                 reloadAdDataFromServer(updateFullView);
             }
         } else if (requestCode == AppConstants.phoneCall || requestCode == AppConstants.sendEmail) {
+            if (requestCode == AppConstants.phoneCall)
+                myAnalyticsUtil.sendEvent(MyAnalyticsUtil.keyCallEvent, "try");
+            else
+                myAnalyticsUtil.sendEvent(MyAnalyticsUtil.keyEmailEvent, "try");
+
             if (interstitialAd.isLoaded()) {
                 interstitialAd.show();
                 initInterstitialAd();
             } else {
                 initInterstitialAd();
             }
+        } else if (requestCode == AppConstants.shareApp) {
+            if (resultCode == RESULT_OK)
+                myAnalyticsUtil.sendEvent(MyAnalyticsUtil.keyShareEvent, "true");
+            else
+                myAnalyticsUtil.sendEvent(MyAnalyticsUtil.keyShareEvent, "false");
         }
     }
 
@@ -570,7 +597,7 @@ public class AdDetailsActivity extends BaseActivity implements View.OnClickListe
 
         favAd.setSelected(false);
         if (adInfo.favCount > 0) {
-            if (adInfo.fav.containsKey(BaseActivity.getUid())) {
+            if (adInfo.fav.get(BaseActivity.getUid()) != null && adInfo.fav.get(BaseActivity.getUid())) {
                 favAd.setSelected(true);
             }
         }
@@ -590,7 +617,18 @@ public class AdDetailsActivity extends BaseActivity implements View.OnClickListe
         if (adInfo != null) {
             String totalRent = "TK " + String.valueOf(AppConstants.rentFormatter(adInfo.flatRent));
             if (adInfo.othersFee > 0)
-                totalRent += " (+Utility TK " + AppConstants.rentFormatter(adInfo.othersFee) + ")";
+                totalRent += " + Utility TK " + AppConstants.rentFormatter(adInfo.othersFee) + " ";
+
+            if (flatType.equals(DBConstants.keyMess)) {
+                if (adInfo.messInfo.numberOfSeat > 0) {
+                    totalRent += "(per seat)";
+                } else {
+                    if (adInfo.messInfo.numberOfRoom == 1)
+                        totalRent += "(1 room)";
+                    else
+                        totalRent += "(" + adInfo.messInfo.numberOfRoom + " room's)";
+                }
+            }
             this.totalRent.setText(totalRent);
 
             this.roomDetails.setText(AppConstants.flatDescription(this, adInfo));
@@ -642,6 +680,7 @@ public class AdDetailsActivity extends BaseActivity implements View.OnClickListe
         String emailAddress = adInfo.emailAddress;
         if (emailAddress == null || emailAddress.trim().isEmpty()) {
             showSimpleDialog(R.string.email_address_not_found);
+            myAnalyticsUtil.sendEvent(MyAnalyticsUtil.keyCallEvent, "email address not found " + adInfo.adId);
             return;
         }
 
@@ -711,7 +750,7 @@ public class AdDetailsActivity extends BaseActivity implements View.OnClickListe
     private void openMapActivity() {
         if (adInfo == null)
             return;
-
+        myAnalyticsUtil.sendEvent(MyAnalyticsUtil.keyShowMapFromAdDetailsEvent, "true");
         Intent mapIntent = new Intent(this, MapActivity.class);
         mapIntent.putExtra(AppConstants.keyAdInfo, adInfo);
         mapIntent.putExtra(DBConstants.flatType, flatType);
@@ -806,6 +845,7 @@ public class AdDetailsActivity extends BaseActivity implements View.OnClickListe
                         showDeleteAdDialog();
                     }
                 } else {
+                    myAnalyticsUtil.sendEvent(MyAnalyticsUtil.keyBookingEvent, "try");
                     showSimpleDialog(R.string.booking_ad, R.string.coming_soon);
                 }
                 return true;
@@ -829,7 +869,7 @@ public class AdDetailsActivity extends BaseActivity implements View.OnClickListe
                     showSimpleDialog(R.string.please_update_your_rent_date);
                     return;
                 }
-
+                myAnalyticsUtil.sendEvent(MyAnalyticsUtil.keyAdRepublishEvent, "true");
                 deleteAd(-1, true);
             }
         });
@@ -902,6 +942,7 @@ public class AdDetailsActivity extends BaseActivity implements View.OnClickListe
                     deleteReasonValue = 3;
                 }
 
+                myAnalyticsUtil.sendEvent(MyAnalyticsUtil.keyAdDeleteEvent, String.valueOf(deleteReason));
                 deleteAd(deleteReasonValue, false);
                 deleteAdDialog.dismiss();
             }
@@ -1056,10 +1097,10 @@ public class AdDetailsActivity extends BaseActivity implements View.OnClickListe
     }
 
     private void showTermsOfUse() {
-
+        showToast();
     }
 
     private void showPrivacyPolicy() {
-
+        showToast();
     }
 }

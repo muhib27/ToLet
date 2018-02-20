@@ -114,7 +114,7 @@
                     android:layout_width="match_parent"
                     android:layout_height="wrap_content"
                     android:gravity="center_vertical"
-                    android:hint="@string/full_address_hint"
+                    android:hint="@string/full_address"
                     android:inputType="textMultiLine|textNoSuggestions"
                     android:maxLines="3"
                     android:singleLine="false"
@@ -241,6 +241,7 @@
                     android:textStyle="bold" />
 
                 <android.support.design.widget.TextInputLayout
+                    android:id="@+id/totalRentTIL"
                     android:layout_width="0dp"
                     android:layout_height="wrap_content"
                     android:layout_weight="1">
@@ -251,7 +252,7 @@
                         android:layout_height="wrap_content"
                         android:ems="6"
                         android:gravity="center"
-                        android:hint="@string/rent"
+                        android:hint="@string/rent_per_month"
                         android:imeOptions="actionNext"
                         android:inputType="number"
                         android:maxLength="6"
